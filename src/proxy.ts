@@ -18,6 +18,8 @@ export async function proxy(request:NextRequest){
  });
  await client.auth.getClaims();
  response.headers.set('Cache-Control','private, no-store');
+ response.headers.set('Referrer-Policy','no-referrer');
+ if(request.nextUrl.pathname.startsWith('/invite/')||request.nextUrl.pathname.startsWith('/api/invites/'))response.headers.set('X-Robots-Tag','noindex, nofollow, noarchive');
  return response;
 }
 

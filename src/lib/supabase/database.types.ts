@@ -23,7 +23,27 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "fridge_members": {
+            "fridge_invites": {
+                  Row: {
+                    "created_at": string,"created_by": string,"expires_at": string,"fridge_id": string,"id": string,"revoked_at": string | null,"token_hash": string,"used_at": string | null,"used_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at": string,"created_by": string,"expires_at": string,"fridge_id": string,"id"?: string,"revoked_at"?: string | null,"token_hash": string,"used_at"?: string | null,"used_by"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"expires_at"?: string,"fridge_id"?: string,"id"?: string,"revoked_at"?: string | null,"token_hash"?: string,"used_at"?: string | null,"used_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "fridge_invites_fridge_id_fkey"
+      columns: ["fridge_id"]
+isOneToOne: false
+      referencedRelation: "fridges"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"fridge_members": {
                   Row: {
                     "fridge_id": string,"joined_at": string,"role": Database["public"]['Enums']["fridge_role"],"user_id": string
                   }
@@ -123,7 +143,17 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "create_ingredient":
+            "accept_fridge_invite":
+{ Args: { "token_digest": string }; Returns: {
+              "id": string,"name": string,"role": Database["public"]['Enums']["fridge_role"]
+            }[]
+                           },
+"create_fridge_invite":
+{ Args: { "target_fridge_id": string,"token_digest": string }; Returns: {
+              "expires_at": string,"invite_id": string
+            }[]
+                           },
+"create_ingredient":
 { Args: { "input": Json,"target_fridge_id": string }; Returns: {
               "created_at": string,
 "created_by": string,
@@ -146,6 +176,25 @@ isOneToOne: false
       } },
 "delete_ingredient":
 { Args: { "expected_version": number,"ingredient_id": string,"target_fridge_id": string }; Returns: undefined
+                           },
+"inspect_fridge_invite":
+{ Args: { "token_digest": string }; Returns: {
+              "fridge_id": string,"fridge_name": string,"role": Database["public"]['Enums']["fridge_role"],"state": string
+            }[]
+                           },
+"leave_fridge":
+{ Args: { "target_fridge_id": string }; Returns: undefined
+                           },
+"list_fridge_members":
+{ Args: { "target_fridge_id": string }; Returns: {
+              "display_name": string,"role": Database["public"]['Enums']["fridge_role"],"user_id": string
+            }[]
+                           },
+"remove_fridge_member":
+{ Args: { "member_user_id": string,"target_fridge_id": string }; Returns: undefined
+                           },
+"revoke_fridge_invite":
+{ Args: { "invite_id": string,"target_fridge_id": string }; Returns: undefined
                            },
 "update_ingredient":
 { Args: { "expected_version": number,"ingredient_id": string,"patch": Json,"target_fridge_id": string }; Returns: {

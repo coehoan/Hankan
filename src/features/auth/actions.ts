@@ -4,13 +4,14 @@ import { AppError } from '@/lib/errors';
 import { siteOrigin } from '@/lib/env';
 import { requireUser } from '@/lib/auth';
 import { parseAuthInput } from './validation';
+import { safeNextPath } from './redirects';
 
-export async function signUp(email:string,password:string):Promise<void>{
+export async function signUp(email:string,password:string,nextPath='/'):Promise<void>{
  const input=parseAuthInput('sign-up',{email,password});
  if(input.action!=='sign-up')return;
  const client=await createServerSupabaseClient();
  const callback=new URL('/auth/callback',siteOrigin());
- callback.searchParams.set('next','/');
+ callback.searchParams.set('next',safeNextPath(nextPath));
  const {error}=await client.auth.signUp({email:input.email,password:input.password,options:{emailRedirectTo:callback.toString()}});
  if(error)throw new AppError('validation','가입 요청을 완료하지 못했어요. 입력 내용을 확인하고 다시 시도해 주세요.');
 }

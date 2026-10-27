@@ -16,7 +16,7 @@ export async function POST(request:Request,{params}:{params:Promise<{action:stri
   const input=parseAuthInput(action as AuthAction,body);
   switch(input.action){
    case 'sign-in':await signIn(input.email,input.password);break;
-   case 'sign-up':await signUp(input.email,input.password);break;
+   case 'sign-up':await signUp(input.email,input.password,safeNextPath(input.next));break;
    case 'request-reset':await requestPasswordReset(input.email);break;
    case 'update-password':await updatePassword(input.password);break;
    case 'sign-out':await signOut();break;

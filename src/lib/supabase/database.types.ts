@@ -57,6 +57,46 @@ isOneToOne: false
                   Relationships: [
 
                   ]
+                },"ingredient_create_requests": {
+                  Row: {
+                    "created_at": string,"fridge_id": string,"ingredient_id": string,"payload": NonNullable<Json>,"request_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"fridge_id": string,"ingredient_id": string,"payload": NonNullable<Json>,"request_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"fridge_id"?: string,"ingredient_id"?: string,"payload"?: NonNullable<Json>,"request_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ingredient_create_requests_fridge_id_fkey"
+      columns: ["fridge_id"]
+isOneToOne: false
+      referencedRelation: "fridges"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"ingredients": {
+                  Row: {
+                    "created_at": string,"created_by": string,"expires_on": string,"fridge_id": string,"id": string,"name": string,"normalized_name": string | null,"remaining_percent": number,"storage": string,"updated_at": string,"updated_by": string,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by": string,"expires_on": string,"fridge_id": string,"id"?: string,"name": string,"normalized_name"?: never,"remaining_percent"?: number,"storage": string,"updated_at"?: string,"updated_by": string,"version"?: number
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"expires_on"?: string,"fridge_id"?: string,"id"?: string,"name"?: string,"normalized_name"?: never,"remaining_percent"?: number,"storage"?: string,"updated_at"?: string,"updated_by"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ingredients_fridge_id_fkey"
+      columns: ["fridge_id"]
+isOneToOne: false
+      referencedRelation: "fridges"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"display_name": string,"last_fridge_id": string | null,"theme_preference": string,"timezone": string,"updated_at": string,"user_id": string
@@ -83,7 +123,51 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "create_ingredient":
+{ Args: { "input": Json,"target_fridge_id": string }; Returns: {
+              "created_at": string,
+"created_by": string,
+"expires_on": string,
+"fridge_id": string,
+"id": string,
+"name": string,
+"normalized_name": string | null,
+"remaining_percent": number,
+"storage": string,
+"updated_at": string,
+"updated_by": string,
+"version": number
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "ingredients"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"delete_ingredient":
+{ Args: { "expected_version": number,"ingredient_id": string,"target_fridge_id": string }; Returns: undefined
+                           },
+"update_ingredient":
+{ Args: { "expected_version": number,"ingredient_id": string,"patch": Json,"target_fridge_id": string }; Returns: {
+              "created_at": string,
+"created_by": string,
+"expires_on": string,
+"fridge_id": string,
+"id": string,
+"name": string,
+"normalized_name": string | null,
+"remaining_percent": number,
+"storage": string,
+"updated_at": string,
+"updated_by": string,
+"version": number
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "ingredients"
+        isOneToOne: true
+        isSetofReturn: false
+      } }
           }
           Enums: {
             "fridge_role": "owner"|"member"

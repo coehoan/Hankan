@@ -341,6 +341,9 @@ isOneToOne: false
 "record_notification_delivery":
 { Args: { "delivery_status": string,"job_id": string,"subscription_id": string,"token": string }; Returns: undefined
                            },
+"recover_receipt_analysis":
+{ Args: { "draft_id": string }; Returns: boolean
+                           },
 "remove_fridge_member":
 { Args: { "member_user_id": string,"target_fridge_id": string }; Returns: undefined
                            },

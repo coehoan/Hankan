@@ -81,3 +81,15 @@ it('push_endpoint_cannot_target_private_networks_or_other_websites',async()=>{
   const result=await group.owner.client.rpc('save_push_subscription',{input:{endpoint,keys:{p256dh:'B'+'A'.repeat(86),auth:'A'.repeat(22)}}});expect(result.error?.code).toBe('22023');
  }
 });
+it('time_change_to_past_retires_today_entirely_unsent_jobs_and_invalidates_leases',async()=>{
+ for(const status of ['pending','retry','leased']){
+  const job=await freshJob();
+  expect((await admin.from('notification_jobs').update({status,due_at:new Date(Date.now()-1000).toISOString()}).eq('id',job.id)).error).toBeNull();
+  const changed=await group.owner.client.rpc('save_notification_preferences',{input:{enabled:true,localTime:'00:00'}});expect(changed.error).toBeNull();
+  expect(localDateAt(changed.data!.next_run_at!,'Asia/Seoul')).not.toBe(job.localDate);
+  const retired=await admin.from('notification_jobs').select('status,lease_token,lease_until').eq('id',job.id).single();
+  expect(retired.data).toEqual({status:'skipped',lease_token:null,lease_until:null});
+  expect(await databaseOutbox.prepare(job)).toBeNull();
+  expect((await claimDueDigests(new Date().toISOString(),100)).filter(j=>j.userId===group.owner.userId)).toHaveLength(0);
+ }
+});

@@ -42,7 +42,12 @@ export async function createReceiptDraft(access:AccessContext,image:VerifiedImag
  return {draftId:id,fridgeId:current.fridgeId,status:'uploaded'};
 }
 export async function getReceiptDraft(id:string):Promise<ReceiptDraft>{
- const {client,row}=await rawDraft(id);const fridge=await client.from('fridges').select('name').eq('id',row.fridge_id).single();checkDatabaseError(fridge.error);
+ let {client,row}=await rawDraft(id);
+ if(row.status==='analyzing'){
+  const recovered=await client.rpc('recover_receipt_analysis',{draft_id:row.id});checkDatabaseError(recovered.error);
+  if(recovered.data)({client,row}=await rawDraft(id));
+ }
+ const fridge=await client.from('fridges').select('name').eq('id',row.fridge_id).single();checkDatabaseError(fridge.error);
  let originalUrl:string|null=null;
  if(!['saved','cancelled'].includes(row.status)){const signed=await createAdminSupabaseClient().storage.from(bucket).createSignedUrl(row.object_path,60);if(signed.error)throw new AppError('internal','사진을 불러오지 못했어요. 다시 시도해 주세요.');originalUrl=browserSupabaseUrl(signed.data.signedUrl)}
  return {draftId:row.id,fridgeId:row.fridge_id,fridgeName:fridge.data!.name,status:row.status as ReceiptDraftStatus,items:extracted(row.items),reviewItems:row.review_items as ReviewItem[]|null,originalUrl,expiresAt:row.expires_at};

@@ -29,3 +29,13 @@ it('resumes_saved_review_with_its_empty_date',()=>{
  render(<ReviewScreen draft={{...draft,reviewItems:[{id:'one',name:'내가 고친 두부',storage:'pantry',expiresOn:'',included:true,rawText:'두부',needsReview:false}]}} onSaved={()=>{}} onCancel={()=>{}}/>);
  expect(screen.getByLabelText('재료 이름 1')).toHaveValue('내가 고친 두부');expect(screen.getByLabelText('유통기한 1')).toHaveValue('');expect(screen.getByRole('button',{name:'확인한 재료 저장'})).toBeDisabled();
 });
+it('recovered_analysis_enables_retry_and_manual_editing_without_losing_review_rows',async()=>{
+ const reviewItems=[{id:'one',name:'저장한 두부',storage:'pantry' as const,expiresOn:'',included:true,rawText:'두부',needsReview:false}];
+ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({data:{...draft,status:'failed',reviewItems}})));
+ render(<ReviewScreen draft={{...draft,status:'analyzing',reviewItems}} onSaved={()=>{}} onCancel={()=>{}}/>);
+ expect(screen.getByRole('button',{name:'품목 직접 추가'})).toBeDisabled();
+ fireEvent.click(screen.getByRole('button',{name:'사진·상태 다시 확인'}));
+ await waitFor(()=>expect(screen.getByRole('button',{name:'AI로 품목 읽기'})).toBeEnabled());
+ expect(screen.getByLabelText('재료 이름 1')).toBeEnabled();expect(screen.getByLabelText('재료 이름 1')).toHaveValue('저장한 두부');expect(screen.getByLabelText('유통기한 1')).toHaveValue('');
+ expect(screen.getByRole('button',{name:'품목 직접 추가'})).toBeEnabled();
+});

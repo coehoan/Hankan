@@ -2,7 +2,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
-  
+
   "graphql_public": {
           Tables: {
             [_ in never]: never
@@ -75,7 +75,7 @@ isOneToOne: false
                     "created_at"?: string,"id"?: string,"name"?: string,"owner_user_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"ingredient_create_requests": {
                   Row: {
@@ -129,7 +129,7 @@ isOneToOne: false
                     "enabled"?: boolean,"last_sent_local_date"?: string | null,"local_time"?: string,"next_run_at"?: string | null,"timezone"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"profiles": {
                   Row: {
@@ -428,7 +428,7 @@ export type CompositeTypes<
 export const Constants = {
   "graphql_public": {
           Enums: {
-            
+
           }
         },"public": {
           Enums: {

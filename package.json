@@ -24,7 +24,8 @@
     "check:stage4": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
     "check:stage5": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
     "check:stage6": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
-    "receipts:cleanup": "node scripts/receipt-cleanup.mjs"
+    "receipts:cleanup": "node scripts/receipt-cleanup.mjs",
+    "check:stage7": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

@@ -1,6 +1,8 @@
 'use client';
 import { useCallback,useEffect,useRef,useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import {RecipeList} from '@/features/recipes/recipe-list';
 import { Brand } from '@/features/auth/auth-frame';
 import { SignOutButton } from '@/features/auth/sign-out-button';
 import { InventoryScreen } from '@/features/inventory/inventory-screen';
@@ -8,7 +10,7 @@ import { FridgeSwitcher } from './fridge-switcher';
 import type { FridgeSummary } from './contracts';
 import { MembersDialog } from '@/features/sharing/members-dialog';
 import {UploadForm} from '@/features/receipts/upload-form';
-export function AppShell({fridges,selectedId,initialToday,timeZone}:{fridges:FridgeSummary[];selectedId:string;initialToday:string;timeZone:string}){
+export function AppShell({fridges,selectedId,initialToday,timeZone,view='inventory'}:{view?:'inventory'|'recipes';fridges:FridgeSummary[];selectedId:string;initialToday:string;timeZone:string}){
  const router=useRouter(),[switching,setSwitching]=useState(false),[error,setError]=useState(''),[online,setOnline]=useState(true);
  const switchingRef=useRef(false),selected=fridges.find(fridge=>fridge.id===selectedId)!;
  const [membersFor,setMembersFor]=useState<string|null>(null),[receiptFor,setReceiptFor]=useState<string|null>(null);
@@ -20,9 +22,9 @@ export function AppShell({fridges,selectedId,initialToday,timeZone}:{fridges:Fri
   try{
    const response=await fetch('/api/fridges',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fridgeId:id})});
    const json=await response.json();if(!response.ok){if(response.status===401||response.status===403)accessLost();throw new Error(json.error?.message??'냉장고를 열지 못했어요.')}
-   router.push('/fridges/'+id);
+   router.push('/fridges/'+id+(view==='recipes'?'/recipes':''));
   }catch(caught){setError(caught instanceof Error?caught.message:'연결을 확인해 주세요.')}
   finally{switchingRef.current=false;setSwitching(false)}
  }
- return <div className="pantry-app"><header className="pantry-header"><div><Brand/><nav aria-label="메인 메뉴"><span aria-current="page">내 냉장고</span></nav><SignOutButton/></div></header><div className="pantry-context"><FridgeSwitcher fridges={fridges} selectedId={selectedId} onSelect={id=>void select(id)} disabled={switching||!online}/><span className="fridge-role">{selected.role==='owner'?'내 소유':'함께 관리'}</span><button className="secondary-button" onClick={()=>setReceiptFor(selectedId)} disabled={!online||switching}>영수증 등록</button><button className="secondary-button members-toggle" onClick={()=>setMembersFor(current=>current===selectedId?null:selectedId)} aria-haspopup="dialog" aria-expanded={membersFor===selectedId}>멤버 관리</button>{switching&&<p role="status">냉장고를 열고 있어요…</p>}</div>{error&&<p className="shell-error" role="alert">{error}</p>}{membersFor===selectedId&&<MembersDialog key={'members:'+selectedId} fridgeId={selectedId} role={selected.role} onClose={()=>setMembersFor(null)} onLeft={accessLost}/>}{receiptFor===selectedId&&<UploadForm key={'receipt:'+selectedId} fridgeId={selectedId} fridgeName={selected.name} onClose={()=>setReceiptFor(null)} onCreated={id=>router.push('/receipts/'+id)}/>}<InventoryScreen key={'inventory:'+selectedId} fridgeId={selectedId} fridgeName={selected.name} initialToday={initialToday} timeZone={timeZone} onAccessLost={accessLost}/><footer className="pantry-footer">한칸<span>냉장고를 가볍게, 한 끼를 맛있게.</span></footer></div>;
+ return <div className="pantry-app"><header className="pantry-header"><div><Brand/><nav aria-label="메인 메뉴"><Link href={'/fridges/'+selectedId} aria-current={view==='inventory'?'page':undefined}>내 냉장고</Link><Link href={'/fridges/'+selectedId+'/recipes'} aria-current={view==='recipes'?'page':undefined}>요리 추천</Link></nav><SignOutButton/></div></header><div className="pantry-context"><FridgeSwitcher fridges={fridges} selectedId={selectedId} onSelect={id=>void select(id)} disabled={switching||!online}/><span className="fridge-role">{selected.role==='owner'?'내 소유':'함께 관리'}</span><button className="secondary-button" onClick={()=>setReceiptFor(selectedId)} disabled={!online||switching}>영수증 등록</button><button className="secondary-button members-toggle" onClick={()=>setMembersFor(current=>current===selectedId?null:selectedId)} aria-haspopup="dialog" aria-expanded={membersFor===selectedId}>멤버 관리</button>{switching&&<p role="status">냉장고를 열고 있어요…</p>}</div>{error&&<p className="shell-error" role="alert">{error}</p>}{membersFor===selectedId&&<MembersDialog key={'members:'+selectedId} fridgeId={selectedId} role={selected.role} onClose={()=>setMembersFor(null)} onLeft={accessLost}/>}{receiptFor===selectedId&&<UploadForm key={'receipt:'+selectedId} fridgeId={selectedId} fridgeName={selected.name} onClose={()=>setReceiptFor(null)} onCreated={id=>router.push('/receipts/'+id)}/>}{view==='recipes'?<RecipeList key={'recipes:'+selectedId} fridgeId={selectedId} fridgeName={selected.name} initialToday={initialToday} timeZone={timeZone} onAccessLost={accessLost}/>:<InventoryScreen key={'inventory:'+selectedId} fridgeId={selectedId} fridgeName={selected.name} initialToday={initialToday} timeZone={timeZone} onAccessLost={accessLost}/>}<footer className="pantry-footer">한칸<span>냉장고를 가볍게, 한 끼를 맛있게.</span></footer></div>;
 }

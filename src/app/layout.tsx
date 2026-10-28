@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './ui.css';
 import './receipts.css';
+import './recipes.css';
 import {cookies} from 'next/headers';
 import {createServerSupabaseClient} from '@/lib/supabase/server';
 import {ThemeProvider,ThemeSelector} from '@/features/shell/theme-provider';

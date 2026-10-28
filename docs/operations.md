@@ -4,11 +4,11 @@
 
 2026-10-28 기준 로컬 구현과 자동 검증을 진행했다. [인수 문서](acceptance.md)에 결과와 미검증 항목을 기록한다. 저장된 브라우저 접근 정책으로 이번 CUA 화면 검수가 차단됐고, 사용자는 HTTPS·지원 기기 환경이 없다고 확인했다. 실제 Android/데스크톱 푸시와 iOS 홈 화면 설치 수신 검증 전에는 공개 릴리스 완료로 판정하지 않는다. 호스팅 계정·도메인·DNS·외부 메일 변경은 이 로컬 작업의 승인에 포함되지 않는다.
 
-## 설정 목록과 인증 메일
+## 설정 목록과 아이디 인증
 
 | 이름 | 사용하는 곳 | 설정 기준 |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | 인증 redirect·Origin 검증 | 사용자가 접속하는 정확한 origin. 개발 기본은 `http://127.0.0.1:3000`; localhost/다른 포트와 혼용 금지 |
+| `NEXT_PUBLIC_SITE_URL` | Origin 검증 | 사용자가 접속하는 정확한 origin. 개발 기본은 `http://127.0.0.1:3000`; localhost/다른 포트와 혼용 금지 |
 | `NEXT_PUBLIC_SUPABASE_URL` | 웹/브라우저/기본 서버 연결 | 해당 Supabase API 주소. 테스트는 loopback만 허용 |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | 웹/브라우저 인증 | 프로젝트의 공개 키. service role과 교체하지 않음 |
 | `SUPABASE_SERVICE_ROLE_KEY` | 서버 사진 처리·worker·로컬 테스트 | 브라우저 노출 금지. 운영 비밀 저장소에서 주입 |
@@ -19,7 +19,15 @@
 | `VAPID_PRIVATE_KEY` | worker 전송 | 위 공개 키와 쌍인 서버 전용 개인 키 |
 | `VAPID_SUBJECT` | worker 전송 | 실제 연락 가능한 mailto/HTTPS. 로컬 개발용 연락처를 그대로 배포하지 않음 |
 
-Supabase Auth의 Site URL을 서비스 origin으로, 허용 redirect를 정확한 `/auth/callback`과 `/reset-password` 경로로 설정한다. 광범위한 운영 wildcard 대신 실제 주소만 허용한다. 가입 확인과 비밀번호 재설정 메일을 모두 검증하고, 인증 완료 후 내부 초대 경로 복귀도 확인한다. 로컬 `local_smtp`(Mailpit)는 외부 메일을 보내지 않는다. 운영 SMTP 제공사·발신 도메인·확인 메일 제한/반송은 실제 배포 단계에서 정하고 테스트한다.
+Supabase Auth의 Confirm email을 끈다. 사용자가 2026-10-28 클라우드 설정을 해제했으며 로컬 `auth.email.enable_confirmations=false`도 적용했다. 일반 아이디는 서버에서 `<소문자 아이디>@accounts.hankan.invalid`로 매핑한다. 실제 이메일을 수집하거나 메일을 보내지 않으며 SMTP와 이메일 callback은 사용하지 않는다. 아이디는 영문·숫자·밑줄 4~24자로 제한한다. 가입 직후 세션과 내부 초대 경로 복귀를 확인한다.
+
+로그인한 사용자는 상단 **비밀번호 변경**에서 새 비밀번호와 확인을 입력한다. 기존 비밀번호 입력은 받지 않는다. 분실한 사용자는 관리자에게 초기화를 요청한다. 관리자는 서버의 프로젝트 폴더에서 다음을 실행한다.
+
+```powershell
+npm.cmd run auth:reset-password -- 대상아이디
+```
+
+새 비밀번호를 두 번 입력하면 화면에는 별표만 표시된다. 비밀번호는 명령행 인자·파일·로그에 넣지 않는다. `.env.local`의 서버 관리자 키를 사용하므로 실행 전 연결 대상 프로젝트를 확인한다. 자동화 전용 `--stdin`은 표준 입력으로 `{ "password": "...", "confirmPassword": "..." }` JSON을 받으며 비밀 저장소에서 직접 전달한다. 셸 기록에 실제 비밀번호가 남는 예제 명령은 사용하지 않는다. 공개 초기화 API는 제공하지 않는다. 초기화 후 해당 계정의 refresh 세션을 전역 해제한다. 기존 access JWT는 Supabase 표준 동작에 따라 만료까지 유효할 수 있다.
 
 웹 서버는 사진의 비공개 Storage 처리 때문에 서버 권한을 사용하며, 교차 사용자 예약 작업은 독립 worker가 실행한다. 일반 클라이언트는 발송 큐를 읽거나 claim할 수 없다. `.env.local`·서비스 키·VAPID 개인 키·원본 영수증·초대 원문은 Git, 빌드 인자, 오류 보고에 넣지 않는다. `NEXT_PUBLIC_*` 값은 공개됨을 전제로 설정한다. 키가 노출되면 공급자에서 폐기·교체하고 서버/worker를 재시작한다.
 
@@ -83,6 +91,6 @@ Node 24.15 이상(25 미만), 로컬 Supabase를 사용한다. `npm run dev`와 
 
 현재 .env.local은 클라우드 접속을 사용한다. 변경 전 설정은 Git에서 제외된 work/env-backups/.env.local.before-cloud에 보관한다. 전체 DB 통합 검사는 .env.test.local의 기존 로컬 연결을 쓰도록 분리했다. .env.cloud.local은 준비 파일이며 Next가 자동으로 읽지 않는다. 키 값이나 백업 파일을 커밋하지 않는다.
 
-클라우드 SDK 검사32건과 실제 Next 서버 로그인·알림 설정·구독 등록·로그아웃 API 흐름, worker 한 주기를 확인했다. 검증용 사용자/사진은 제거했다. 일반 사용자 인증메일 발송·SMTP, 실제 브라우저/기기 수신, 웹 공개 호스팅은 별도 검증 대상이다.
+클라우드 SDK 검사32건과 실제 Next 서버 로그인·알림 설정·구독 등록·로그아웃 API 흐름, worker 한 주기를 확인했다. 아이디 인증 변경 후 실제 클라우드 가입·중복 가입·미로그인 거부·비밀번호 변경·관리자 CLI 초기화·이전 비밀번호 거부 등18건도 통과했다. 검증용 사용자/사진은 제거했다. 실제 브라우저/기기 푸시 수신과 웹 공개 호스팅은 별도 검증 대상이다.
 
 보안 Advisor의 authenticated SECURITY DEFINER 실행 경고20건은 소유권·멤버십을 검사하는 의도된 원자적 RPC다. [경고 설명](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable)을 확인하고 실제 접근 차단을 검사했으며 경고 제거를 위해 권한을 풀지 않았다. RLS 정책 없음 정보3건은 클라이언트가 접근하면 안 되는 서버 전용 표의 기본 거부다. [설명](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).

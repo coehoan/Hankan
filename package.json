@@ -34,7 +34,8 @@
     "dev:worker": "node --env-file=.env.local --conditions=react-server --import tsx scripts/run-worker.ts",
     "start:worker": "node dist/worker.cjs",
     "check:stage10": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build && npm run build:worker",
-    "check:stage11": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build && npm run build:worker"
+    "check:stage11": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build && npm run build:worker",
+    "auth:reset-password": "node --env-file=.env.local --conditions=react-server --import tsx scripts/admin-reset-password.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

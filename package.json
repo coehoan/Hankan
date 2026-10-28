@@ -27,6 +27,7 @@
     "receipts:cleanup": "node scripts/receipt-cleanup.mjs",
     "check:stage7": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
     "check:stage8": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
+    "check:stage9": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
     "test:ai-live": "vitest run --config vitest.ai-live.config.ts",
     "ai:evaluate": "node --env-file=.env.local --conditions=react-server --import tsx scripts/evaluate-ai.ts"
   },

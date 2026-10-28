@@ -2,7 +2,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
-
+  
   "graphql_public": {
           Tables: {
             [_ in never]: never
@@ -75,7 +75,7 @@ isOneToOne: false
                     "created_at"?: string,"id"?: string,"name"?: string,"owner_user_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
-
+                    
                   ]
                 },"ingredient_create_requests": {
                   Row: {
@@ -116,6 +116,20 @@ isOneToOne: false
       referencedRelation: "fridges"
       referencedColumns: ["id"]
     }
+                  ]
+                },"notification_preferences": {
+                  Row: {
+                    "enabled": boolean,"last_sent_local_date": string | null,"local_time": string,"next_run_at": string | null,"timezone": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "enabled"?: boolean,"last_sent_local_date"?: string | null,"local_time"?: string,"next_run_at"?: string | null,"timezone"?: string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "enabled"?: boolean,"last_sent_local_date"?: string | null,"local_time"?: string,"next_run_at"?: string | null,"timezone"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"profiles": {
                   Row: {
@@ -253,6 +267,22 @@ isOneToOne: false
 "revoke_fridge_invite":
 { Args: { "invite_id": string,"target_fridge_id": string }; Returns: undefined
                            },
+"save_notification_preferences":
+{ Args: { "input": Json }; Returns: {
+              "enabled": boolean,
+"last_sent_local_date": string | null,
+"local_time": string,
+"next_run_at": string | null,
+"timezone": string,
+"updated_at": string,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "notification_preferences"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "save_receipt_review":
 { Args: { "draft_id": string,"review": Json }; Returns: undefined
                            },
@@ -398,7 +428,7 @@ export type CompositeTypes<
 export const Constants = {
   "graphql_public": {
           Enums: {
-
+            
           }
         },"public": {
           Enums: {

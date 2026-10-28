@@ -29,5 +29,5 @@ export function AuthForm({mode,nextPath='/'}:{mode:FormAction;nextPath?:string;n
  {mode==='sign-in'&&<p className="forgot-row">비밀번호를 잊었다면 관리자에게 초기화를 요청해 주세요.</p>}
  {error&&<p className="form-message error" role="alert">{error}</p>}
  <Button className="primary-button" type="submit" disabled={pending}>{pending?'잠시만 기다려 주세요':text.submit}<span aria-hidden="true">↗</span></Button>
- </form>{mode==='sign-in'?<p className="switch-auth">아직 한칸 계정이 없나요? <Link href={'/signup?next='+encodeURIComponent(safeNextPath(nextPath))}>회원가입</Link></p>:<p className="switch-auth"><Link href={mode==='update-password'?'/':'/login'}>{mode==='update-password'?'내 냉장고로':'로그인으로 돌아가기'}</Link></p>}</div>;
+ </form>{mode==='sign-in'?<p className="switch-auth">아직 한칸 계정이 없나요? <Link href={'/signup?next='+encodeURIComponent(safeNextPath(nextPath))}>회원가입</Link></p>:<p className="switch-auth"><Link href={mode==='update-password'?'/':'/login?next='+encodeURIComponent(safeNextPath(nextPath))}>{mode==='update-password'?'내 냉장고로':'로그인으로 돌아가기'}</Link></p>}</div>;
 }

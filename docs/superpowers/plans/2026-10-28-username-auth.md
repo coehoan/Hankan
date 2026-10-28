@@ -27,8 +27,12 @@
 **Files:** src/features/auth/{validation,identity,actions,auth-form,admin-reset}.ts(x), auth 폼 테스트, src/app/api/auth/[action]/route.ts, change-password/reset-password 경로, AppShell, scripts/admin-reset-password.ts, supabase/config.toml, README/docs/operations.
 **Interfaces:** usernameToEmail(username):string; parseAuthInput(sign-in/sign-up/update-password/sign-out); updatePassword(password,confirmPassword); resetAccountPassword(username,password,confirmPassword,clients).
 
-- [ ] RED: 정규화·아이디 형식·확인 불일치·메일 API 없음·미로그인 거부·즉시 가입 이동·CLI 정확한 대상 및 세션 해제 테스트.
-- [ ] GREEN: 검증/매핑, 서버 로그인/가입/변경, UI와 관리자 CLI를 연결한다.
-- [ ] 로컬 Confirm email=false 적용, 로컬 실제 DB/서버 시나리오 확인.
-- [ ] 클라우드 설정 저장 후 합성 계정 가입→로그인→비밀번호 변경→관리자 초기화→구 비밀번호 실패를 검사하고 검증용 계정만 정리.
-- [ ] 전체 check:stage11·새 인증 테스트·독립 리뷰의 중요 결함 수정, 커밋 및 운영 절차 기록.
+- [x] RED: 정규화·아이디 형식·확인 불일치·메일 API 없음·미로그인 거부·즉시 가입 이동·CLI 정확한 대상 및 세션 해제 테스트.
+- [x] GREEN: 검증/매핑, 서버 로그인/가입/변경, UI와 관리자 CLI를 연결한다.
+- [x] 로컬 Confirm email=false 적용, 로컬 실제 DB/서버 시나리오 확인.
+- [x] 클라우드 설정 저장 후 합성 계정 가입→로그인→비밀번호 변경→관리자 초기화→구 비밀번호 실패를 검사하고 검증용 계정만 정리.
+- [x] 전체 check:stage11·새 인증 테스트·독립 리뷰의 중요 결함 수정, 커밋 및 운영 절차 기록.
+
+## Verification
+
+2026-10-28: check:stage11 exit0, DB101 + unit/UI215 + integration99 = 415 passed; two opt-in AI live tests skipped. Actual cloud API/CLI auth18 passed. Fresh reviewer found one invitation navigation regression; safe/external destination tests failed first, then passed after correction. No remaining Critical/Important/Minor findings. Existing browser/device acceptance gates remain separate in docs/acceptance.md.

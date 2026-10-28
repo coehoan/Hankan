@@ -21,7 +21,8 @@
     "check:stage1": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
     "check:stage2": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
     "check:stage3": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
-    "check:stage4": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build"
+    "check:stage4": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
+    "check:stage5": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

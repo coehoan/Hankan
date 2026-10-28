@@ -11,6 +11,7 @@ export function SignOutButton(){
   try{
    const response=await fetch('/api/auth/sign-out',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
    if(!response.ok)throw new Error('로그아웃하지 못했어요. 다시 시도해 주세요.');
+   window.dispatchEvent(new Event('hankan:identity-cleared'));
    router.replace('/login');
    router.refresh();
   }catch(caught){setError(caught instanceof Error?caught.message:'연결을 확인해 주세요.');setPending(false)}

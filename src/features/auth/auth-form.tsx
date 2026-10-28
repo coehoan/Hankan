@@ -1,4 +1,5 @@
 'use client';
+import {Button} from '@/components/ui/button';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -42,6 +43,6 @@ export function AuthForm({mode,nextPath='/',notice}:{mode:FormAction;nextPath?:s
   {mode==='sign-in'&&<div className="forgot-row"><Link href="/reset-password">비밀번호를 잊으셨나요?</Link></div>}
   {error&&<p className="form-message error" role="alert">{error}</p>}
   {success&&<p className="form-message success" role="status">{success}</p>}
-  <button className="primary-button" type="submit" disabled={pending}>{pending?'잠시만 기다려 주세요':text.submit}<span aria-hidden="true">↗</span></button>
+  <Button className="primary-button" type="submit" disabled={pending}>{pending?'잠시만 기다려 주세요':text.submit}<span aria-hidden="true">↗</span></Button>
  </form>{mode==='sign-in'?<p className="switch-auth">아직 한칸 계정이 없나요? <Link href={'/signup?next='+encodeURIComponent(safeNextPath(nextPath))}>회원가입</Link></p>:<p className="switch-auth"><Link href={'/login?next='+encodeURIComponent(safeNextPath(nextPath))}>로그인으로 돌아가기</Link></p>}</div>;
 }

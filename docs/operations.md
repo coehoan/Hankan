@@ -25,7 +25,7 @@ Supabase Auth의 Site URL을 서비스 origin으로, 허용 redirect를 정확�
 
 ## 마이그레이션과 검증
 
-기존 DB에는 `node scripts/supabase.mjs migration up --local`로 추가 migration만 적용한다. 001~008을 순서대로 유지하고 적용 이력을 먼저 확인한다. 기존 사용자 DB reset·볼륨 삭제는 하지 않는다. 새 DB 검증은 별도 project_id, 사용하지 않는 API/DB/메일 포트의 폐기용 Supabase를 만들어 수행한다. 11단계는 `hankan-stage11-20261028`과 5532x 포트를 사용해 원래 프로젝트와 분리했다.
+기존 DB에는 `node scripts/supabase.mjs migration up --local`로 추가 migration만 적용한다. 001~009를 순서대로 유지하고 적용 이력을 먼저 확인한다. 새 migration을 먼저 적용한 뒤 호환되는 웹·worker를 배포한다. 기존 사용자 DB reset·볼륨 삭제는 하지 않는다. 새 DB 검증은 별도 project_id, 사용하지 않는 API/DB/메일 포트의 폐기용 Supabase를 만들어 수행한다. 11단계는 `hankan-stage11-20261028`과 5532x 포트를 사용해 원래 프로젝트와 분리했다.
 
 `npm run check:stage11`은 pgTAP→단위/UI→실제 로컬 DB 통합→타입→lint→웹 빌드→worker 빌드를 실행한다. worker는 검사 중 테스트 작업을 가져가지 않게 멈추고 종료 후 다시 시작한다. 통합 검사는 자체 생성한 계정만 지운다. 유료 AI 호출은 기본 검사에서 실행하지 않으며 별도 `HANKAN_AI_LIVE=1 npm run test:ai-live` 결과를 기록한다. Windows 명령은 [AI 평가 문서](ai-evaluation.md)를 따른다.
 
@@ -74,3 +74,5 @@ Node 24.15 이상(25 미만), 로컬 Supabase를 사용한다. `npm run dev`와 
 사진 삭제 실패는 `cleanup_pending`을 유지해 다음 주기에 재시도한다. Storage/DB 연결 복구 후 감소하는지 확인한다. AI 공급자 장애는 재료를 보존하며 사용자에게 직접 입력 또는 재시도를 안내한다. 세 기능의 실패를 실제 성공으로 기록하거나 예시 결과로 대체하지 않는다.
 
 웹/프록시/호스팅 접근 로그에서 초대 원문이 들어가는 `/invite/*`, `/api/invites/*` 경로와 인증 query·cookie·Authorization을 가린다. 요청 본문·서명된 사진 URL·AI 원문도 수집하지 않는다. 모니터링에는 상태 코드·익명화한 오류 코드·처리 시간·정리 개수만 기록한다. 호스트의 worker 중단, 오래된 미처리 작업, 반복 삭제 실패 알림은 공개 배포 때 실제 운영 서비스와 연결한다.
+
+영수증 분석 중 서버가 중단돼 analyzing으로 남으면 5분 뒤 초안을 다시 확인한다. 본인과 현재 멤버십을 검사한 뒤 만료된 분석 실행만 복구한다. 저장해 둔 검토 내용을 보존하며 다시 분석/직접 입력을 사용할 수 있고, 이전 실행의 늦은 응답은 반영하지 않는다. 원본의 24시간 만료는 별도로 유지된다.

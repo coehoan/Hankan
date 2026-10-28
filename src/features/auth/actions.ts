@@ -5,6 +5,7 @@ import { siteOrigin } from '@/lib/env';
 import { requireUser } from '@/lib/auth';
 import { parseAuthInput } from './validation';
 import { safeNextPath } from './redirects';
+import {deleteBrowserSubscription} from '@/features/notifications/subscriptions';
 
 export async function signUp(email:string,password:string,nextPath='/'):Promise<void>{
  const input=parseAuthInput('sign-up',{email,password});
@@ -44,6 +45,7 @@ export async function updatePassword(password:string):Promise<void>{
 }
 
 export async function signOut():Promise<void>{
+ await deleteBrowserSubscription();
  const client=await createServerSupabaseClient();
  const {error}=await client.auth.signOut({scope:'local'});
  if(error)throw new AppError('internal','로그아웃하지 못했어요. 다시 시도해 주세요.');

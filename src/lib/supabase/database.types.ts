@@ -117,6 +117,40 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"notification_deliveries": {
+                  Row: {
+                    "created_at": string,"job_id": string,"status": string,"subscription_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"job_id": string,"status": string,"subscription_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"job_id"?: string,"status"?: string,"subscription_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notification_deliveries_job_id_fkey"
+      columns: ["job_id"]
+isOneToOne: false
+      referencedRelation: "notification_jobs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"notification_jobs": {
+                  Row: {
+                    "attempts": number,"due_at": string,"id": string,"lease_token": string | null,"lease_until": string | null,"local_date": string,"status": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempts"?: number,"due_at": string,"id"?: string,"lease_token"?: string | null,"lease_until"?: string | null,"local_date": string,"status"?: string,"user_id": string
+                  }
+                  Update: {
+                    "attempts"?: number,"due_at"?: string,"id"?: string,"lease_token"?: string | null,"lease_until"?: string | null,"local_date"?: string,"status"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+
+                  ]
                 },"notification_preferences": {
                   Row: {
                     "enabled": boolean,"last_sent_local_date": string | null,"local_time": string,"next_run_at": string | null,"timezone": string,"updated_at": string,"user_id": string
@@ -150,6 +184,20 @@ isOneToOne: false
       referencedRelation: "fridges"
       referencedColumns: ["id"]
     }
+                  ]
+                },"push_subscriptions": {
+                  Row: {
+                    "auth": string,"created_at": string,"endpoint": string,"id": string,"p256dh": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "auth": string,"created_at"?: string,"endpoint": string,"id"?: string,"p256dh": string,"user_id": string
+                  }
+                  Update: {
+                    "auth"?: string,"created_at"?: string,"endpoint"?: string,"id"?: string,"p256dh"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+
                   ]
                 },"receipt_drafts": {
                   Row: {
@@ -185,6 +233,23 @@ isOneToOne: false
 "cancel_receipt":
 { Args: { "draft_id": string }; Returns: undefined
                            },
+"claim_notification_jobs":
+{ Args: { "at_time": string,"batch_limit": number }; Returns: {
+              "attempts": number,
+"due_at": string,
+"id": string,
+"lease_token": string | null,
+"lease_until": string | null,
+"local_date": string,
+"status": string,
+"user_id": string
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "notification_jobs"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "commit_receipt":
 { Args: { "commit_request": string,"confirmed_items": Json,"draft_id": string }; Returns: Json
                            },
@@ -242,8 +307,14 @@ isOneToOne: false
 "delete_ingredient":
 { Args: { "expected_version": number,"ingredient_id": string,"target_fridge_id": string }; Returns: undefined
                            },
+"delete_push_subscription":
+{ Args: { "subscription_id": string }; Returns: undefined
+                           },
 "expire_receipts":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"finish_notification_job":
+{ Args: { "job_id": string,"token": string,"will_retry": boolean }; Returns: undefined
                            },
 "finish_receipt_analysis":
 { Args: { "draft_id": string,"extracted": Json,"run_id": string,"succeeded": boolean }; Returns: boolean
@@ -260,6 +331,15 @@ isOneToOne: false
 { Args: { "target_fridge_id": string }; Returns: {
               "display_name": string,"role": Database["public"]['Enums']["fridge_role"],"user_id": string
             }[]
+                           },
+"prepare_notification_dispatch":
+{ Args: { "job_id": string,"token": string }; Returns: Json
+                           },
+"read_notification_digest":
+{ Args: { "digest_id": string }; Returns: Json
+                           },
+"record_notification_delivery":
+{ Args: { "delivery_status": string,"job_id": string,"subscription_id": string,"token": string }; Returns: undefined
                            },
 "remove_fridge_member":
 { Args: { "member_user_id": string,"target_fridge_id": string }; Returns: undefined
@@ -283,6 +363,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"save_push_subscription":
+{ Args: { "input": Json }; Returns: string
+                           },
 "save_receipt_review":
 { Args: { "draft_id": string,"review": Json }; Returns: undefined
                            },

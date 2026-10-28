@@ -76,3 +76,13 @@ Node 24.15 이상(25 미만), 로컬 Supabase를 사용한다. `npm run dev`와 
 웹/프록시/호스팅 접근 로그에서 초대 원문이 들어가는 `/invite/*`, `/api/invites/*` 경로와 인증 query·cookie·Authorization을 가린다. 요청 본문·서명된 사진 URL·AI 원문도 수집하지 않는다. 모니터링에는 상태 코드·익명화한 오류 코드·처리 시간·정리 개수만 기록한다. 호스트의 worker 중단, 오래된 미처리 작업, 반복 삭제 실패 알림은 공개 배포 때 실제 운영 서비스와 연결한다.
 
 영수증 분석 중 서버가 중단돼 analyzing으로 남으면 5분 뒤 초안을 다시 확인한다. 본인과 현재 멤버십을 검사한 뒤 만료된 분석 실행만 복구한다. 저장해 둔 검토 내용을 보존하며 다시 분석/직접 입력을 사용할 수 있고, 이전 실행의 늦은 응답은 반영하지 않는다. 원본의 24시간 만료는 별도로 유지된다.
+
+## 클라우드 연결 기록
+
+2026-10-28 클라우드 프로젝트에 기존001~009 SQL을 순서대로 적용했다. MCP가 발급한 시각 기반 이력은 적용 결과 확인 후 저장소의001~009와 정합화해 다음 CLI 실행의 중복 적용을 방지했다. 새로 시작한 클라우드로 사용자 데이터를 복사하지 않았으며 로컬 DB는 유지했다.
+
+현재 .env.local은 클라우드 접속을 사용한다. 변경 전 설정은 Git에서 제외된 work/env-backups/.env.local.before-cloud에 보관한다. 전체 DB 통합 검사는 .env.test.local의 기존 로컬 연결을 쓰도록 분리했다. .env.cloud.local은 준비 파일이며 Next가 자동으로 읽지 않는다. 키 값이나 백업 파일을 커밋하지 않는다.
+
+클라우드 SDK 검사32건과 실제 Next 서버 로그인·알림 설정·구독 등록·로그아웃 API 흐름, worker 한 주기를 확인했다. 검증용 사용자/사진은 제거했다. 일반 사용자 인증메일 발송·SMTP, 실제 브라우저/기기 수신, 웹 공개 호스팅은 별도 검증 대상이다.
+
+보안 Advisor의 authenticated SECURITY DEFINER 실행 경고20건은 소유권·멤버십을 검사하는 의도된 원자적 RPC다. [경고 설명](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable)을 확인하고 실제 접근 차단을 검사했으며 경고 제거를 위해 권한을 풀지 않았다. RLS 정책 없음 정보3건은 클라이언트가 접근하면 안 되는 서버 전용 표의 기본 거부다. [설명](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).

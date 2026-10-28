@@ -22,7 +22,9 @@
     "check:stage2": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
     "check:stage3": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
     "check:stage4": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
-    "check:stage5": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build"
+    "check:stage5": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
+    "check:stage6": "npm run test:db && npm test && npm run test:integration && npm run typecheck && npm run lint && npm run build",
+    "receipts:cleanup": "node scripts/receipt-cleanup.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
@@ -31,6 +33,7 @@
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "server-only": "0.0.1",
+    "sharp": "0.35.5",
     "zod": "4.6.7"
   },
   "devDependencies": {

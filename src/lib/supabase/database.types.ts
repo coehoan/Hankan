@@ -137,6 +137,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"receipt_drafts": {
+                  Row: {
+                    "analysis_run": string | null,"analysis_started_at": string | null,"cleanup_pending": boolean,"commit_payload": Json | null,"commit_result": Json | null,"created_at": string,"error_code": string | null,"expires_at": string,"fridge_id": string,"id": string,"items": NonNullable<Json>,"object_path": string,"request_id": string | null,"review_items": Json | null,"status": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "analysis_run"?: string | null,"analysis_started_at"?: string | null,"cleanup_pending"?: boolean,"commit_payload"?: Json | null,"commit_result"?: Json | null,"created_at"?: string,"error_code"?: string | null,"expires_at"?: string,"fridge_id": string,"id": string,"items"?: NonNullable<Json>,"object_path": string,"request_id"?: string | null,"review_items"?: Json | null,"status"?: string,"user_id": string
+                  }
+                  Update: {
+                    "analysis_run"?: string | null,"analysis_started_at"?: string | null,"cleanup_pending"?: boolean,"commit_payload"?: Json | null,"commit_result"?: Json | null,"created_at"?: string,"error_code"?: string | null,"expires_at"?: string,"fridge_id"?: string,"id"?: string,"items"?: NonNullable<Json>,"object_path"?: string,"request_id"?: string | null,"review_items"?: Json | null,"status"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "receipt_drafts_fridge_id_fkey"
+      columns: ["fridge_id"]
+isOneToOne: false
+      referencedRelation: "fridges"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -147,6 +167,12 @@ isOneToOne: false
 { Args: { "token_digest": string }; Returns: {
               "id": string,"name": string,"role": Database["public"]['Enums']["fridge_role"]
             }[]
+                           },
+"cancel_receipt":
+{ Args: { "draft_id": string }; Returns: undefined
+                           },
+"commit_receipt":
+{ Args: { "commit_request": string,"confirmed_items": Json,"draft_id": string }; Returns: Json
                            },
 "create_fridge_invite":
 { Args: { "target_fridge_id": string,"token_digest": string }; Returns: {
@@ -174,8 +200,39 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"create_receipt_draft":
+{ Args: { "draft_id": string,"target_fridge_id": string }; Returns: {
+              "analysis_run": string | null,
+"analysis_started_at": string | null,
+"cleanup_pending": boolean,
+"commit_payload": Json | null,
+"commit_result": Json | null,
+"created_at": string,
+"error_code": string | null,
+"expires_at": string,
+"fridge_id": string,
+"id": string,
+"items": NonNullable<Json>,
+"object_path": string,
+"request_id": string | null,
+"review_items": Json | null,
+"status": string,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "receipt_drafts"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "delete_ingredient":
 { Args: { "expected_version": number,"ingredient_id": string,"target_fridge_id": string }; Returns: undefined
+                           },
+"expire_receipts":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"finish_receipt_analysis":
+{ Args: { "draft_id": string,"extracted": Json,"run_id": string,"succeeded": boolean }; Returns: boolean
                            },
 "inspect_fridge_invite":
 { Args: { "token_digest": string }; Returns: {
@@ -195,6 +252,12 @@ isOneToOne: false
                            },
 "revoke_fridge_invite":
 { Args: { "invite_id": string,"target_fridge_id": string }; Returns: undefined
+                           },
+"save_receipt_review":
+{ Args: { "draft_id": string,"review": Json }; Returns: undefined
+                           },
+"start_receipt_analysis":
+{ Args: { "draft_id": string }; Returns: string
                            },
 "update_ingredient":
 { Args: { "expected_version": number,"ingredient_id": string,"patch": Json,"target_fridge_id": string }; Returns: {

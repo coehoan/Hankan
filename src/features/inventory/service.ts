@@ -13,7 +13,7 @@ async function authorizedClient(access:AccessContext) {
   return createServerSupabaseClient();
 }
 
-function checkDatabaseError(error:{code?:string}|null):void {
+export function checkDatabaseError(error:{code?:string}|null):void {
   if (!error) return;
   if (error.code==='42501') throw new AppError('forbidden','이 냉장고에 접근할 권한이 없어요.');
   if (error.code==='P0002') throw new AppError('not_found','이미 삭제되었거나 찾을 수 없는 재료예요.');
@@ -22,7 +22,7 @@ function checkDatabaseError(error:{code?:string}|null):void {
   throw new AppError('internal','재료를 처리하지 못했어요. 잠시 후 다시 시도해 주세요.');
 }
 
-function toIngredient(row:Tables<'ingredients'>):Ingredient {
+export function toIngredient(row:Tables<'ingredients'>):Ingredient {
   const place = row.storage;
   if ((place!=='fridge' && place!=='freezer' && place!=='pantry') || row.normalized_name===null) throw new AppError('internal','재료 정보를 읽지 못했어요.');
   return {

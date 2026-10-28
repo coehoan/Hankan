@@ -17,6 +17,15 @@
 
 테마 저장은 `PATCH /api/preferences/theme`에 `{preference: "system" | "light" | "dark"}`를 전달합니다. 로그인한 본인 profile만 변경하며 같은 Origin의 JSON 요청을 검사합니다. 로그인 전 선택은 표시용 cookie에만 저장합니다. 저장 실패 시 현재 화면 색은 유지하고 재선택 안내를 표시합니다.
 
+
+6단계에서 개인 영수증 업로드·확인 화면과 명시적 일괄 등록을 연결했습니다. JPEG/PNG/WebP를 실제 디코딩한 뒤 PNG로 다시 인코딩하여 EXIF를 제거하고, 10MB·25MP 제한을 검사합니다. 비공개 Storage 원본과 초안은 업로더만 접근하며 원본 링크는 60초 유효합니다. 사용자가 품목을 수정·제외·추가하고 유통기한을 직접 정해야 저장할 수 있습니다. 검토 내용은 별도로 임시 저장할 수 있고, 목적 냉장고는 초안 생성 때 고정됩니다. 초안당 원자적 1회 저장과 재시도 중복 방지, 멤버 탈퇴 시 자동 취소를 DB에서 검사합니다.
+
+AI 제공사는 8단계에서 연결합니다. 지금은 `provider_unconfigured`를 반환하고 품목 직접 입력을 제공합니다. 테스트용 공급자는 계약 검증에만 주입하며 사용자 화면에 가짜 분석 결과를 표시하지 않습니다.
+
+사진 삭제는 저장·취소 직후 시도하고 실패하면 `cleanup_pending`으로 남깁니다. 중단한 초안은 24시간 뒤 취소됩니다. 로컬에서는 `npm run receipts:cleanup` 프로세스를 함께 실행해 15분마다 정리하고, 한 번만 실행하려면 `npm run receipts:cleanup -- --once`를 사용합니다. 이 프로세스가 꺼져 있으면 예약 정리는 실행되지 않습니다. 운영 환경의 정기 실행 연결은 배포 단계에서 구성해야 합니다.
+
+영수증 API는 `POST /api/receipts`(multipart: fridgeId, file), `GET /api/receipts?fridgeId=...`, `GET/PATCH/DELETE /api/receipts/:draftId`, `POST .../analyze`, `POST .../commit`입니다. PATCH는 `{items: ReviewItem[]}`, commit은 `{requestId, items: {name,storage,expiresOn}[]}`를 받습니다. 변경 요청은 같은 Origin만 허용하며 JSON은 64KiB, 사진 요청은 10MiB+multipart 여유분을 스트리밍으로 제한합니다. 취소는 멤버십을 잃은 업로더도 자기 사진 정리를 위해 수행할 수 있습니다.
+
 초대 원문은 생성 응답에서 한 번만 표시하고 새로고침 후 복원하지 않습니다. 소유자는 생성한 초대 목록에서 사용 전 취소할 수 있습니다. 초대 경로에는 no-referrer/noindex 헤더를 사용하고 Next 개발 요청 로그를 비활성화했습니다. 배포 시 프록시·호스팅 접근 로그에서도 초대 경로를 기록하지 않도록 설정해야 합니다.
 
 멤버 이름은 냉장고 멤버십을 검사하는 전용 RPC로 제공하며, 다른 사람의 profile·테마·알림 설정을 공개하지 않습니다. 초대 수락은 GET으로 실행하지 않습니다. 가입 확인 메일을 거친 경우에도 검증된 내부 초대 경로로 돌아갑니다.

@@ -373,6 +373,20 @@ isOneToOne: false
 "remove_fridge_member":
 { Args: { "member_user_id": string,"target_fridge_id": string }; Returns: undefined
                            },
+"rename_fridge":
+{ Args: { "fridge_name": string,"target_fridge_id": string }; Returns: {
+              "created_at": string,
+"id": string,
+"name": string,
+"owner_user_id": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "fridges"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "revoke_fridge_invite":
 { Args: { "invite_id": string,"target_fridge_id": string }; Returns: undefined
                            },

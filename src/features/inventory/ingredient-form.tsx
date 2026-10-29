@@ -26,7 +26,7 @@ export function IngredientForm({item,latestItem,online,create,update,onComplete,
   }catch(caught){setError(caught instanceof InventoryRequestError&&caught.code==='conflict'?'다른 사람이 먼저 변경했어요. 입력한 내용은 남겨뒀어요. 최신 저장값을 확인해 주세요.':caught instanceof Error?caught.message:'저장하지 못했어요. 다시 시도해 주세요.')}
   finally{saving.current=false;setPending(false)}
  }
- return <Dialog open title={title} onOpenChange={open=>{if(!open&&!saving.current)onCancel()}} closeDisabled={pending}><section className="ingredient-editor"><div className="editor-heading"><p className="eyebrow">A FRESH LITTLE HABIT</p><span className="editor-hint">한 묶음씩, 차곡차곡</span></div>
+ return <Dialog open title={title} onOpenChange={open=>{if(!open&&!saving.current)onCancel()}} closeDisabled={pending}><section className="ingredient-editor"><div className="editor-heading"><span className="editor-hint">한 묶음씩, 차곡차곡</span></div>
   <form aria-label={title} onSubmit={submit}><div className="ingredient-fields">
    <label className="field">재료 이름<input aria-label="재료 이름" aria-describedby={hintId} name="name" value={name} onChange={event=>setName(event.target.value)} placeholder="예: 방울토마토" required maxLength={160} disabled={pending}/><span id={hintId} className="field-hint">{[...name].length}/80자 · 같은 재료도 묶음별로 관리해요.</span></label>
    <label className="field">보관 장소<select name="storage" value={storage} onChange={event=>setStorage(event.target.value as StoragePlace)} disabled={pending}><option value="fridge">냉장</option><option value="freezer">냉동</option><option value="pantry">실온</option></select></label>

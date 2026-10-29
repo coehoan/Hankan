@@ -20,15 +20,15 @@ function ReadTheme(){const theme=useThemePreference();return <output aria-label=
 function Fixture(){return <ThemeProvider initialPreference="system"><ThemeSelector/><ReadTheme/><InventoryScreen fridgeId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" fridgeName="우리집" initialToday="2026-10-28"/></ThemeProvider>}
 
 // Catches a provider that remounts descendants when only its theme changes.
-it('theme_change_keeps_unsaved_form',async()=>{
+it('system_theme_change_keeps_unsaved_form',async()=>{
  render(<Fixture/>);fireEvent.click(screen.getByRole('button',{name:'재료 등록'}));
  const dialog=screen.getByRole('dialog',{name:'재료 등록'});
  fireEvent.change(within(dialog).getByLabelText('재료 이름'),{target:{value:'손질해 둔 시금치'}});
  fireEvent.change(within(dialog).getByLabelText('유통기한'),{target:{value:'2026-11-02'}});
- fireEvent.change(within(dialog).getByLabelText('화면 테마'),{target:{value:'dark'}});
+ act(()=>{dark=true;changes.forEach(fn=>fn())});
  expect(within(dialog).getByLabelText('재료 이름')).toHaveValue('손질해 둔 시금치');
  expect(within(dialog).getByLabelText('유통기한')).toHaveValue('2026-11-02');
- expect(document.documentElement).toHaveAttribute('data-theme','dark');
+ expect(screen.getByLabelText('적용 테마')).toHaveTextContent('dark');
 });
 // Catches OS listeners overriding an explicit choice.
 it('system_change_only_affects_system_preference',()=>{

@@ -22,11 +22,11 @@ export function AuthForm({mode,nextPath='/'}:{mode:FormAction;nextPath?:string;n
    router.replace(safeNextPath(result.data?.nextPath));router.refresh();
   }catch(caught){setError(caught instanceof Error?caught.message:'연결을 확인하고 다시 시도해 주세요.')}finally{setPending(false)}
  }
- return <div className="auth-card"><p className="eyebrow">YOUR FRESH START</p><h2>{text.title}</h2><p className="form-description">{text.description}</p><form onSubmit={submit} aria-label={text.submit}>
+ return <div className="auth-card"><h2>{text.title}</h2><p className="form-description">{text.description}</p><form onSubmit={submit} aria-label={text.submit}>
  {mode!=='update-password'&&<label className="field">아이디<input name="username" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="영문·숫자·밑줄 4~24자" required minLength={4} maxLength={24} disabled={pending}/></label>}
  <label className="field">{mode==='update-password'?'새 비밀번호':'비밀번호'}<input name="password" type="password" autoComplete={mode==='sign-in'?'current-password':'new-password'} placeholder="8자 이상 입력해 주세요" required minLength={8} maxLength={72} disabled={pending}/></label>
  {mode==='update-password'&&<label className="field">새 비밀번호 확인<input name="confirmPassword" type="password" autoComplete="new-password" placeholder="한 번 더 입력해 주세요" required minLength={8} maxLength={72} disabled={pending}/></label>}
- {mode==='sign-in'&&<p className="forgot-row">비밀번호를 잊었다면 관리자에게 초기화를 요청해 주세요.</p>}
+
  {error&&<p className="form-message error" role="alert">{error}</p>}
  <Button className="primary-button" type="submit" disabled={pending}>{pending?'잠시만 기다려 주세요':text.submit}<span aria-hidden="true">↗</span></Button>
  </form>{mode==='sign-in'?<p className="switch-auth">아직 한칸 계정이 없나요? <Link href={'/signup?next='+encodeURIComponent(safeNextPath(nextPath))}>회원가입</Link></p>:<p className="switch-auth"><Link href={mode==='update-password'?'/':'/login?next='+encodeURIComponent(safeNextPath(nextPath))}>{mode==='update-password'?'내 냉장고로':'로그인으로 돌아가기'}</Link></p>}</div>;

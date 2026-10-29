@@ -32,7 +32,7 @@ export function RecipeResults({fridgeId,ingredients,today,online,loading,revoked
   finally{scope.busy=false;if(scope.controller===controller)scope.controller=null}
  }
  if(revoked)return <p className="recipe-feedback" role="alert">냉장고 접근 권한이 변경되어 추천을 지웠어요.</p>;
- return <section className={compact?'recipe-results compact':'recipe-results'} aria-label="재료로 찾는 요리"><header className="recipe-results-intro"><div><p className="eyebrow">A FRESH IDEA FOR TODAY</p><h2>남은 재료로, 오늘 한 끼</h2></div><Button disabled={disabled} onClick={()=>void recommend()}>{phase==='loading'?'추천 찾는 중…':phase==='idle'?'요리 추천 받기':'다시 추천 받기'}</Button></header>
+ return <section className={compact?'recipe-results compact':'recipe-results'} aria-label="재료로 찾는 요리"><header className="recipe-results-intro"><div><h2>남은 재료로, 오늘 한 끼</h2></div><Button disabled={disabled} onClick={()=>void recommend()}>{phase==='loading'?'추천 찾는 중…':phase==='idle'?'요리 추천 받기':'다시 추천 받기'}</Button></header>
  <p className="recipe-quantity-note">재료 종류를 기준으로 찾아요. 조리법의 필요한 양은 따로 확인해 주세요.</p>
  {!online&&<p className="connection-banner" role="status">온라인으로 연결하면 요리를 추천받을 수 있어요.</p>}
  {loading?<p className="recipe-feedback" role="status">현재 냉장고 재료를 확인하고 있어요…</p>:inventoryError?<p className="recipe-feedback" role="status">재료 목록을 다시 불러온 뒤 추천받아 주세요.</p>:!usable.length&&<div className="recipe-empty"><h3>추천에 쓸 재료가 아직 없어요</h3><p>남은 양이 있는 재료를 등록해 주세요. 0%이거나 기한이 지난 묶음은 추천에서 제외해요.</p></div>}

@@ -5,7 +5,8 @@ import './receipts.css';
 import './recipes.css';
 import {cookies} from 'next/headers';
 import {createServerSupabaseClient} from '@/lib/supabase/server';
-import {ThemeProvider,ThemeSelector} from '@/features/shell/theme-provider';
+import {ThemeProvider} from '@/features/shell/theme-provider';
+import './mobile-settings.css';
 import {isThemePreference} from '@/features/shell/theme';
 import {PwaProvider} from '@/features/notifications/pwa-provider';
 
@@ -16,5 +17,5 @@ export default async function RootLayout({children}:{children:React.ReactNode}){
  const {data}=await client.auth.getClaims();const userId=data?.claims.sub;
  const saved=userId?(await client.from('profiles').select('theme_preference').eq('user_id',userId).maybeSingle()).data?.theme_preference:jar.get('hankan-theme')?.value;
  const preference=isThemePreference(saved)?saved:'system';
- return <html lang="ko" data-theme={preference} suppressHydrationWarning><body><ThemeProvider key={userId??'guest'} userId={userId} initialPreference={preference}><PwaProvider key={userId??'guest'} userId={userId}/><div className="theme-toolbar"><ThemeSelector/></div>{children}</ThemeProvider></body></html>;
+ return <html lang="ko" data-theme={preference} suppressHydrationWarning><body><ThemeProvider key={userId??'guest'} userId={userId} initialPreference={preference}><PwaProvider key={userId??'guest'} userId={userId}/>{children}</ThemeProvider></body></html>;
 }

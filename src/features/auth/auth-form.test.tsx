@@ -15,7 +15,6 @@ it('password_change_has_two_fields_and_mismatch_never_sends',async()=>{
  const fetcher=vi.fn();vi.stubGlobal('fetch',fetcher);render(<AuthForm mode="update-password"/>);
  fireEvent.change(screen.getByLabelText('새 비밀번호'),{target:{value:'new-password'}});fireEvent.change(screen.getByLabelText('새 비밀번호 확인'),{target:{value:'different-password'}});fireEvent.submit(screen.getByRole('form',{name:'비밀번호 변경'}));await screen.findByRole('alert');expect(fetcher).not.toHaveBeenCalled();
 });
-it('forgotten_password_is_admin_help_instead_of_email_flow',()=>{render(<AuthForm mode="sign-in"/>);expect(screen.getByText(/관리자에게.*초기화/)).toBeVisible();expect(screen.queryByRole('link',{name:'비밀번호를 잊으셨나요?'})).not.toBeInTheDocument()});
 it.each([['/invite/token','/invite/token'],['https://foreign.invalid','/']])('signup_to_login_keeps_only_safe_destination: %s',(nextPath,expected)=>{
  render(<AuthForm mode="sign-up" nextPath={nextPath}/>);
  expect(screen.getByRole('link',{name:'로그인으로 돌아가기'})).toHaveAttribute('href','/login?next='+encodeURIComponent(expected));

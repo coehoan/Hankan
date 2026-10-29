@@ -4,6 +4,13 @@ import { AppError } from '@/lib/errors';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { parseId } from '@/features/inventory/domain';
 import type { FridgeDirectory } from './contracts';
+import {parseFridgeName} from './fridge-name';
+import {checkDatabaseError} from '@/features/inventory/service';
+export async function renameFridge(id:string,value:unknown):Promise<{id:string;name:string}>{
+ const name=parseFridgeName(value),access=await requireFridgeAccess(parseId(id)),client=await createServerSupabaseClient();
+ const result=await client.rpc('rename_fridge',{target_fridge_id:access.fridgeId,fridge_name:name});checkDatabaseError(result.error);
+ if(!result.data)throw new AppError('internal','냉장고 이름을 저장하지 못했어요.');return {id:result.data.id,name:result.data.name};
+}
 export async function loadFridgeDirectory():Promise<FridgeDirectory>{
  const {userId}=await requireUser(),client=await createServerSupabaseClient();
  const [fridges,memberships,profile]=await Promise.all([

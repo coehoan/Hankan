@@ -10,5 +10,5 @@ export default async function InvitePage({params}:{params:Promise<{token:string}
  const {token}=await params;
  try{validateInviteToken(token)}catch{return <main className="message-page"><h1>초대를 찾을 수 없어요.</h1><Link href="/">내 냉장고로 돌아가기</Link></main>}
  try{await requireUser()}catch(error){if(error instanceof AppError&&error.code==='unauthenticated')redirect('/login?next='+encodeURIComponent('/invite/'+token));throw error}
- return <main className="invitation-page"><Brand/><InviteScreen key={token} token={token}/></main>;
+ return <main className="invitation-page"><Link className="brand-link" href="/"><Brand/></Link><InviteScreen key={token} token={token}/></main>;
 }

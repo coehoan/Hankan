@@ -1,7 +1,6 @@
 'use client';
 import {useEffect,useId,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
-import {ThemeSelector} from '@/features/shell/theme-provider';
 import {Button} from './button';
 const focusable='button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex]:not([tabindex="-1"])';
 function createHost(){if(typeof document==='undefined')return null;const node=document.createElement('div');node.className='dialog-portal';return node}
@@ -16,7 +15,7 @@ export function Dialog({open,title,onOpenChange,children,closeDisabled=false}:{o
   const previous=siblings.map(node=>node.inert);siblings.forEach(node=>node.inert=true);
   const overflow=document.body.style.overflow;document.body.style.overflow='hidden';
   const elements=()=>Array.from(panel.current?.querySelectorAll<HTMLElement>(focusable)??[]).filter(node=>!node.hidden&&node.getAttribute('aria-hidden')!=='true');
-  const focus=()=>{const field=panel.current?.querySelector<HTMLElement>('input:not(:disabled),textarea:not(:disabled)');(field??elements()[0]??panel.current)?.focus()};focus();
+  const focus=()=>{const field=panel.current?.querySelector<HTMLElement>('input:not(:disabled):not([hidden]):not([type="hidden"]),textarea:not(:disabled):not([hidden])');(field??elements()[0]??panel.current)?.focus()};focus();
   const keyboard=(event:KeyboardEvent)=>{
    if(event.key==='Escape'){event.preventDefault();if(!blocked.current)callback.current(false)}
    if(event.key==='Tab'){
@@ -31,5 +30,5 @@ export function Dialog({open,title,onOpenChange,children,closeDisabled=false}:{o
   return()=>{document.removeEventListener('keydown',keyboard);document.removeEventListener('focusin',contain);siblings.forEach((node,i)=>node.inert=previous[i]);document.body.style.overflow=overflow;host.remove();if(opener?.isConnected)opener.focus()};
  },[open,host]);
  if(!open||!host)return null;
- return createPortal(<div className="dialog-backdrop"><div className="dialog-panel" role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} ref={panel}><header className="dialog-heading"><h2 id={titleId}>{title}</h2><Button variant="secondary" aria-label={title+' 닫기'} onClick={()=>onOpenChange(false)} disabled={closeDisabled}>닫기 <span aria-hidden="true">×</span></Button></header><div className="dialog-content">{children}</div><footer className="dialog-footer"><ThemeSelector/><span>Esc 키로 닫기</span></footer></div></div>,host);
+ return createPortal(<div className="dialog-backdrop"><div className="dialog-panel" role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} ref={panel}><header className="dialog-heading"><h2 id={titleId}>{title}</h2><Button variant="secondary" aria-label={title+' 닫기'} onClick={()=>onOpenChange(false)} disabled={closeDisabled}>닫기 <span aria-hidden="true">×</span></Button></header><div className="dialog-content">{children}</div></div></div>,host);
 }

@@ -1,0 +1,19 @@
+.pantry-header nav{gap:26px;margin-left:auto}
+.pantry-header nav a{display:flex;align-items:center;min-height:60px;padding:12px 3px;border-bottom:2px solid transparent;color:var(--muted);font-size:15px;white-space:nowrap}
+.pantry-header nav a[aria-current=page]{border-color:var(--accent);color:var(--accent);font-weight:650}
+.dialog-backdrop{-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);background:rgba(7,20,15,.48)}
+.dialog-panel{box-shadow:0 24px 90px rgba(0,0,0,.35)}
+.auth-page,.auth-content{min-height:100dvh}.auth-story{min-height:calc(100dvh - 48px)}
+.my-page{max-width:920px;margin:auto;padding:36px 38px 60px;min-height:65dvh}
+.my-page-heading{margin-bottom:28px}.my-page-heading h1{font-size:30px;letter-spacing:-1px}.my-page-heading p{color:var(--muted);margin-top:9px}
+.my-page-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:18px}
+.my-page-card h2{font-size:19px;margin-bottom:18px}.my-page-card p{line-height:1.8}
+.my-page-section-heading,.my-page-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+.my-page-actions{justify-content:flex-start}.my-page-actions .secondary-button{display:inline-flex;align-items:center;min-height:44px;text-decoration:none}
+.my-page-section-heading h2{margin:0}.my-page-section-heading{margin-bottom:18px}.my-page-card .push-controls{margin-top:0}
+.receipt-photo-box{min-height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:22px;border:1px dashed var(--control-border);border-radius:14px;background:var(--background)}
+.receipt-photo-preview{display:block;width:100%;max-height:360px;object-fit:contain;border-radius:8px}
+.receipt-upload-actions{display:flex;justify-content:flex-end;margin-top:22px}.receipt-upload-actions button{min-width:130px}
+.rename-fridge-trigger{display:grid;place-items:center;min-width:44px;min-height:44px;align-self:flex-end;border:1px solid var(--control-border);border-radius:10px;background:var(--surface);color:var(--accent);cursor:pointer}.rename-fridge-trigger:disabled{opacity:.5;cursor:default}.rename-fridge-trigger svg{width:20px;height:20px}.rename-fridge-actions{display:flex;justify-content:flex-end;margin-top:20px}
+@media(max-width:540px){.pantry-header>div{gap:5px 18px}.pantry-header nav{flex-basis:100%;width:100%;justify-content:space-between;gap:12px;margin:0}.pantry-header nav a{min-height:44px;font-size:14px}.my-page{padding:26px 18px 40px}.my-page-heading h1{font-size:27px}.my-page-card{padding:20px 18px}.receipt-photo-box{padding:18px;min-height:190px}.receipt-upload-actions button{width:100%}}
+@media(max-width:540px){.pantry-context .fridge-switcher{flex:1 1 calc(100% - 120px);min-width:0}.pantry-context .fridge-switcher select{width:100%}.pantry-context .fridge-role{margin-top:20px}.rename-fridge-trigger{flex-shrink:0}}

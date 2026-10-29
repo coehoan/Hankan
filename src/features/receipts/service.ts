@@ -15,6 +15,7 @@ import {getAiProvider} from '@/features/ai/registry';
 import type {ExtractedItem,VerifiedImage} from '@/features/ai/contracts';
 import type {ConfirmedItem,ReceiptDraft,ReceiptDraftStatus,ReviewItem} from './contracts';
 import {verifyReceiptImage} from './image';
+import {removeReceiptFiles} from './file-cleanup';
 const bucket='receipt-originals';
 const reviewSchema=z.array(z.object({id:z.string().min(1).max(100),name:z.string().refine(value=>[...value].length<=80),storage:z.enum(['fridge','freezer','pantry']),expiresOn:z.string().refine(value=>{if(value==='')return true;try{parseIngredientPatch({expiresOn:value});return true}catch{return false}}),included:z.boolean(),rawText:z.string().max(1000),needsReview:z.boolean()}).strict()).max(100).refine(rows=>new Set(rows.map(row=>row.id)).size===rows.length);
 export async function saveReceiptReview(id:string,rows:unknown):Promise<void>{const {client,row}=await rawDraft(id);const parsed=reviewSchema.safeParse(rows);if(!parsed.success)throw new AppError('validation','임시 저장할 품목을 확인해 주세요.');const result=await client.rpc('save_receipt_review',{draft_id:row.id,review:parsed.data.map(item=>({...item}))});checkDatabaseError(result.error)}
@@ -27,18 +28,27 @@ async function rawDraft(id:string){
  await requireFridgeAccess(result.data.fridge_id);return {client,row:result.data};
 }
 async function cleanOne(id:string){
- const admin=createAdminSupabaseClient();const found=await admin.from('receipt_drafts').select('object_path,status,cleanup_pending').eq('id',id).single();
- if(found.error||!found.data.cleanup_pending||!['saved','cancelled'].includes(found.data.status))return false;
- try{const removed=await admin.storage.from(bucket).remove([found.data.object_path]);if(removed.error)return false;const update=await admin.from('receipt_drafts').update({cleanup_pending:false}).eq('id',id);return !update.error}catch{return false}
+ const admin=createAdminSupabaseClient();const found=await admin.from('receipt_drafts').select('object_path,staged_object_path,status,cleanup_pending').eq('id',id).single();
+ if(found.error||!['saved','cancelled'].includes(found.data.status))return false;
+ try{await removeReceiptFiles({objectPath:found.data.object_path,stagedObjectPath:found.data.staged_object_path});const update=await admin.from('receipt_drafts').update({cleanup_pending:false}).eq('id',id);return !update.error}catch{return false}
 }
-export async function createReceiptDraft(access:AccessContext,image:VerifiedImage):Promise<{draftId:string;fridgeId:string;status:ReceiptDraftStatus}>{
+export async function createReceiptDraft(access:AccessContext,image:VerifiedImage,stagedObjectPath?:string):Promise<{draftId:string;fridgeId:string;status:ReceiptDraftStatus}>{
  const current=await requireFridgeAccess(parseId(access.fridgeId));if(current.userId!==access.userId)throw new AppError('forbidden','냉장고 권한을 다시 확인해 주세요.');
  const verified=await verifyReceiptImage(image.bytes,image.mimeType),client=await createServerSupabaseClient(),id=randomUUID();
  const result=await client.rpc('create_receipt_draft',{draft_id:id,target_fridge_id:current.fridgeId});checkDatabaseError(result.error);
  if(!result.data)throw new AppError('internal','초안을 만들지 못했어요.');
+ if(stagedObjectPath){
+  const linked=await createAdminSupabaseClient().from('receipt_drafts').update({staged_object_path:stagedObjectPath}).eq('id',id).eq('user_id',current.userId).eq('fridge_id',current.fridgeId).eq('status','uploaded').select('id').maybeSingle();
+  if(linked.error||!linked.data){await client.rpc('cancel_receipt',{draft_id:id});throw new AppError('internal','사진 연결을 보관하지 못했어요. 다시 올려 주세요.')}
+ }
  const upload=await createAdminSupabaseClient().storage.from(bucket).upload(result.data.object_path,verified.bytes,{contentType:'image/png',upsert:false,cacheControl:'0'});
  if(upload.error){await client.rpc('cancel_receipt',{draft_id:id});throw new AppError('internal','사진을 보관하지 못했어요. 다시 올려 주세요.')}
- try{await requireFridgeAccess(current.fridgeId)}catch(error){await cancelReceipt(id);throw error}
+ try{
+  await requireFridgeAccess(current.fridgeId);
+  const latest=await client.from('receipt_drafts').select('status').eq('id',id).maybeSingle();checkDatabaseError(latest.error);
+  if(!latest.data)throw new AppError('not_found','초안을 찾을 수 없어요.');
+  if(['saved','cancelled'].includes(latest.data.status)){await cleanOne(id);throw new AppError('conflict','이미 저장하거나 취소한 초안이에요.')}
+ }catch(error){await cancelReceipt(id).catch(()=>{});throw error}
  return {draftId:id,fridgeId:current.fridgeId,status:'uploaded'};
 }
 export async function getReceiptDraft(id:string):Promise<ReceiptDraft>{

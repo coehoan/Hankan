@@ -201,14 +201,14 @@ isOneToOne: false
                   ]
                 },"receipt_drafts": {
                   Row: {
-                    "analysis_run": string | null,"analysis_started_at": string | null,"cleanup_pending": boolean,"commit_payload": Json | null,"commit_result": Json | null,"created_at": string,"error_code": string | null,"expires_at": string,"fridge_id": string,"id": string,"items": NonNullable<Json>,"object_path": string,"request_id": string | null,"review_items": Json | null,"status": string,"user_id": string
+                    "analysis_run": string | null,"analysis_started_at": string | null,"cleanup_pending": boolean,"commit_payload": Json | null,"commit_result": Json | null,"created_at": string,"error_code": string | null,"expires_at": string,"fridge_id": string,"id": string,"items": NonNullable<Json>,"object_path": string,"request_id": string | null,"review_items": Json | null,"staged_object_path": string | null,"status": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "analysis_run"?: string | null,"analysis_started_at"?: string | null,"cleanup_pending"?: boolean,"commit_payload"?: Json | null,"commit_result"?: Json | null,"created_at"?: string,"error_code"?: string | null,"expires_at"?: string,"fridge_id": string,"id": string,"items"?: NonNullable<Json>,"object_path": string,"request_id"?: string | null,"review_items"?: Json | null,"status"?: string,"user_id": string
+                    "analysis_run"?: string | null,"analysis_started_at"?: string | null,"cleanup_pending"?: boolean,"commit_payload"?: Json | null,"commit_result"?: Json | null,"created_at"?: string,"error_code"?: string | null,"expires_at"?: string,"fridge_id": string,"id": string,"items"?: NonNullable<Json>,"object_path": string,"request_id"?: string | null,"review_items"?: Json | null,"staged_object_path"?: string | null,"status"?: string,"user_id": string
                   }
                   Update: {
-                    "analysis_run"?: string | null,"analysis_started_at"?: string | null,"cleanup_pending"?: boolean,"commit_payload"?: Json | null,"commit_result"?: Json | null,"created_at"?: string,"error_code"?: string | null,"expires_at"?: string,"fridge_id"?: string,"id"?: string,"items"?: NonNullable<Json>,"object_path"?: string,"request_id"?: string | null,"review_items"?: Json | null,"status"?: string,"user_id"?: string
+                    "analysis_run"?: string | null,"analysis_started_at"?: string | null,"cleanup_pending"?: boolean,"commit_payload"?: Json | null,"commit_result"?: Json | null,"created_at"?: string,"error_code"?: string | null,"expires_at"?: string,"fridge_id"?: string,"id"?: string,"items"?: NonNullable<Json>,"object_path"?: string,"request_id"?: string | null,"review_items"?: Json | null,"staged_object_path"?: string | null,"status"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -295,6 +295,7 @@ isOneToOne: false
 "object_path": string,
 "request_id": string | null,
 "review_items": Json | null,
+"staged_object_path": string | null,
 "status": string,
 "user_id": string
             }

@@ -5,13 +5,14 @@ import {dispatchDigest} from '@/features/notifications/dispatcher';
 import {createWebPushTransport} from '@/features/notifications/web-push-transport';
 import {cleanReceipts} from './cleanup';
 import {cleanupStagedUploads} from './staging-cleanup';
+import {removeReceiptFiles} from '@/features/receipts/file-cleanup';
 
 export async function cleanupReceiptFiles(now:string):Promise<{deleted:number;failed:number}>{
  const admin=createAdminSupabaseClient();
  return cleanReceipts(now,{
   async expire(){const {error}=await admin.rpc('expire_receipts');if(error)throw new Error('Cannot expire receipts')},
-  async pending(){const {data,error}=await admin.from('receipt_drafts').select('id,object_path').eq('cleanup_pending',true).limit(100);if(error)throw new Error('Cannot list cleanup');return (data??[]).map(r=>({id:r.id,path:r.object_path}))},
-  async remove(path){const {error}=await admin.storage.from('receipt-originals').remove([path]);if(error)throw new Error('Cannot remove receipt file')},
+  async pending(){const {data,error}=await admin.from('receipt_drafts').select('id,object_path,staged_object_path').eq('cleanup_pending',true).limit(100);if(error)throw new Error('Cannot list cleanup');return (data??[]).map(r=>({id:r.id,path:r.object_path,stagedPath:r.staged_object_path}))},
+  async remove(path,stagedPath){await removeReceiptFiles({objectPath:path,stagedObjectPath:stagedPath})},
   async complete(id){const {error}=await admin.from('receipt_drafts').update({cleanup_pending:false}).eq('id',id);if(error)throw new Error('Cannot record cleanup')},
  });
 }

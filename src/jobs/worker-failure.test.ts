@@ -4,7 +4,7 @@ const state=vi.hoisted(()=>({stagingReads:0}));
 vi.mock('@/features/notifications/web-push-transport',()=>({createWebPushTransport:()=>null}));
 vi.mock('@/lib/supabase/admin',()=>({createAdminSupabaseClient:()=>({
  rpc:async()=>({error:null}),
- from:()=>({select:()=>({eq:()=>({limit:async()=>({data:[{id:'draft',object_path:'private-path'}],error:null})})})}),
+ from:()=>({select:(columns:string)=>columns.includes('created_at')?{in:()=>({not:()=>({order:()=>({limit:async()=>({data:[],error:null})})})})}:{eq:()=>({limit:async()=>({data:[{id:'draft',object_path:'private-path',staged_object_path:null}],error:null})})}}),
  storage:{from:()=>({remove:async()=>({error:new Error('private storage outage')}),list:async()=>{state.stagingReads++;return {data:[],error:null}}})},
 })}));
 afterEach(()=>vi.unstubAllEnvs());

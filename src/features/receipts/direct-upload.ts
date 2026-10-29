@@ -22,5 +22,5 @@ export async function completeReceiptUpload(fridgeId:string,objectPath:string):P
  const {data,error}=await createAdminSupabaseClient().storage.from(bucket).download(objectPath);
  if(error||!data||data.size>MAX_IMAGE_BYTES)throw new AppError('validation','사진 업로드가 완료되지 않았어요. 다시 올려 주세요.');
  const verified=await verifyReceiptImage(new Uint8Array(await data.arrayBuffer()),data.type);
- return createReceiptDraft(access,verified);
+ return createReceiptDraft(access,verified,objectPath);
 }

@@ -26,7 +26,7 @@
 
 8단계에서 OpenAI `gpt-6-luna`, 추론 강도 `high`를 연결했습니다. 프로젝트 루트 `.env.local`의 `OPENAI_API_KEY`에 서버용 키를 입력하고 개발 서버를 다시 시작합니다. `NEXT_PUBLIC_` 접두사를 붙이지 않습니다. 키가 없으면 `provider_unconfigured`를 반환하고 품목 직접 입력을 제공합니다. 테스트용 공급자는 계약 검증에만 주입하며 사용자 화면에 가짜 분석 결과를 표시하지 않습니다. 실제 토큰·응답 시간·비용과 재현 명령은 [AI 평가 기록](docs/ai-evaluation.md)에 있습니다.
 
-사진 삭제는 저장·취소 직후 시도하고 실패하면 `cleanup_pending`으로 남깁니다. 중단한 초안은 24시간 뒤 취소됩니다. 로컬에서는 `npm run dev:worker`를 별도 실행해 60초마다 발송과 사진 정리를 수행합니다. 배포는 `npm run build:worker` 후 `npm run start:worker`로 지속 실행합니다. 기존 `receipts:cleanup`은 사진 정리만 하는 호환 명령이며 두 정리 프로세스를 함께 켤 필요는 없습니다.
+사진 삭제는 저장·취소 직후 분석용 PNG와 연결된 임시 업로드 원본을 함께 시도하고, 실패하면 `cleanup_pending`으로 남깁니다. 업로드 URL이 유효한 동안 재생성된 종료 초안의 임시 파일도 매분 정리합니다. 초안 생성 전 중단한 업로드는125분 후, 저장/취소하지 않은 초안은24시간 후 정리합니다. 로컬에서는 `npm run dev:worker`를 별도 실행하고, Vercel은 Supabase 예약 작업이 매분 인증된 작업 API를 호출합니다. 별도 서버 방식은 `npm run build:worker` 후 `npm run start:worker`를 사용합니다.
 
 영수증 API는 `POST /api/receipts`(multipart: fridgeId, file), `GET /api/receipts?fridgeId=...`, `GET/PATCH/DELETE /api/receipts/:draftId`, `POST .../analyze`, `POST .../commit`입니다. PATCH는 `{items: ReviewItem[]}`, commit은 `{requestId, items: {name,storage,expiresOn}[]}`를 받습니다. 변경 요청은 같은 Origin만 허용하며 JSON은 64KiB, 사진 요청은 10MiB+multipart 여유분을 스트리밍으로 제한합니다. 취소는 멤버십을 잃은 업로더도 자기 사진 정리를 위해 수행할 수 있습니다.
 

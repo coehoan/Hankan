@@ -34,11 +34,15 @@ it('system_theme_change_keeps_unsaved_form',async()=>{
 it('system_change_only_affects_system_preference',()=>{
  render(<ThemeProvider initialPreference="system"><ThemeSelector/><ReadTheme/></ThemeProvider>);
  act(()=>{dark=true;changes.forEach(fn=>fn())});expect(screen.getByLabelText('적용 테마')).toHaveTextContent('dark');
- fireEvent.change(screen.getByLabelText('화면 테마'),{target:{value:'light'}});
+ fireEvent.click(screen.getByRole('radio',{name:'라이트'}));
  act(()=>{dark=false;changes.forEach(fn=>fn());dark=true;changes.forEach(fn=>fn())});
  expect(screen.getByLabelText('적용 테마')).toHaveTextContent('light');
- fireEvent.change(screen.getByLabelText('화면 테마'),{target:{value:'system'}});
+ fireEvent.click(screen.getByRole('radio',{name:'시스템'}));
  expect(screen.getByLabelText('적용 테마')).toHaveTextContent('dark');
+});
+it('theme_selector_has_three_choices_and_explains_system_mode',()=>{
+ render(<ThemeProvider initialPreference="system"><ThemeSelector/></ThemeProvider>);
+ const choices=screen.getByRole('radiogroup',{name:'화면 테마'});expect(within(choices).getAllByRole('radio')).toHaveLength(3);expect(screen.getByRole('radio',{name:'시스템'})).toBeChecked();expect(screen.getByText('시스템: 기기의 다크 모드 설정을 따릅니다.')).toBeVisible();fireEvent.click(screen.getByRole('radio',{name:'다크'}));expect(screen.getByRole('radio',{name:'다크'})).toBeChecked();expect(document.documentElement).toHaveAttribute('data-theme','dark');
 });
 function DialogFixture(){const [open,setOpen]=useState(false);return <><button onClick={()=>setOpen(true)}>열기</button><Dialog open={open} title="재료 입력" onOpenChange={setOpen}><input aria-label="재료"/><button onClick={()=>setOpen(false)}>완료</button></Dialog></>}
 // Catches missing focus capture, trapping and restoration to the actual opener.

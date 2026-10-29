@@ -7,6 +7,7 @@ import {cookies} from 'next/headers';
 import {createServerSupabaseClient} from '@/lib/supabase/server';
 import {ThemeProvider} from '@/features/shell/theme-provider';
 import './mobile-settings.css';
+import './profile-navigation.css';
 import {isThemePreference} from '@/features/shell/theme';
 import {PwaProvider} from '@/features/notifications/pwa-provider';
 

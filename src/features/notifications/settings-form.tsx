@@ -20,7 +20,7 @@ export function NotificationSettingsForm({onAccessLost}:{onAccessLost?:()=>void}
   <p>내가 참여한 냉장고의 임박 재료를 매일 한 번 모아 알려드려요.</p>
   {!online&&<p className="connection-banner" role="status">오프라인이에요. 연결한 뒤 저장해 주세요.</p>}
   {loading?<p role="status">내 알림 설정을 불러오고 있어요…</p>:saved?<form onSubmit={event=>void save(event)} className="notification-form">
-   <label className="notification-toggle"><input type="checkbox" checked={draft.enabled} onChange={event=>{setDraft(value=>({...value,enabled:event.target.checked}));setNotice('')}} disabled={saving}/>알림 받기</label>
+   <label className="notification-toggle ios-switch"><input type="checkbox" role="switch" checked={draft.enabled} onChange={event=>{setDraft(value=>({...value,enabled:event.target.checked}));setNotice('')}} disabled={saving}/><span className="ios-switch-track" aria-hidden="true"/><span>알림 받기</span></label>
    {draft.enabled&&<div className="notification-time-settings"><label>매일 받을 시각<input type="time" step="60" required value={draft.localTime} onChange={event=>{setDraft(value=>({...value,localTime:event.target.value}));setNotice('')}} disabled={saving}/></label><p className="notification-hint">오늘 아직 보내지 않았고 새 시각이 남아 있으면 오늘부터, 이미 지났거나 오늘 보냈으면 내일부터 적용해요. 이 설정은 내 계정에만 적용돼요.</p></div>}
    <Button type="submit" disabled={!online||saving}>{saving?'저장 중…':'알림 설정 저장'}</Button>
   </form>:<Button onClick={()=>setRevision(value=>value+1)} disabled={!online}>설정 다시 불러오기</Button>}

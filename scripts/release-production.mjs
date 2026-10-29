@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { glob, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parseEnv } from 'node:util';
 import { pathToFileURL } from 'node:url';
@@ -15,6 +15,47 @@ const target = {
 };
 const databaseOrigin = 'https://' + target.SUPABASE_PROJECT_ID + '.supabase.co';
 const siteOrigin = 'https://hankan-murex.vercel.app';
+
+export async function checkBuildArtifacts({ read = readFile, list = glob } = {}) {
+  const manifests = new Set([
+    '.next/next-server.js.nft.json',
+    '.next/next-minimal-server.js.nft.json',
+  ]);
+  let functions = 0;
+  for await (const file of list([
+    '.next/server/**/*.nft.json',
+    '.vercel/output/functions/**/.vc-config.json',
+  ])) {
+    manifests.add(file);
+    if (file.endsWith('.vc-config.json')) functions++;
+  }
+  if (!functions) throw Error('Prebuilt function manifests are missing. Database was not changed.');
+  for (const file of manifests) {
+    let paths;
+    try {
+      const manifest = JSON.parse(await read(file, 'utf8'));
+      if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) throw Error();
+      if (file.endsWith('.nft.json')) {
+        if (!Array.isArray(manifest.files)) throw Error();
+        paths = manifest.files;
+      } else {
+        const map = Object.hasOwn(manifest, 'filePathMap') ? manifest.filePathMap : {};
+        if (!map || typeof map !== 'object' || Array.isArray(map)) throw Error();
+        paths = [...Object.keys(map), ...Object.values(map)];
+      }
+      if (paths.some((path) => typeof path !== 'string')) throw Error();
+    } catch {
+      throw Error('Missing or invalid build manifest: ' + file + '. Database was not changed.');
+    }
+    if (paths.some((path) => /(^|[\\/])\.env[^\\/]*(?:$|[\\/])/.test(path)))
+      throw Error(
+        'Build manifest references an environment file: ' +
+          file +
+          '. Fix outputFileTracingExcludes and rebuild. Database was not changed.',
+      );
+  }
+}
+
 export function validateReleaseConfig(env) {
   for (const [name, expected] of Object.entries(target)) {
     if (env[name] !== expected)
@@ -74,6 +115,7 @@ export async function releaseProduction({
   env = process.env,
   run = runChecked,
   read = readFile,
+  list = glob,
 } = {}) {
   validateReleaseConfig(env);
   const { SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD, VERCEL_TOKEN, ...base } = env;
@@ -98,6 +140,7 @@ export async function releaseProduction({
   await vercel('pull', ['pull', '--yes', '--environment=production']);
   await vercel('build', ['build', '--prod', '--yes']);
   await checkBuildTarget(read);
+  await checkBuildArtifacts({ read, list });
   await supabase('link', ['link', '--project-ref', target.SUPABASE_PROJECT_ID, '--yes']);
   await supabase('dry-run', ['db', 'push', '--linked', '--dry-run']);
   await supabase('migrate', ['db', 'push', '--linked', '--yes']);

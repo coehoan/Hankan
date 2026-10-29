@@ -2,8 +2,9 @@ import type { NextConfig } from 'next';
 
 const config: NextConfig = {
   poweredByHeader: false,
-  // Vercel provides runtime environment variables; local env files are not assets.
-  outputFileTracingExcludes: { '/*': ['./.env*'] },
+  // Include shared `next-server` traces, which the route-only `/*` key misses.
+  // Match absolute tracing paths too; Vercel supplies environment values at runtime.
+  outputFileTracingExcludes: { '*': ['**/.env*'] },
   logging: { incomingRequests: false },
   async headers() {
     return [

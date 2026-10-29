@@ -34,7 +34,7 @@ dev push는 아래 워크플로를 실행한다. 로컬 수정은 커밋과 push
 2. 고정된 Node24.15.0과 프로젝트 lockfile로 의존성을 설치한다. Supabase CLI는 프로젝트의2.122.0, Vercel CLI는65.7.0을 사용한다.
 3. GitHub 러너의 폐기용 로컬 Supabase를 실행한다. `.env.test.local`은 loopback API와 임시 키만으로 생성한다. 기존 파일이 있으면 덮어쓰지 않는다.
 4. 릴리스 로직·형식·린트·타입·단위·DB·통합·worker 빌드를 확인한다. 유료 실제 AI 검사는 실행하지 않는다.
-5. Vercel Production 설정을 읽고 운영 앱을 빌드한다. 결과물과 연결 프로젝트·DB·사이트 주소가 한칸 대상인지 확인한다.
+5. Vercel Production 설정을 읽고 운영 앱을 빌드한다. 결과물과 연결 프로젝트·DB·사이트 주소가 한칸 대상인지 확인한다. 공통 서버·각 경로의 Next.js 추적 목록과 Vercel 함수의 `filePathMap`도 검사한다. 환경파일 참조가 남거나 필수 메타데이터가 누락·손상되면 DB 작업 전에 중단한다.
 6. Supabase를 지정 프로젝트에 link하고 `db push --linked --dry-run`으로 미적용 목록을 확인한 뒤 `db push --linked --yes`로 적용한다.
 7. 성공한 경우에만 같은 prebuilt 결과물을 Vercel Production으로 배포한다.
 
@@ -49,13 +49,13 @@ dev push는 아래 워크플로를 실행한다. 로컬 수정은 커밋과 push
 - 앱 배포 실패: 적용된 DB 변경은 자동으로 되돌리지 않는다. 기존 앱과 호환되는 추가 위주의 DB 변경을 작성한다. 이미 적용한 migration 파일을 수정해 재실행하려 하지 않는다.
 - 자격 증명/변수 누락: 기존 Vercel 직접 배포로 우회하지 말고 등록을 완료한 뒤 현재 dev 커밋의 작업을 다시 실행한다. 오래된 커밋의 실행을 재시도하면 과거 앱을 배포할 수 있으므로 먼저 실행 커밋을 확인한다.
 - `vercel pull`에서 `User not found (404)`: 이전 `--scope` 옵션과 팀 범위 토큰의 개인 사용자 조회 충돌을 확인한다. 해당 옵션을 제거한 최신 커밋으로 실행해야 한다. 여전히 실패하면 Vercel 토큰의 만료·회수 여부와 Hankan 팀 접근 범위를 확인하고 GitHub `VERCEL_TOKEN`을 갱신한다. 실제 토큰 값을 로그나 채팅으로 보내지 않는다.
-- prebuilt 배포에서 `.env.example` 등의 `ENOENT` 또는 `.vercelignore` 충돌: 환경파일이 Next.js 파일 추적에 포함된 경우다. `next.config.ts`의 `outputFileTracingExcludes`로 루트 `.env*`를 빌드 파일 목록에서 제외한다. `.vercelignore`의 환경파일 제외 규칙은 유지한다. 수정 후 새로 빌드한 결과물을 배포하며, 앞서 적용된 DB 마이그레이션은 다음 실행에서 다시 적용하지 않는다.
+- prebuilt 배포에서 `.env.example` 등의 `ENOENT` 또는 `.vercelignore` 충돌: 환경파일이 Next.js 파일 추적에 포함된 경우다. 2026-10-29 실행은 앱 빌드와 DB 최신 상태 확인에 성공했지만, 업로드에서 제외된 `.env.example`·`.env.test.local`을 함수가 참조해 실패했다. 기존 `outputFileTracingExcludes: { '/*': ['./.env*'] }`는 공통 `next-server` 추적을 제외하지 못했다. 현재 설정은 `'*': ['**/.env*']`로 페이지와 공통 서버의 절대 경로까지 처리한다. `.vercelignore`의 환경파일 제외 규칙은 유지한다. 빌드 산출물 검사가 같은 참조를 발견하면 DB 작업 전에 실패하므로, 규칙을 지우거나 환경파일을 업로드해 우회하지 않는다. 수정 후 새로 빌드한 결과물을 배포하며, 앞서 적용된 DB 마이그레이션은 다음 실행에서 다시 적용하지 않는다.
 - 결과는 GitHub **Actions → Deploy Hankan production**에서 확인한다. 실제 운영 로그·사이트·DB 상태 점검은 첫 승인 배포 후 별도로 수행한다.
 
 DB reset, seed, 자동 migration repair, 강제 rollback, 운영 데이터 복사는 수행하지 않는다. 배포용 토큰과 DB 비밀번호는 테스트·앱 빌드 명령에 전달하지 않고 필요한 자식 프로세스에만 전달한다. 비밀 파일과 prebuilt 산출물을 GitHub artifact로 업로드하지 않는다.
 
 ## 로컬 검증
 
-`npm run test:release`는 가짜 command runner와 읽기 fixture로 순서·실패 중단·잘못된 대상 차단·키 전달 범위를 확인한다. 실제 운영 CLI를 실행하지 않는다. `scripts/release-production.mjs`는 GitHub의 원본 저장소 dev push 환경과 모든 필수 값을 확인하며, 명시적인 `--execute` 없이 배포하지 않는다. 로컬에서 환경변수를 흉내 내 실제 배포를 시도하지 않는다.
+`npm run test:release`는 가짜 command runner로 순서·실패 중단·잘못된 대상 차단·키 전달 범위를 확인한다. 임시 파일의 실제 glob 탐색으로 중첩된 함수/경로 메타데이터 검사도 확인하고, 설치된 Next.js 추적기에 현재 설정을 전달해 공통 서버의 환경파일 제외와 일반 런타임 파일 보존을 검증한다. 임시 파일에는 시험용 값만 사용하며 실제 운영 CLI·DB·AI는 호출하지 않는다. `scripts/release-production.mjs`는 GitHub의 원본 저장소 dev push 환경과 모든 필수 값을 확인하며, 명시적인 `--execute` 없이 배포하지 않는다. 로컬에서 환경변수를 흉내 내 실제 배포를 시도하지 않는다.
 
 참고: [Supabase GitHub Actions 가이드](https://supabase.com/docs/guides/deployment/managing-environments), [Vercel GitHub Actions](https://vercel.com/docs/git/vercel-for-github), [Vercel Git 배포 설정](https://vercel.com/docs/project-configuration/git-configuration).

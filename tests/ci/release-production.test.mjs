@@ -23,6 +23,14 @@ const files = {
   '.vercel/.env.production.local':
     'NEXT_PUBLIC_SUPABASE_URL=https://wtwvmerpucfdodieawul.supabase.co\nNEXT_PUBLIC_SITE_URL=https://hankan-murex.vercel.app\n',
   '.vercel/output/config.json': '{"version":3}',
+  '.next/next-server.js.nft.json': '{"version":1,"files":["../package.json"]}',
+  '.next/next-minimal-server.js.nft.json': '{"version":1,"files":["../package.json"]}',
+  '.next/server/app/page.js.nft.json': '{"version":1,"files":["page.js"]}',
+  '.vercel/output/functions/index.func/.vc-config.json': JSON.stringify({
+    runtime: 'nodejs24.x',
+    handler: 'index.js',
+    filePathMap: { 'index.js': '.next/server/app/page.js' },
+  }),
 };
 function harness({ fail, overrides = {} } = {}) {
   const calls = [];
@@ -38,6 +46,10 @@ function harness({ fail, overrides = {} } = {}) {
         const value = { ...files, ...overrides }[file];
         if (value === undefined) throw Error('Missing build output');
         return value;
+      },
+      list: async function* () {
+        yield '.next/server/app/page.js.nft.json';
+        yield '.vercel/output/functions/index.func/.vc-config.json';
       },
     },
   };
@@ -139,3 +151,83 @@ test('migration_credentials_never_reach_vercel_and_vercel_token_never_reaches_su
     }
   }
 });
+
+for (const file of [
+  '.next/next-server.js.nft.json',
+  '.next/next-minimal-server.js.nft.json',
+  '.next/server/app/page.js.nft.json',
+]) {
+  test('blocks_database_and_deployment_when_environment_file_is_traced_by_' + file, async () => {
+    const h = harness({
+      overrides: {
+        [file]: JSON.stringify({ version: 1, files: ['../package.json', '../.env.example'] }),
+      },
+    });
+    await assert.rejects(releaseProduction(h.options), /environment file/i);
+    assert.deepEqual(
+      h.calls.map((c) => c.name),
+      ['pull', 'build'],
+    );
+  });
+}
+
+for (const source of [
+  '.env.example',
+  '.env.test.local',
+  '.vercel/.env.production.local',
+  'src\\.env',
+]) {
+  test('blocks_database_and_deployment_when_prebuilt_function_references_' + source, async () => {
+    const h = harness({
+      overrides: {
+        '.vercel/output/functions/index.func/.vc-config.json': JSON.stringify({
+          runtime: 'nodejs24.x',
+          handler: 'index.js',
+          filePathMap: { 'index.js': '.next/server/app/page.js', 'private-config.txt': source },
+        }),
+      },
+    });
+    await assert.rejects(releaseProduction(h.options), /environment file/i);
+    assert.deepEqual(
+      h.calls.map((c) => c.name),
+      ['pull', 'build'],
+    );
+  });
+}
+
+test('blocks_database_when_environment_file_is_the_function_destination', async () => {
+  const h = harness({
+    overrides: {
+      '.vercel/output/functions/index.func/.vc-config.json': JSON.stringify({
+        runtime: 'nodejs24.x',
+        handler: 'index.js',
+        filePathMap: { '.env.local': 'safe-config.txt' },
+      }),
+    },
+  });
+  await assert.rejects(releaseProduction(h.options), /environment file/i);
+  assert.deepEqual(
+    h.calls.map((c) => c.name),
+    ['pull', 'build'],
+  );
+});
+
+for (const file of [
+  '.next/next-server.js.nft.json',
+  '.next/next-minimal-server.js.nft.json',
+  '.vercel/output/functions/index.func/.vc-config.json',
+]) {
+  for (const value of [undefined, 'not json']) {
+    test(
+      'blocks_database_when_build_manifest_is_missing_or_invalid_' + file + '_' + value,
+      async () => {
+        const h = harness({ overrides: { [file]: value } });
+        await assert.rejects(releaseProduction(h.options), /manifest/i);
+        assert.deepEqual(
+          h.calls.map((c) => c.name),
+          ['pull', 'build'],
+        );
+      },
+    );
+  }
+}

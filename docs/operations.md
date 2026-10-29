@@ -2,6 +2,8 @@
 
 ## Vercel 무료 배포 구성
 
+dev push의 DB·앱 통합 배포와 GitHub Secrets/Variables 최초 등록은 [배포 파이프라인 안내](deployment-pipeline.md)를 따른다. 전환 설정을 처음 push하면 Vercel Git 직접 배포 대신 GitHub Actions가 검증 → 운영 빌드 → DB 적용 → Vercel 배포를 맡는다. 사용자의 배포 승인 전에는 이 설정을 push하거나 운영 명령을 실행하지 않는다.
+
 Vercel Hankan 팀(`hankan1`), 프로젝트 `hankan`, GitHub `coehoan/Hankan`의 `dev`가 Production 브랜치다. Node24, Seoul(`icn1`), 웹 빌드 `npm run build`, 설치 `npm ci`를 사용한다. 기본 주소는 `https://hankan-murex.vercel.app`이다. 아래 Compose 설명은 별도 호스트에서 운영할 때의 선택지다.
 
 Vercel에서는 지속 프로세스를 띄우지 않고 Supabase pg_cron/pg_net이 매분 `POST /api/internal/worker`를 호출한다. `WORKER_SECRET`(32자 이상)은 Vercel Production Secret과 Supabase Vault의 `hankan_worker_secret`에 같은 값을 보관한다. `hankan_worker_url`도 Vault에 둔다. `supabase/ops/worker-scheduler.sql`은 작업을 비활성 상태로 준비한다. 인증된 호출의200을 확인한 뒤 `cron.alter_job(jobid,active:=true)`로 켠다. 중지는 같은 호출의false를 사용한다. Secret을 Git이나 cron.command 문자열에 직접 넣지 않는다. Vault는 일반 클라이언트 접근 대상이 아니다.

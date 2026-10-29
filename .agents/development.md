@@ -13,6 +13,7 @@
 | 목적 | 명령 |
 | --- | --- |
 | 단위·컴포넌트 테스트 | `npm test -- --maxWorkers=4` (뒤에 파일 경로로 범위 제한 가능) |
+| 배포 순서·대상 차단 | `npm run test:release` (실제 배포 없이 가짜 실행기로 검사) |
 | DB 정책·RPC | `npm run test:db` |
 | 실제 로컬 DB와 API 통합 | `npm run test:integration` |
 | 형식·타입·린트·빌드 | `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm run build` |

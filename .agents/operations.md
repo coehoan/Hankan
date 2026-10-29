@@ -13,7 +13,7 @@
 - 키 값은 문서·로그·커밋에 넣지 않는다. OpenAI 키와 Supabase 서버 키는 서버에서만 사용하고 `NEXT_PUBLIC_`에 넣지 않는다. `SUPABASE_SERVER_URL`은 서버용 내부 주소이며 공개 주소·쿠키 식별과 구분한다.
 - 영수증 저장·취소 직후 파일 삭제를 시도하고 실패 시 worker가 재시도한다. 생성 전 중단 업로드는 125분, 방치한 초안은 24시간 기준으로 정리한다. staging 재업로드 경합·중복 전송 방지를 보존한다.
 - 로컬 worker: `npm run dev:worker`. 독립 실행: `npm run build:worker` → `npm run start:worker`. 운영 Vercel은 Supabase 예약 작업이 인증된 worker API를 호출한다.
-- **명시적 배포 요청 전 push·Vercel 배포·클라우드 마이그레이션 금지.** `dev` push는 자동 배포를 유발한다. 배포 요청 시에도 미적용 마이그레이션·실제 대상·환경변수를 확인한 뒤 진행하고, 기존 배포 연결을 임의로 변경하지 않는다.
+- **명시적 배포 요청 전 push·Vercel 배포·클라우드 마이그레이션 금지.** 승인된 `dev` push 통합 배포는 [배포 안내](../docs/deployment-pipeline.md)를 따른다. 검증·운영 빌드 → DB 마이그레이션 → Vercel 배포 순서이며 Git 직접 배포와 중복 실행하지 않는다. 이번 설정이 최초 push되기 전에는 기존 Vercel 자동 배포가 유지된다. 대상·환경변수와 미적용 마이그레이션을 먼저 확인한다.
 - **Realtime:** `20261029073618_inventory_realtime.sql`의 비공개 수신 정책·DB 트리거가 프런트 배포 전에 필요하다. 로컬에서는 Realtime 컨테이너도 실행되어 있어야 한다. 연결 실패는 화면에 표시하고 3초 폴링으로 돌아가지 않는다. 상세 운영·검증은 [Realtime 안내](../docs/inventory-realtime.md)를 참고한다.
 
 ## 실제 화면 검증

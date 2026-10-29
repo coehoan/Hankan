@@ -35,12 +35,8 @@ async function cleanOne(id:string){
 export async function createReceiptDraft(access:AccessContext,image:VerifiedImage,stagedObjectPath?:string):Promise<{draftId:string;fridgeId:string;status:ReceiptDraftStatus}>{
  const current=await requireFridgeAccess(parseId(access.fridgeId));if(current.userId!==access.userId)throw new AppError('forbidden','냉장고 권한을 다시 확인해 주세요.');
  const verified=await verifyReceiptImage(image.bytes,image.mimeType),client=await createServerSupabaseClient(),id=randomUUID();
- const result=await client.rpc('create_receipt_draft',{draft_id:id,target_fridge_id:current.fridgeId});checkDatabaseError(result.error);
+ const result=stagedObjectPath?await client.rpc('create_receipt_draft',{draft_id:id,target_fridge_id:current.fridgeId,staged_upload_path:stagedObjectPath}):await client.rpc('create_receipt_draft',{draft_id:id,target_fridge_id:current.fridgeId});checkDatabaseError(result.error);
  if(!result.data)throw new AppError('internal','초안을 만들지 못했어요.');
- if(stagedObjectPath){
-  const linked=await createAdminSupabaseClient().from('receipt_drafts').update({staged_object_path:stagedObjectPath}).eq('id',id).eq('user_id',current.userId).eq('fridge_id',current.fridgeId).eq('status','uploaded').select('id').maybeSingle();
-  if(linked.error||!linked.data){await client.rpc('cancel_receipt',{draft_id:id});throw new AppError('internal','사진 연결을 보관하지 못했어요. 다시 올려 주세요.')}
- }
  const upload=await createAdminSupabaseClient().storage.from(bucket).upload(result.data.object_path,verified.bytes,{contentType:'image/png',upsert:false,cacheControl:'0'});
  if(upload.error){await client.rpc('cancel_receipt',{draft_id:id});throw new AppError('internal','사진을 보관하지 못했어요. 다시 올려 주세요.')}
  try{

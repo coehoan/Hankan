@@ -12,7 +12,7 @@ Vercel에서는 지속 프로세스를 띄우지 않고 Supabase pg_cron/pg_net�
 
 Vercel 함수의4.5MB 요청 한도를 피하기 위해 브라우저는10MB 이하 사진을 비공개 `receipt-uploads`에 직접 업로드한다. 서버는 업로드 경로의 사용자·냉장고 권한과 실제 이미지 형식을 검사하고 메타데이터를 제거한 PNG를 기존 `receipt-originals`에 보관한다. 임시 버킷에는 클라이언트 읽기 정책이 없다. 2026-10-29부터 새 초안은 서버 전용 `staged_object_path`로 임시 원본과 연결하며, 재료 저장/초안 취소 시 두 버킷의 파일을 함께 즉시 삭제한다. 두 삭제가 모두 성공해야 `cleanup_pending`을 해제하고 실패 시 매분 재시도한다. 업로드 중 취소로 뒤늦게 만들어진 PNG도 상태 재확인 후 정리한다.
 
-서명 업로드 URL이2시간 유효하므로 파일을 삭제한 뒤에도 경로 연결은 초안 생성 후125분까지 유지한다. 이 기간에 재사용된 URL로 파일이 다시 생기면 종료 초안의 연결을 보고 매분 제거한다. 유효 기간이 지난 종료 초안의 연결은 정리 성공 후 해제한다. 초안까지 완료하지 않은 업로드와 변경 전 연결 정보가 없는 파일은 기존125분 정리를 유지한다. 기존 파일의 연결을 추측해 다른 초안의 파일을 삭제하지 않는다.
+서명 업로드 URL이2시간 유효하므로 파일을 삭제한 뒤에도 경로 연결은 초안 생성 후125분까지 유지한다. 이 기간에 재사용된 URL로 파일이 다시 생기면 종료 초안의 연결을 보고 매분 제거한다. 연결이100건을 넘어도 UUID cursor로 모든 페이지를 순회하며, 유효 기간이 지난 연결은 정리 성공 후 해제한다. 초안까지 완료하지 않은 업로드와 변경 전 연결 정보가 없는 파일은 기존125분 정리를 유지한다. 기존 파일의 연결을 추측해 다른 초안의 파일을 삭제하지 않는다. 새3인자 생성 RPC는 기존 멤버십/생성 검사를 재사용해 초안과 경로 연결을 같은 트랜잭션에서 기록하며, 기존2인자 RPC도 호환된다.
 
 환경변수는 Production에만 설정한다. `NEXT_PUBLIC_SITE_URL`은 위 기본 주소, 기존 Supabase/OpenAI 키는 서버 전용 범위를 유지한다. 운영 VAPID는 로컬과 별도 쌍이다. Preview에는 운영 비밀을 복사하지 않는다. 비밀 파일과 `.vercel/`은 ignored이며 CLI link가 추가한 로컬 OIDC 토큰을 커밋하지 않는다. 브랜치 push가 자동 배포되므로 코드 검증 후 push한다.
 
@@ -110,3 +110,5 @@ Compose/지속 프로세스 방식을 선택하면 웹과 Node worker를 모두 
 클라우드 SDK 검사32건과 실제 Next 서버 로그인·알림 설정·구독 등록·로그아웃 API 흐름, worker 한 주기를 확인했다. 아이디 인증 변경 후 실제 클라우드18건도 통과했다. 2026-10-29 Vercel에서 실제 Production28건과 예약 worker HTTP200까지 확인했다. 검증용 사용자/사진은 제거했다. 실제 기기 푸시 수신은 별도 검증 대상이다. 추가 버킷/예약 extension 마이그레이션2건을 적용한 뒤 클라우드 이력도 저장소 파일 버전과 정합화했다.
 
 보안 Advisor의 authenticated SECURITY DEFINER 실행 경고20건은 소유권·멤버십을 검사하는 의도된 원자적 RPC다. [경고 설명](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable)을 확인하고 실제 접근 차단을 검사했으며 경고 제거를 위해 권한을 풀지 않았다. RLS 정책 없음 정보3건은 클라이언트가 접근하면 안 되는 서버 전용 표의 기본 거부다. [설명](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
+
+즉시 정리 변경의 새3인자 생성 RPC도 기존 멤버십 검사와 소유 경로 제약을 재사용하며 anon/PUBLIC 실행을 금지했다. 실제 다른 사용자 경로 지정이 거부되고 생성까지 롤백되는 것을 검사했다. 같은 Advisor 검사에서 유출된 비밀번호 보호 비활성 경고도 관찰했다. [해당 설정 설명](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection)을 참고하며, 이번 사진 정리 작업에서 인증 설정이나 요금제는 변경하지 않았다.

@@ -38,6 +38,7 @@ function harness({ fail, overrides = {} } = {}) {
     calls,
     options: {
       env,
+      build: (action) => action(),
       run: async (command) => {
         calls.push(command);
         if (command.name === fail) throw Error('simulated ' + fail + ' failure');
@@ -70,6 +71,22 @@ test('builds_before_migrating_and_deploys_prebuilt_only_after_migration', async 
   assert.ok(h.calls.find((c) => c.name === 'deploy').args.includes('--prebuilt'));
   assert.ok(h.calls.find((c) => c.name === 'migrate').args.includes('--linked'));
   assert.ok(h.calls.find((c) => c.name === 'migrate').args.includes('--yes'));
+});
+test('does_not_build_or_touch_database_if_environment_isolation_fails', async () => {
+  const h = harness();
+  await assert.rejects(
+    releaseProduction({
+      ...h.options,
+      build: async () => {
+        throw Error('simulated environment isolation failure');
+      },
+    }),
+    /environment isolation failure/,
+  );
+  assert.deepEqual(
+    h.calls.map((c) => c.name),
+    ['pull'],
+  );
 });
 for (const [key, value] of Object.entries({
   GITHUB_ACTIONS: '',

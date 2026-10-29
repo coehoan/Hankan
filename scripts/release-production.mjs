@@ -3,6 +3,7 @@ import { glob, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parseEnv } from 'node:util';
 import { pathToFileURL } from 'node:url';
+import { withoutRootEnvironmentFiles } from './build-environment.mjs';
 
 const target = {
   GITHUB_ACTIONS: 'true',
@@ -114,6 +115,7 @@ export async function releaseProduction({
   run = runChecked,
   read = readFile,
   list = glob,
+  build = withoutRootEnvironmentFiles,
 } = {}) {
   validateReleaseConfig(env);
   const { SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD, VERCEL_TOKEN, ...base } = env;
@@ -136,7 +138,7 @@ export async function releaseProduction({
       env: databaseEnv,
     });
   await vercel('pull', ['pull', '--yes', '--environment=production']);
-  await vercel('build', ['build', '--prod', '--yes']);
+  await build(() => vercel('build', ['build', '--prod', '--yes']));
   await checkBuildTarget(read);
   await checkBuildArtifacts({ read, list });
   await supabase('link', ['link', '--project-ref', target.SUPABASE_PROJECT_ID, '--yes']);

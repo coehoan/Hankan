@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 vi.mock('@/features/inventory/inventory-realtime', () => ({
   subscribeToInventory: () => () => {},
@@ -60,7 +61,9 @@ let rows = [item],
   recipeStatus = 200,
   late: Promise<Response> | null = null,
   online = true;
+let user: ReturnType<typeof userEvent.setup>;
 beforeEach(() => {
+  user = userEvent.setup();
   rows = [item];
   recipeStatus = 200;
   late = null;
@@ -88,8 +91,8 @@ it('recipe_request_does_not_change_remaining', async () => {
   show();
   const button = await screen.findByRole('button', { name: '요리 추천 받기' });
   await waitFor(() => expect(button).toBeEnabled());
-  fireEvent.click(button);
-  fireEvent.click(await screen.findByRole('button', { name: '계란찜 조리법 보기' }));
+  await user.click(button);
+  await user.click(await screen.findByRole('button', { name: '계란찜 조리법 보기' }));
   expect(screen.getByRole('dialog', { name: '계란찜' })).toBeVisible();
   expect(screen.getByText('2개')).toBeVisible();
   expect(screen.getByText('달걀을 풀어요.')).toBeVisible();
@@ -117,7 +120,7 @@ it('shows_both_groups_and_missing_ingredients', async () => {
   );
   show();
   await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
-  fireEvent.click(screen.getByRole('button', { name: '요리 추천 받기' }));
+  await user.click(screen.getByRole('button', { name: '요리 추천 받기' }));
   expect(await screen.findByRole('heading', { name: /조금만 더 사면 만들어요/ })).toBeVisible();
   expect(screen.getByText(/추가할 재료: 소금/)).toBeVisible();
 });
@@ -125,7 +128,7 @@ it.each([503, 502])('shows_safe_retry_for_provider_status_%s', async (status) =>
   recipeStatus = status;
   show();
   await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
-  fireEvent.click(screen.getByRole('button', { name: '요리 추천 받기' }));
+  await user.click(screen.getByRole('button', { name: '요리 추천 받기' }));
   await screen.findByRole('alert');
   expect(screen.queryByRole('button', { name: '계란찜 조리법 보기' })).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: '다시 추천 받기' })).toBeEnabled();
@@ -137,7 +140,7 @@ it('discards_late_recommendation_after_fridge_switch', async () => {
   });
   const view = show();
   await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
-  fireEvent.click(screen.getByRole('button', { name: '요리 추천 받기' }));
+  await user.click(screen.getByRole('button', { name: '요리 추천 받기' }));
   view.rerender(<RecipeList fridgeId={B} fridgeName="다른 냉장고" initialToday="2026-10-28" />);
   await act(async () => resolve(response([match])));
   expect(screen.queryByRole('button', { name: '계란찜 조리법 보기' })).not.toBeInTheDocument();
@@ -145,8 +148,8 @@ it('discards_late_recommendation_after_fridge_switch', async () => {
 it('clears_cards_and_detail_when_inventory_changes', async () => {
   show();
   await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
-  fireEvent.click(screen.getByRole('button', { name: '요리 추천 받기' }));
-  fireEvent.click(await screen.findByRole('button', { name: '계란찜 조리법 보기' }));
+  await user.click(screen.getByRole('button', { name: '요리 추천 받기' }));
+  await user.click(await screen.findByRole('button', { name: '계란찜 조리법 보기' }));
   rows = [{ ...item, version: 2, remainingPercent: 50 }];
   await act(async () => window.dispatchEvent(new Event('focus')));
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -168,7 +171,11 @@ it('clears_recommendation_on_revocation', async () => {
   );
   show();
   await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
-  fireEvent.click(screen.getByRole('button', { name: '요리 추천 받기' }));
+  await user.click(screen.getByRole('button', { name: '요리 추천 받기' }));
+  expect(fetch).toHaveBeenCalledWith(
+    expect.stringMatching(/\/recipes$/),
+    expect.objectContaining({ method: 'POST' }),
+  );
   await screen.findByRole('button', { name: '계란찜 조리법 보기' });
   revoked = true;
   await act(async () => window.dispatchEvent(new Event('focus')));

@@ -250,6 +250,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"clear_fridge_invite_history":
+{ Args: { "target_fridge_id": string }; Returns: number
+                           },
 "commit_receipt":
 { Args: { "commit_request": string,"confirmed_items": Json,"draft_id": string }; Returns: Json
                            },

@@ -33,6 +33,10 @@ export async function revokeInvite(access:AccessContext,inviteId:string):Promise
  const client=await checkedClient(access,true);
  check((await client.rpc('revoke_fridge_invite',{target_fridge_id:access.fridgeId,invite_id:parseId(inviteId)})).error);
 }
+export async function clearInviteHistory(access:AccessContext):Promise<number>{
+ const client=await checkedClient(access,true),result=await client.rpc('clear_fridge_invite_history',{target_fridge_id:access.fridgeId});check(result.error);
+ if(typeof result.data!=='number')throw new AppError('internal','삭제 결과를 확인하지 못했어요.');return result.data;
+}
 export async function inspectInvite(token:string):Promise<InviteInfo>{
  await requireUser();const client=await createServerSupabaseClient();
  const result=await client.rpc('inspect_fridge_invite',{token_digest:digest(token)}).single();check(result.error);

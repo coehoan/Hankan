@@ -42,11 +42,11 @@ describe('real single-use invitations and memberships',()=>{
   expect((await memberRoute(request('DELETE'),{params:Promise.resolve({fridgeId:group.fridgeId,userId:'me'})})).status).toBe(200);
   expect((await acceptRoute(request('POST'),tokenContext)).status).toBe(409);
  });
- it('stores_only_a_hash_and_expires_after_seven_days',async()=>{
+ it('stores_only_a_hash_and_expires_after_one_day',async()=>{
   const created=await invite();expect(created.token.length).toBe(43);
   const row=await localAdmin().from('fridge_invites').select('token_hash,created_at,expires_at').eq('id',created.inviteId).single();expect(row.error).toBeNull();
   expect(row.data?.token_hash).toBe(createHash('sha256').update(created.token).digest('hex'));
-  expect(Date.parse(row.data!.expires_at)-Date.parse(row.data!.created_at)).toBe(7*86400000);
+  expect(Date.parse(row.data!.expires_at)-Date.parse(row.data!.created_at)).toBe(86400000);
  });
  it('two_acceptors_use_one_invite_once',async()=>{
   const created=await invite();await localAdmin().from('fridge_members').delete().eq('fridge_id',group.fridgeId).eq('user_id',group.member.userId);

@@ -1,5 +1,17 @@
 # 한칸 운영과 worker
 
+## Vercel 무료 배포 구성
+
+Vercel Hankan 팀(`hankan1`), 프로젝트 `hankan`, GitHub `coehoan/Hankan`의 `dev`가 Production 브랜치다. Node24, Seoul(`icn1`), 웹 빌드 `npm run build`, 설치 `npm ci`를 사용한다. 기본 주소는 `https://hankan-murex.vercel.app`이다. 아래 Compose 설명은 별도 호스트에서 운영할 때의 선택지다.
+
+Vercel에서는 지속 프로세스를 띄우지 않고 Supabase pg_cron/pg_net이 매분 `POST /api/internal/worker`를 호출한다. `WORKER_SECRET`(32자 이상)은 Vercel Production Secret과 Supabase Vault의 `hankan_worker_secret`에 같은 값을 보관한다. `hankan_worker_url`도 Vault에 둔다. `supabase/ops/worker-scheduler.sql`은 작업을 비활성 상태로 준비한다. 인증된 호출의200을 확인한 뒤 `cron.alter_job(jobid,active:=true)`로 켠다. 중지는 같은 호출의false를 사용한다. Secret을 Git이나 cron.command 문자열에 직접 넣지 않는다. Vault는 일반 클라이언트 접근 대상이 아니다.
+
+예약 HTTP 응답은 `net._http_response`에서 상태·시각·실패 개수만 확인한다. 인증 실패는401, 미설정/주기 실패는503이다. 웹 함수 최대 실행 시간은300초이며 기존 DB 임대와 재시도를 유지한다. 대규모 사용으로 한 주기가300초를 넘기기 전에 별도 worker 구성을 재검토한다. 무료 한도 초과/프로젝트 일시 정지 시 작업이 지연될 수 있다. 같은 DB를 가리키는 로컬 worker는 운영 전환 후 끈다.
+
+Vercel 함수의4.5MB 요청 한도를 피하기 위해 브라우저는10MB 이하 사진을 비공개 `receipt-uploads`에 직접 업로드한다. 서버는 업로드 경로의 사용자·냉장고 권한과 실제 이미지 형식을 검사하고 메타데이터를 제거한 PNG를 기존 `receipt-originals`에 보관한다. 임시 버킷은 클라이언트 읽기 정책이 없으며, 생성 후125분이 지난 파일만 작업 주기에서 삭제한다(서명 URL 유효2시간 보호). 저장/취소 후 정리되는 canonical 원본과 구분한다.
+
+환경변수는 Production에만 설정한다. `NEXT_PUBLIC_SITE_URL`은 위 기본 주소, 기존 Supabase/OpenAI 키는 서버 전용 범위를 유지한다. 운영 VAPID는 로컬과 별도 쌍이다. Preview에는 운영 비밀을 복사하지 않는다. 비밀 파일과 `.vercel/`은 ignored이며 CLI link가 추가한 로컬 OIDC 토큰을 커밋하지 않는다. 브랜치 push가 자동 배포되므로 코드 검증 후 push한다.
+
 ## 릴리스 상태
 
 2026-10-28 기준 로컬 구현과 자동 검증을 진행했다. [인수 문서](acceptance.md)에 결과와 미검증 항목을 기록한다. 저장된 브라우저 접근 정책으로 이번 CUA 화면 검수가 차단됐고, 사용자는 HTTPS·지원 기기 환경이 없다고 확인했다. 실제 Android/데스크톱 푸시와 iOS 홈 화면 설치 수신 검증 전에는 공개 릴리스 완료로 판정하지 않는다. 호스팅 계정·도메인·DNS·외부 메일 변경은 이 로컬 작업의 승인에 포함되지 않는다.

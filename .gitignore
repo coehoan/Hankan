@@ -11,3 +11,5 @@ supabase/.branches/
 work/
 *.log
 dist/
+
+.vercel/

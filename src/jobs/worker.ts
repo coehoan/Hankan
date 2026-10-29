@@ -4,6 +4,7 @@ import {claimDueDigests,databaseOutbox} from '@/features/notifications/outbox';
 import {dispatchDigest} from '@/features/notifications/dispatcher';
 import {createWebPushTransport} from '@/features/notifications/web-push-transport';
 import {cleanReceipts} from './cleanup';
+import {cleanupStagedUploads} from './staging-cleanup';
 
 export async function cleanupReceiptFiles(now:string):Promise<{deleted:number;failed:number}>{
  const admin=createAdminSupabaseClient();
@@ -22,6 +23,7 @@ export async function runCycle():Promise<void>{
   if(transport){for(const job of await claimDueDigests(new Date().toISOString(),20))try{await dispatchDigest(job,transport,databaseOutbox)}catch{console.error('Notification job deferred; lease will recover')}}
   else console.info('Push unconfigured; cleanup remains active');
   const result=await cleanupReceiptFiles(new Date().toISOString());console.info('Receipt cleanup',result);
+  const staged=await cleanupStagedUploads(new Date().toISOString());console.info('Staged receipt cleanup',staged);
  }finally{running=false}
 }
 async function main(){

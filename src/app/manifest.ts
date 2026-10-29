@@ -1,2 +1,19 @@
-import type {MetadataRoute} from 'next';
-export default function manifest():MetadataRoute.Manifest{return {name:'한칸 · 신선한 냉장고의 시작',short_name:'한칸',description:'식재료와 유통기한을 함께 관리해요.',lang:'ko',start_url:'/',scope:'/',display:'standalone',background_color:'#f3faf7',theme_color:'#188568',icons:[{src:'/icons/icon-192.png',sizes:'192x192',type:'image/png',purpose:'any'},{src:'/icons/icon-512.png',sizes:'512x512',type:'image/png',purpose:'any'},{src:'/icons/icon-512.png',sizes:'512x512',type:'image/png',purpose:'maskable'}]}}
+import type { MetadataRoute } from 'next';
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: '한칸 · 신선한 냉장고의 시작',
+    short_name: '한칸',
+    description: '식재료와 유통기한을 함께 관리해요.',
+    lang: 'ko',
+    start_url: '/',
+    scope: '/',
+    display: 'standalone',
+    background_color: '#f3faf7',
+    theme_color: '#188568',
+    icons: [
+      { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+      { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+    ],
+  };
+}

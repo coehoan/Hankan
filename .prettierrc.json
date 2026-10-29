@@ -1,0 +1,21 @@
+{
+  "singleQuote": true,
+  "semi": true,
+  "tabWidth": 2,
+  "useTabs": false,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "endOfLine": "lf",
+  "plugins": ["prettier-plugin-sql"],
+  "overrides": [
+    {
+      "files": "*.sql",
+      "options": {
+        "language": "postgresql",
+        "keywordCase": "preserve",
+        "dataTypeCase": "preserve",
+        "functionCase": "preserve"
+      }
+    }
+  ]
+}

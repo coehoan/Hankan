@@ -1,7 +1,7 @@
 -- Existing issued links keep their original expires_at.
-create or replace function public.create_fridge_invite(target_fridge_id uuid,token_digest text)
-returns table(invite_id uuid,expires_at timestamptz)
-language plpgsql security definer set search_path='' as $$
+create or replace function public.create_fridge_invite (target_fridge_id uuid, token_digest text) returns table (invite_id uuid, expires_at timestamptz) language plpgsql security definer
+set
+  search_path = '' as $$
 declare actor uuid; created timestamptz := clock_timestamp();
 begin
  actor := private.lock_owned_fridge(target_fridge_id);
@@ -11,8 +11,9 @@ begin
 end;
 $$;
 
-create or replace function public.clear_fridge_invite_history(target_fridge_id uuid)
-returns integer language plpgsql security definer set search_path='' as $$
+create or replace function public.clear_fridge_invite_history (target_fridge_id uuid) returns integer language plpgsql security definer
+set
+  search_path = '' as $$
 declare removed integer; cutoff timestamptz;
 begin
  perform private.lock_owned_fridge(target_fridge_id);
@@ -22,12 +23,19 @@ begin
  get diagnostics removed=row_count;
  return removed;
 end;$$;
-revoke all on function public.clear_fridge_invite_history(uuid) from public,anon,authenticated;
-grant execute on function public.clear_fridge_invite_history(uuid) to authenticated;
 
-create or replace function public.accept_fridge_invite(token_digest text)
-returns table(id uuid,name text,role public.fridge_role)
-language plpgsql security definer set search_path='' as $$
+revoke all on function public.clear_fridge_invite_history (uuid)
+from
+  public,
+  anon,
+  authenticated;
+
+grant
+execute on function public.clear_fridge_invite_history (uuid) to authenticated;
+
+create or replace function public.accept_fridge_invite (token_digest text) returns table (id uuid, name text, role public.fridge_role) language plpgsql security definer
+set
+  search_path = '' as $$
 declare actor uuid := auth.uid(); invitation public.fridge_invites; fridge public.fridges;
 begin
  if actor is null then raise exception 'Authentication required' using errcode='42501'; end if;
@@ -51,4 +59,3 @@ begin
  return query select fridge.id,fridge.name,'member'::public.fridge_role;
 end;
 $$;
-

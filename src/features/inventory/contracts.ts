@@ -14,5 +14,12 @@ export type Ingredient = {
   createdBy: string;
   updatedBy: string;
 };
-export type CreateIngredientInput = { requestId: string; name: string; storage: StoragePlace; expiresOn: ISODate };
-export type IngredientPatch = Partial<Pick<Ingredient, 'name' | 'storage' | 'expiresOn' | 'remainingPercent'>>;
+export type CreateIngredientInput = {
+  requestId: string;
+  name: string;
+  storage: StoragePlace;
+  expiresOn: ISODate;
+};
+export type IngredientPatch = Partial<
+  Pick<Ingredient, 'name' | 'storage' | 'expiresOn' | 'remainingPercent'>
+>;

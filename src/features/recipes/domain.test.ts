@@ -1,16 +1,108 @@
-import {expect,it} from 'vitest';
-import type {Ingredient} from '@/features/inventory/contracts';
-import type {RecipeCandidate} from '@/features/ai/contracts';
-import {classifyRecipes,normalizeIngredientName} from './domain';
-const today='2026-10-28';
-const item=(id:string,name:string,expiresOn='2026-11-05',remainingPercent=100):Ingredient=>({id,name,normalizedName:name,fridgeId:'fridge',storage:'fridge',expiresOn,remainingPercent,version:1,createdAt:'2026-10-26T00:00:00Z',updatedAt:'2026-10-26T00:00:00Z',createdBy:'owner',updatedBy:'owner'});
-const recipe=(id:string,names:string[]):RecipeCandidate=>({id,name:id,ingredients:names.map(name=>({name,amountText:'조리법의 양'})),steps:['재료를 손질하고 익힌다.'],prepMinutes:15,servings:1,origin:{kind:'generated'}});
-it('egg_alias_matches',()=>{expect(classifyRecipes([recipe('달걀 요리',['달걀'])],[item('egg','계란')],today)[0].kind).toBe('available')});
-it('normalizes_nfkc_spaces_without_changing_the_display_name',()=>{expect(normalizeIngredientName('  Ａ　소스  ')).toBe('a 소스');const food=item('egg','  달걀 ');classifyRecipes([recipe('계란찜',['계란'])],[food],today);expect(food.name).toBe('  달걀 ')});
-it('zero_and_expired_do_not_count',()=>{const results=classifyRecipes([recipe('볶음',['계란','두부','시금치'])],[item('egg','달걀'),item('tofu','두부','2026-10-27'),item('spinach','시금치','2026-10-29',0)],today);expect(results[0].missing).toEqual(['두부','시금치']);expect(results[0].kind).toBe('needs-shopping')});
-it('salt_is_missing_unless_registered',()=>{expect(classifyRecipes([recipe('계란찜',['계란','소금','식용유'])],[item('egg','계란')],today)[0].missing).toEqual(['소금','식용유'])});
-it('recalculates_missing_even_if_a_candidate_claims_everything_is_available',()=>{const candidate={...recipe('계란찜',['계란','소금']),missing:[],kind:'available'};expect(classifyRecipes([candidate],[item('egg','계란')],today)[0]).toMatchObject({kind:'needs-shopping',missing:['소금']})});
-it('urgent_candidates_rank_first',()=>{const result=classifyRecipes([recipe('여유',['당근']),recipe('내일',['계란']),recipe('오늘',['두부'])],[item('carrot','당근'),item('egg','계란','2026-10-29'),item('tofu','두부',today)],today);expect(result.map(x=>x.recipe.id)).toEqual(['오늘','내일','여유'])});
-it('ranks_urgent_type_count_then_missing_count_then_recipe_name',()=>{const result=classifyRecipes([recipe('다',['두부','양파']),recipe('나',['두부','계란','소금','간장']),recipe('가',['두부','소금'])],[item('tofu','두부',today),item('egg','계란',today)],today);expect(result.map(x=>x.recipe.id)).toEqual(['나','가','다'])});
-it('uses_the_earliest_batch_once_per_type_and_excludes_nonoverlapping_candidates',()=>{const result=classifyRecipes([recipe('계란찜',['계란','달걀']),recipe('국수',['국수'])],[item('late','계란','2026-10-30'),item('early','달걀',today)],today);expect(result).toHaveLength(1);expect(result[0].urgentIngredientIds).toEqual(['early']);expect(result[0].missing).toEqual([])});
-it('keeps_available_and_needs_shopping_in_separate_groups',()=>{const result=classifyRecipes([recipe('급한 장보기',['두부','소금']),recipe('가능',['계란'])],[item('tofu','두부',today),item('egg','계란')],today);expect(result.map(x=>x.kind)).toEqual(['available','needs-shopping'])});
+import { expect, it } from 'vitest';
+import type { Ingredient } from '@/features/inventory/contracts';
+import type { RecipeCandidate } from '@/features/ai/contracts';
+import { classifyRecipes, normalizeIngredientName } from './domain';
+const today = '2026-10-28';
+const item = (
+  id: string,
+  name: string,
+  expiresOn = '2026-11-05',
+  remainingPercent = 100,
+): Ingredient => ({
+  id,
+  name,
+  normalizedName: name,
+  fridgeId: 'fridge',
+  storage: 'fridge',
+  expiresOn,
+  remainingPercent,
+  version: 1,
+  createdAt: '2026-10-26T00:00:00Z',
+  updatedAt: '2026-10-26T00:00:00Z',
+  createdBy: 'owner',
+  updatedBy: 'owner',
+});
+const recipe = (id: string, names: string[]): RecipeCandidate => ({
+  id,
+  name: id,
+  ingredients: names.map((name) => ({ name, amountText: '조리법의 양' })),
+  steps: ['재료를 손질하고 익힌다.'],
+  prepMinutes: 15,
+  servings: 1,
+  origin: { kind: 'generated' },
+});
+it('egg_alias_matches', () => {
+  expect(
+    classifyRecipes([recipe('달걀 요리', ['달걀'])], [item('egg', '계란')], today)[0].kind,
+  ).toBe('available');
+});
+it('normalizes_nfkc_spaces_without_changing_the_display_name', () => {
+  expect(normalizeIngredientName('  Ａ　소스  ')).toBe('a 소스');
+  const food = item('egg', '  달걀 ');
+  classifyRecipes([recipe('계란찜', ['계란'])], [food], today);
+  expect(food.name).toBe('  달걀 ');
+});
+it('zero_and_expired_do_not_count', () => {
+  const results = classifyRecipes(
+    [recipe('볶음', ['계란', '두부', '시금치'])],
+    [
+      item('egg', '달걀'),
+      item('tofu', '두부', '2026-10-27'),
+      item('spinach', '시금치', '2026-10-29', 0),
+    ],
+    today,
+  );
+  expect(results[0].missing).toEqual(['두부', '시금치']);
+  expect(results[0].kind).toBe('needs-shopping');
+});
+it('salt_is_missing_unless_registered', () => {
+  expect(
+    classifyRecipes([recipe('계란찜', ['계란', '소금', '식용유'])], [item('egg', '계란')], today)[0]
+      .missing,
+  ).toEqual(['소금', '식용유']);
+});
+it('recalculates_missing_even_if_a_candidate_claims_everything_is_available', () => {
+  const candidate = { ...recipe('계란찜', ['계란', '소금']), missing: [], kind: 'available' };
+  expect(classifyRecipes([candidate], [item('egg', '계란')], today)[0]).toMatchObject({
+    kind: 'needs-shopping',
+    missing: ['소금'],
+  });
+});
+it('urgent_candidates_rank_first', () => {
+  const result = classifyRecipes(
+    [recipe('여유', ['당근']), recipe('내일', ['계란']), recipe('오늘', ['두부'])],
+    [item('carrot', '당근'), item('egg', '계란', '2026-10-29'), item('tofu', '두부', today)],
+    today,
+  );
+  expect(result.map((x) => x.recipe.id)).toEqual(['오늘', '내일', '여유']);
+});
+it('ranks_urgent_type_count_then_missing_count_then_recipe_name', () => {
+  const result = classifyRecipes(
+    [
+      recipe('다', ['두부', '양파']),
+      recipe('나', ['두부', '계란', '소금', '간장']),
+      recipe('가', ['두부', '소금']),
+    ],
+    [item('tofu', '두부', today), item('egg', '계란', today)],
+    today,
+  );
+  expect(result.map((x) => x.recipe.id)).toEqual(['나', '가', '다']);
+});
+it('uses_the_earliest_batch_once_per_type_and_excludes_nonoverlapping_candidates', () => {
+  const result = classifyRecipes(
+    [recipe('계란찜', ['계란', '달걀']), recipe('국수', ['국수'])],
+    [item('late', '계란', '2026-10-30'), item('early', '달걀', today)],
+    today,
+  );
+  expect(result).toHaveLength(1);
+  expect(result[0].urgentIngredientIds).toEqual(['early']);
+  expect(result[0].missing).toEqual([]);
+});
+it('keeps_available_and_needs_shopping_in_separate_groups', () => {
+  const result = classifyRecipes(
+    [recipe('급한 장보기', ['두부', '소금']), recipe('가능', ['계란'])],
+    [item('tofu', '두부', today), item('egg', '계란')],
+    today,
+  );
+  expect(result.map((x) => x.kind)).toEqual(['available', 'needs-shopping']);
+});

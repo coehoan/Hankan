@@ -1,6 +1,9 @@
-alter table public.receipt_drafts add column review_items jsonb;
-create function public.save_receipt_review(draft_id uuid,review jsonb) returns void
-language plpgsql security definer set search_path='' as $$
+alter table public.receipt_drafts
+add column review_items jsonb;
+
+create function public.save_receipt_review (draft_id uuid, review jsonb) returns void language plpgsql security definer
+set
+  search_path = '' as $$
 declare fid uuid; d public.receipt_drafts; entry jsonb;
 begin
  select fridge_id into fid from public.receipt_drafts where id=draft_id and user_id=auth.uid();
@@ -21,15 +24,30 @@ begin
  end loop;
  update public.receipt_drafts set review_items=review where id=draft_id;
 end;$$;
-revoke all on function public.save_receipt_review(uuid,jsonb) from public,anon;
-grant execute on function public.save_receipt_review(uuid,jsonb) to authenticated;
-create function private.cancel_departed_receipts() returns trigger
-language plpgsql security definer set search_path='' as $$
+
+revoke all on function public.save_receipt_review (uuid, jsonb)
+from
+  public,
+  anon;
+
+grant
+execute on function public.save_receipt_review (uuid, jsonb) to authenticated;
+
+create function private.cancel_departed_receipts () returns trigger language plpgsql security definer
+set
+  search_path = '' as $$
 begin
  update public.receipt_drafts set status='cancelled',cleanup_pending=true
  where fridge_id=old.fridge_id and user_id=old.user_id and status not in ('saved','cancelled');
  return old;
 end;$$;
-revoke all on function private.cancel_departed_receipts() from public,anon,authenticated;
-create trigger receipt_membership_removed after delete on public.fridge_members
- for each row execute function private.cancel_departed_receipts();
+
+revoke all on function private.cancel_departed_receipts ()
+from
+  public,
+  anon,
+  authenticated;
+
+create trigger receipt_membership_removed
+after delete on public.fridge_members for each row
+execute function private.cancel_departed_receipts ();

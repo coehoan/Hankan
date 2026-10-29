@@ -1,7 +1,8 @@
 -- A schedule moved to another day must not leave an entirely unsent job live.
 -- Partially delivered digests keep their existing retry policy for other devices.
-create or replace function private.reschedule_unsent_job() returns trigger
-language plpgsql security definer set search_path='' as $$
+create or replace function private.reschedule_unsent_job () returns trigger language plpgsql security definer
+set
+  search_path = '' as $$
 begin
  if new.enabled then
   update public.notification_jobs j set status='skipped',lease_until=null,lease_token=null
@@ -20,18 +21,35 @@ end;
 $$;
 
 -- Retire obsolete entirely-unsent work left by the previous trigger as well.
-update public.notification_jobs j set status='skipped',lease_until=null,lease_token=null
-from public.notification_preferences p
-where j.user_id=p.user_id and p.enabled and p.next_run_at is not null
-and j.local_date<>(p.next_run_at at time zone p.timezone)::date
-and j.status in('pending','retry','leased')
-and not exists(select 1 from public.notification_deliveries d where d.job_id=j.id and d.status='sent');
+update public.notification_jobs j
+set
+  status = 'skipped',
+  lease_until = null,
+  lease_token = null
+from
+  public.notification_preferences p
+where
+  j.user_id = p.user_id
+  and p.enabled
+  and p.next_run_at is not null
+  and j.local_date <> (p.next_run_at at time zone p.timezone)::date
+  and j.status in ('pending', 'retry', 'leased')
+  and not exists (
+    select
+      1
+    from
+      public.notification_deliveries d
+    where
+      d.job_id = j.id
+      and d.status = 'sent'
+  );
 
 -- Reconcile only expired internal analysis leases when the owner resumes/polls.
 -- Current membership and the row lock serialize recovery with commits/new runs.
 -- Review work is retained and clearing analysis_run fences late provider results.
-create function public.recover_receipt_analysis(draft_id uuid) returns boolean
-language plpgsql security definer set search_path='' as $$
+create function public.recover_receipt_analysis (draft_id uuid) returns boolean language plpgsql security definer
+set
+  search_path = '' as $$
 declare fid uuid; d public.receipt_drafts;
 begin
  select fridge_id into fid from public.receipt_drafts where id=draft_id and user_id=auth.uid();
@@ -43,5 +61,11 @@ begin
  return true;
 end;
 $$;
-revoke all on function public.recover_receipt_analysis(uuid) from public,anon;
-grant execute on function public.recover_receipt_analysis(uuid) to authenticated;
+
+revoke all on function public.recover_receipt_analysis (uuid)
+from
+  public,
+  anon;
+
+grant
+execute on function public.recover_receipt_analysis (uuid) to authenticated;

@@ -1,42 +1,91 @@
 import nextEnv from '@next/env';
-import {createAdminSupabaseClient} from '@/lib/supabase/admin';
-import {claimDueDigests,databaseOutbox} from '@/features/notifications/outbox';
-import {dispatchDigest} from '@/features/notifications/dispatcher';
-import {createWebPushTransport} from '@/features/notifications/web-push-transport';
-import {cleanReceipts} from './cleanup';
-import {cleanupStagedUploads} from './staging-cleanup';
-import {removeReceiptFiles} from '@/features/receipts/file-cleanup';
+import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { claimDueDigests, databaseOutbox } from '@/features/notifications/outbox';
+import { dispatchDigest } from '@/features/notifications/dispatcher';
+import { createWebPushTransport } from '@/features/notifications/web-push-transport';
+import { cleanReceipts } from './cleanup';
+import { cleanupStagedUploads } from './staging-cleanup';
+import { removeReceiptFiles } from '@/features/receipts/file-cleanup';
 
-export async function cleanupReceiptFiles(now:string):Promise<{deleted:number;failed:number}>{
- const admin=createAdminSupabaseClient();
- return cleanReceipts(now,{
-  async expire(){const {error}=await admin.rpc('expire_receipts');if(error)throw new Error('Cannot expire receipts')},
-  async pending(){const {data,error}=await admin.from('receipt_drafts').select('id,object_path,staged_object_path').eq('cleanup_pending',true).limit(100);if(error)throw new Error('Cannot list cleanup');return (data??[]).map(r=>({id:r.id,path:r.object_path,stagedPath:r.staged_object_path}))},
-  async remove(path,stagedPath){await removeReceiptFiles({objectPath:path,stagedObjectPath:stagedPath})},
-  async complete(id){const {error}=await admin.from('receipt_drafts').update({cleanup_pending:false}).eq('id',id);if(error)throw new Error('Cannot record cleanup')},
- });
+export async function cleanupReceiptFiles(
+  now: string,
+): Promise<{ deleted: number; failed: number }> {
+  const admin = createAdminSupabaseClient();
+  return cleanReceipts(now, {
+    async expire() {
+      const { error } = await admin.rpc('expire_receipts');
+      if (error) throw new Error('Cannot expire receipts');
+    },
+    async pending() {
+      const { data, error } = await admin
+        .from('receipt_drafts')
+        .select('id,object_path,staged_object_path')
+        .eq('cleanup_pending', true)
+        .limit(100);
+      if (error) throw new Error('Cannot list cleanup');
+      return (data ?? []).map((r) => ({
+        id: r.id,
+        path: r.object_path,
+        stagedPath: r.staged_object_path,
+      }));
+    },
+    async remove(path, stagedPath) {
+      await removeReceiptFiles({ objectPath: path, stagedObjectPath: stagedPath });
+    },
+    async complete(id) {
+      const { error } = await admin
+        .from('receipt_drafts')
+        .update({ cleanup_pending: false })
+        .eq('id', id);
+      if (error) throw new Error('Cannot record cleanup');
+    },
+  });
 }
-let running=false;
-export async function runCycle():Promise<void>{
- if(running)return;running=true;
- try{
-  let failed=false;
-  const transport=createWebPushTransport();
-  if(transport){for(const job of await claimDueDigests(new Date().toISOString(),20))try{await dispatchDigest(job,transport,databaseOutbox)}catch{failed=true;console.error('Notification job deferred; lease will recover')}}
-  else console.info('Push unconfigured; cleanup remains active');
-  const results=await Promise.allSettled([cleanupReceiptFiles(new Date().toISOString()),cleanupStagedUploads(new Date().toISOString())]);
-  for(let i=0;i<results.length;i++){
-   const result=results[i],label=i===0?'Receipt cleanup':'Staged receipt cleanup';
-   if(result.status==='rejected'){failed=true;console.error(label+' failed')}
-   else{console.info(label,result.value);if(result.value.failed>0)failed=true}
+let running = false;
+export async function runCycle(): Promise<void> {
+  if (running) return;
+  running = true;
+  try {
+    let failed = false;
+    const transport = createWebPushTransport();
+    if (transport) {
+      for (const job of await claimDueDigests(new Date().toISOString(), 20))
+        try {
+          await dispatchDigest(job, transport, databaseOutbox);
+        } catch {
+          failed = true;
+          console.error('Notification job deferred; lease will recover');
+        }
+    } else console.info('Push unconfigured; cleanup remains active');
+    const results = await Promise.allSettled([
+      cleanupReceiptFiles(new Date().toISOString()),
+      cleanupStagedUploads(new Date().toISOString()),
+    ]);
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i],
+        label = i === 0 ? 'Receipt cleanup' : 'Staged receipt cleanup';
+      if (result.status === 'rejected') {
+        failed = true;
+        console.error(label + ' failed');
+      } else {
+        console.info(label, result.value);
+        if (result.value.failed > 0) failed = true;
+      }
+    }
+    if (failed) throw new Error('Worker cycle incomplete; retry required');
+  } finally {
+    running = false;
   }
-  if(failed)throw new Error('Worker cycle incomplete; retry required');
- }finally{running=false}
 }
-async function main(){
- nextEnv.loadEnvConfig(process.cwd());
- const once=process.argv.includes('--once');
- const tick=()=>runCycle().catch(()=>{console.error('Worker cycle failed');if(once)process.exitCode=1});
- await tick();if(!once)setInterval(()=>void tick(),60000);
+async function main() {
+  nextEnv.loadEnvConfig(process.cwd());
+  const once = process.argv.includes('--once');
+  const tick = () =>
+    runCycle().catch(() => {
+      console.error('Worker cycle failed');
+      if (once) process.exitCode = 1;
+    });
+  await tick();
+  if (!once) setInterval(() => void tick(), 60000);
 }
-if(process.env.HANKAN_WORKER_MAIN==='1')void main();
+if (process.env.HANKAN_WORKER_MAIN === '1') void main();

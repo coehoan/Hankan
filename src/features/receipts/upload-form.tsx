@@ -1,15 +1,151 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import {Dialog} from '@/components/ui/dialog';
-import {Button} from '@/components/ui/button';
-import {useOnline} from './connectivity';
-import {uploadReceipt} from './upload-client';
-export function UploadForm({fridgeId,fridgeName,onClose,onCreated}:{fridgeId:string;fridgeName:string;onClose:()=>void;onCreated:(id:string)=>void}){
- const [file,setFile]=useState<File|null>(null),[preview,setPreview]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[drafts,setDrafts]=useState<{id:string;created_at:string}[]>([]);const pending=useRef(false),picker=useRef<HTMLInputElement>(null),previewUrl=useRef(''),online=useOnline();
- useEffect(()=>{const controller=new AbortController();void fetch('/api/receipts?fridgeId='+encodeURIComponent(fridgeId),{cache:'no-store',signal:controller.signal}).then(async response=>{const json=await response.json();if(response.ok)setDrafts(json.data)}).catch(()=>{});return()=>controller.abort()},[fridgeId]);
- useEffect(()=>()=>{if(previewUrl.current)URL.revokeObjectURL(previewUrl.current)},[]);
- function choose(next:File|undefined){setError('');if(previewUrl.current)URL.revokeObjectURL(previewUrl.current);previewUrl.current='';setPreview('');if(!next){setFile(null);return}if(!['image/jpeg','image/png','image/webp'].includes(next.type)||next.size<1||next.size>10*1024*1024){setFile(null);setError('JPEG·PNG·WebP 사진을 10MB 이하로 선택해 주세요.');return}previewUrl.current=URL.createObjectURL(next);setFile(next);setPreview(previewUrl.current)}
- async function upload(event:React.SubmitEvent<HTMLFormElement>){event.preventDefault();if(!file||pending.current||!online)return;pending.current=true;setBusy(true);setError('');try{onCreated(await uploadReceipt(fridgeId,file))}catch(caught){setError(caught instanceof Error?caught.message:'연결을 확인해 주세요.')}finally{pending.current=false;setBusy(false)}}
- return <Dialog open title="영수증으로 등록" closeDisabled={busy} onOpenChange={open=>{if(!open&&!pending.current)onClose()}}><form className="receipt-upload" aria-label={fridgeName+' 영수증 등록'} onSubmit={upload}><p className="muted">JPEG·PNG·WebP, 최대 10MB. 원본과 초안은 나만 볼 수 있어요. 사진을 올려도 재료는 바로 저장되지 않아요.</p><div className="receipt-photo-box">{preview&&<img className="receipt-photo-preview" src={preview} alt="선택한 영수증 미리보기"/>}<input ref={picker} type="file" aria-label="영수증 사진 선택" accept="image/jpeg,image/png,image/webp" hidden disabled={busy} onChange={event=>{choose(event.currentTarget.files?.[0]);event.currentTarget.value=''}}/><Button type="button" variant="secondary" onClick={()=>picker.current?.click()} disabled={busy}>사진 업로드</Button></div>{!online&&<p role="status">연결이 돌아오면 업로드할 수 있어요.</p>}{error&&<p className="form-message error" role="alert">{error}</p>}<div className="receipt-upload-actions"><Button type="submit" disabled={!online||busy||!file}>{busy?'사진 확인 중…':'품목 확인'}</Button></div></form>{drafts.length>0&&<section className="receipt-drafts"><h3>내가 중단한 초안</h3><ul>{drafts.map(draft=><li key={draft.id}><Link href={'/receipts/'+draft.id}>{new Date(draft.created_at).toLocaleString('ko-KR')} 초안 이어서 확인</Link></li>)}</ul></section>}</Dialog>;
+import { Dialog } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { useOnline } from './connectivity';
+import { uploadReceipt } from './upload-client';
+export function UploadForm({
+  fridgeId,
+  fridgeName,
+  onClose,
+  onCreated,
+}: {
+  fridgeId: string;
+  fridgeName: string;
+  onClose: () => void;
+  onCreated: (id: string) => void;
+}) {
+  const [file, setFile] = useState<File | null>(null),
+    [preview, setPreview] = useState(''),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState(''),
+    [drafts, setDrafts] = useState<{ id: string; created_at: string }[]>([]);
+  const pending = useRef(false),
+    picker = useRef<HTMLInputElement>(null),
+    previewUrl = useRef(''),
+    online = useOnline();
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch('/api/receipts?fridgeId=' + encodeURIComponent(fridgeId), {
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const json = await response.json();
+        if (response.ok) setDrafts(json.data);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [fridgeId]);
+  useEffect(
+    () => () => {
+      if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+    },
+    [],
+  );
+  function choose(next: File | undefined) {
+    setError('');
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+    previewUrl.current = '';
+    setPreview('');
+    if (!next) {
+      setFile(null);
+      return;
+    }
+    if (
+      !['image/jpeg', 'image/png', 'image/webp'].includes(next.type) ||
+      next.size < 1 ||
+      next.size > 10 * 1024 * 1024
+    ) {
+      setFile(null);
+      setError('JPEG·PNG·WebP 사진을 10MB 이하로 선택해 주세요.');
+      return;
+    }
+    previewUrl.current = URL.createObjectURL(next);
+    setFile(next);
+    setPreview(previewUrl.current);
+  }
+  async function upload(event: React.SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!file || pending.current || !online) return;
+    pending.current = true;
+    setBusy(true);
+    setError('');
+    try {
+      onCreated(await uploadReceipt(fridgeId, file));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : '연결을 확인해 주세요.');
+    } finally {
+      pending.current = false;
+      setBusy(false);
+    }
+  }
+  return (
+    <Dialog
+      open
+      title="영수증으로 등록"
+      closeDisabled={busy}
+      onOpenChange={(open) => {
+        if (!open && !pending.current) onClose();
+      }}
+    >
+      <form className="receipt-upload" aria-label={fridgeName + ' 영수증 등록'} onSubmit={upload}>
+        <p className="muted">
+          JPEG·PNG·WebP, 최대 10MB. 원본과 초안은 나만 볼 수 있어요. 사진을 올려도 재료는 바로
+          저장되지 않아요.
+        </p>
+        <div className="receipt-photo-box">
+          {preview && (
+            <img className="receipt-photo-preview" src={preview} alt="선택한 영수증 미리보기" />
+          )}
+          <input
+            ref={picker}
+            type="file"
+            aria-label="영수증 사진 선택"
+            accept="image/jpeg,image/png,image/webp"
+            hidden
+            disabled={busy}
+            onChange={(event) => {
+              choose(event.currentTarget.files?.[0]);
+              event.currentTarget.value = '';
+            }}
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => picker.current?.click()}
+            disabled={busy}
+          >
+            사진 업로드
+          </Button>
+        </div>
+        {!online && <p role="status">연결이 돌아오면 업로드할 수 있어요.</p>}
+        {error && (
+          <p className="form-message error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="receipt-upload-actions">
+          <Button type="submit" disabled={!online || busy || !file}>
+            {busy ? '사진 확인 중…' : '품목 확인'}
+          </Button>
+        </div>
+      </form>
+      {drafts.length > 0 && (
+        <section className="receipt-drafts">
+          <h3>내가 중단한 초안</h3>
+          <ul>
+            {drafts.map((draft) => (
+              <li key={draft.id}>
+                <Link href={'/receipts/' + draft.id}>
+                  {new Date(draft.created_at).toLocaleString('ko-KR')} 초안 이어서 확인
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </Dialog>
+  );
 }

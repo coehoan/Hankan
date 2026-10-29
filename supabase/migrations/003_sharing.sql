@@ -1,23 +1,44 @@
 create table public.fridge_invites (
- id uuid primary key default gen_random_uuid(),
- fridge_id uuid not null references public.fridges(id) on delete cascade,
- token_hash text not null unique check(token_hash ~ '^[0-9a-f]{64}$'),
- created_by uuid not null,
- created_at timestamptz not null,
- expires_at timestamptz not null,
- used_at timestamptz,
- used_by uuid references auth.users(id) on delete set null,
- revoked_at timestamptz
+  id uuid primary key default gen_random_uuid(),
+  fridge_id uuid not null references public.fridges (id) on delete cascade,
+  token_hash text not null unique check (token_hash ~ '^[0-9a-f]{64}$'),
+  created_by uuid not null,
+  created_at timestamptz not null,
+  expires_at timestamptz not null,
+  used_at timestamptz,
+  used_by uuid references auth.users (id) on delete set null,
+  revoked_at timestamptz
 );
-create index fridge_invites_fridge_created_idx on public.fridge_invites(fridge_id,created_at desc);
-alter table public.fridge_invites enable row level security;
-revoke all on public.fridge_invites from anon,authenticated;
-grant select(id,fridge_id,created_at,expires_at,used_at,revoked_at) on public.fridge_invites to authenticated;
-grant all on public.fridge_invites to service_role;
-create policy fridge_invites_owner_read on public.fridge_invites for select to authenticated using(private.is_fridge_owner(fridge_id));
 
-create function private.lock_owned_fridge(target_fridge_id uuid) returns uuid
-language plpgsql security definer set search_path='' as $$
+create index fridge_invites_fridge_created_idx on public.fridge_invites (fridge_id, created_at desc);
+
+alter table public.fridge_invites enable row level security;
+
+revoke all on public.fridge_invites
+from
+  anon,
+  authenticated;
+
+grant
+select
+  (
+    id,
+    fridge_id,
+    created_at,
+    expires_at,
+    used_at,
+    revoked_at
+  ) on public.fridge_invites to authenticated;
+
+grant all on public.fridge_invites to service_role;
+
+create policy fridge_invites_owner_read on public.fridge_invites for
+select
+  to authenticated using (private.is_fridge_owner (fridge_id));
+
+create function private.lock_owned_fridge (target_fridge_id uuid) returns uuid language plpgsql security definer
+set
+  search_path = '' as $$
 declare actor uuid := auth.uid();
 begin
  if actor is null then raise exception 'Authentication required' using errcode='42501'; end if;
@@ -27,9 +48,9 @@ begin
 end;
 $$;
 
-create function public.create_fridge_invite(target_fridge_id uuid,token_digest text)
-returns table(invite_id uuid,expires_at timestamptz)
-language plpgsql security definer set search_path='' as $$
+create function public.create_fridge_invite (target_fridge_id uuid, token_digest text) returns table (invite_id uuid, expires_at timestamptz) language plpgsql security definer
+set
+  search_path = '' as $$
 declare actor uuid; created timestamptz := clock_timestamp();
 begin
  actor := private.lock_owned_fridge(target_fridge_id);
@@ -39,9 +60,14 @@ begin
 end;
 $$;
 
-create function public.inspect_fridge_invite(token_digest text)
-returns table(fridge_id uuid,fridge_name text,role public.fridge_role,state text)
-language plpgsql security definer set search_path='' as $$
+create function public.inspect_fridge_invite (token_digest text) returns table (
+  fridge_id uuid,
+  fridge_name text,
+  role public.fridge_role,
+  state text
+) language plpgsql security definer
+set
+  search_path = '' as $$
 declare invitation public.fridge_invites; label text; status text;
 begin
  if auth.uid() is null then raise exception 'Authentication required' using errcode='42501'; end if;
@@ -58,9 +84,9 @@ begin
 end;
 $$;
 
-create function public.accept_fridge_invite(token_digest text)
-returns table(id uuid,name text,role public.fridge_role)
-language plpgsql security definer set search_path='' as $$
+create function public.accept_fridge_invite (token_digest text) returns table (id uuid, name text, role public.fridge_role) language plpgsql security definer
+set
+  search_path = '' as $$
 declare actor uuid := auth.uid(); invitation public.fridge_invites; fridge public.fridges;
 begin
  if actor is null then raise exception 'Authentication required' using errcode='42501'; end if;
@@ -84,8 +110,9 @@ begin
 end;
 $$;
 
-create function public.revoke_fridge_invite(target_fridge_id uuid,invite_id uuid) returns void
-language plpgsql security definer set search_path='' as $$
+create function public.revoke_fridge_invite (target_fridge_id uuid, invite_id uuid) returns void language plpgsql security definer
+set
+  search_path = '' as $$
 declare invitation public.fridge_invites;
 begin
  perform private.lock_owned_fridge(target_fridge_id);
@@ -96,9 +123,13 @@ begin
 end;
 $$;
 
-create function public.list_fridge_members(target_fridge_id uuid)
-returns table(user_id uuid,display_name text,role public.fridge_role)
-language plpgsql security definer set search_path='' as $$
+create function public.list_fridge_members (target_fridge_id uuid) returns table (
+  user_id uuid,
+  display_name text,
+  role public.fridge_role
+) language plpgsql security definer
+set
+  search_path = '' as $$
 begin
  perform private.lock_inventory_membership(target_fridge_id);
  return query select m.user_id,p.display_name,m.role from public.fridge_members m join public.profiles p on p.user_id=m.user_id
@@ -106,8 +137,9 @@ begin
 end;
 $$;
 
-create function public.remove_fridge_member(target_fridge_id uuid,member_user_id uuid) returns void
-language plpgsql security definer set search_path='' as $$
+create function public.remove_fridge_member (target_fridge_id uuid, member_user_id uuid) returns void language plpgsql security definer
+set
+  search_path = '' as $$
 declare actor uuid;
 begin
  actor := private.lock_owned_fridge(target_fridge_id);
@@ -116,8 +148,9 @@ begin
 end;
 $$;
 
-create function public.leave_fridge(target_fridge_id uuid) returns void
-language plpgsql security definer set search_path='' as $$
+create function public.leave_fridge (target_fridge_id uuid) returns void language plpgsql security definer
+set
+  search_path = '' as $$
 declare actor uuid := auth.uid(); fridge public.fridges;
 begin
  if actor is null then raise exception 'Authentication required' using errcode='42501'; end if;
@@ -128,6 +161,29 @@ begin
 end;
 $$;
 
-revoke all on function private.lock_owned_fridge(uuid) from public,anon,authenticated;
-revoke all on function public.create_fridge_invite(uuid,text),public.inspect_fridge_invite(text),public.accept_fridge_invite(text),public.revoke_fridge_invite(uuid,uuid),public.list_fridge_members(uuid),public.remove_fridge_member(uuid,uuid),public.leave_fridge(uuid) from public,anon,authenticated;
-grant execute on function public.create_fridge_invite(uuid,text),public.inspect_fridge_invite(text),public.accept_fridge_invite(text),public.revoke_fridge_invite(uuid,uuid),public.list_fridge_members(uuid),public.remove_fridge_member(uuid,uuid),public.leave_fridge(uuid) to authenticated;
+revoke all on function private.lock_owned_fridge (uuid)
+from
+  public,
+  anon,
+  authenticated;
+
+revoke all on function public.create_fridge_invite (uuid, text),
+public.inspect_fridge_invite (text),
+public.accept_fridge_invite (text),
+public.revoke_fridge_invite (uuid, uuid),
+public.list_fridge_members (uuid),
+public.remove_fridge_member (uuid, uuid),
+public.leave_fridge (uuid)
+from
+  public,
+  anon,
+  authenticated;
+
+grant
+execute on function public.create_fridge_invite (uuid, text),
+public.inspect_fridge_invite (text),
+public.accept_fridge_invite (text),
+public.revoke_fridge_invite (uuid, uuid),
+public.list_fridge_members (uuid),
+public.remove_fridge_member (uuid, uuid),
+public.leave_fridge (uuid) to authenticated;

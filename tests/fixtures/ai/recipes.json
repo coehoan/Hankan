@@ -1,4 +1,21 @@
 [
- {"id":"minimal-no-pantry","today":"2026-10-28","ingredients":[{"name":"두부","remainingPercent":65,"expiresOn":"2026-10-29","storage":"fridge"},{"name":"달걀","remainingPercent":50,"expiresOn":"2026-10-30","storage":"fridge"},{"name":"시금치","remainingPercent":100,"expiresOn":"2026-10-29","storage":"fridge"}]},
- {"id":"with-seasonings","today":"2026-10-28","ingredients":[{"name":"두부","remainingPercent":65,"expiresOn":"2026-10-29","storage":"fridge"},{"name":"양파","remainingPercent":50,"expiresOn":"2026-10-30","storage":"pantry"},{"name":"간장","remainingPercent":80,"expiresOn":"2027-01-01","storage":"pantry"},{"name":"식용유","remainingPercent":80,"expiresOn":"2027-01-01","storage":"pantry"}]}
+  {
+    "id": "minimal-no-pantry",
+    "today": "2026-10-28",
+    "ingredients": [
+      { "name": "두부", "remainingPercent": 65, "expiresOn": "2026-10-29", "storage": "fridge" },
+      { "name": "달걀", "remainingPercent": 50, "expiresOn": "2026-10-30", "storage": "fridge" },
+      { "name": "시금치", "remainingPercent": 100, "expiresOn": "2026-10-29", "storage": "fridge" }
+    ]
+  },
+  {
+    "id": "with-seasonings",
+    "today": "2026-10-28",
+    "ingredients": [
+      { "name": "두부", "remainingPercent": 65, "expiresOn": "2026-10-29", "storage": "fridge" },
+      { "name": "양파", "remainingPercent": 50, "expiresOn": "2026-10-30", "storage": "pantry" },
+      { "name": "간장", "remainingPercent": 80, "expiresOn": "2027-01-01", "storage": "pantry" },
+      { "name": "식용유", "remainingPercent": 80, "expiresOn": "2027-01-01", "storage": "pantry" }
+    ]
+  }
 ]

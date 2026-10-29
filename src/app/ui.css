@@ -1,21 +1,671 @@
-@font-face{font-family:"Hankan Pretendard";src:url('/fonts/PretendardVariable.woff2') format('woff2');font-style:normal;font-weight:100 900;font-display:swap}
-:root{--control-border:#7d9487}:root[data-theme="dark"]{--control-border:#6b8c78}@media(prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="dark"]){--control-border:#6b8c78}}
-button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
-.view-state{text-align:center}.view-state .empty-leaf{margin-inline:auto}.retry-page{margin:24px auto 0}
-html{scrollbar-gutter:stable}body{font-size:16px}button,input,select,textarea{font-family:inherit}button:disabled{cursor:default}button,input,select,a{ -webkit-tap-highlight-color:transparent }
-select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
-.theme-toolbar{padding:8px max(22px,calc((100vw - 1144px)/2));background:var(--surface);border-bottom:1px solid var(--border);display:flex;justify-content:flex-end}
-.theme-control{min-width:0;position:relative}.theme-control label{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}.theme-control select{min-height:44px;padding:8px 30px 8px 12px;border:1px solid var(--border);border-radius:9px;color:var(--foreground);background:var(--surface);font-size:14px;max-width:100%}.theme-feedback{font-size:12px;color:var(--muted);display:block}.theme-error{font-size:13px;color:var(--error);max-width:290px;padding-block:6px}
-.dialog-backdrop{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:28px;background:#091c16a6;overflow:auto;overscroll-behavior:contain}
-.dialog-panel{width:min(100%,700px);max-height:calc(100dvh - 56px);display:flex;flex-direction:column;border-radius:20px;background:var(--surface);color:var(--foreground);border:1px solid var(--border);box-shadow:0 24px 90px #071d1733;min-width:0;outline:none}
-.dialog-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:23px 26px 19px;border-bottom:1px solid var(--border);flex-shrink:0}.dialog-heading h2{font-size:23px;letter-spacing:-.7px;overflow-wrap:anywhere}.dialog-heading button{flex-shrink:0}.dialog-heading button span{margin-left:9px;font-size:20px}.dialog-content{overflow:auto;overscroll-behavior:contain;padding:24px 26px;min-height:0}.dialog-footer{padding:15px 26px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-shrink:0}.dialog-footer>span{font-size:12px;color:var(--muted)}
-.dialog-content .ingredient-editor,.dialog-content .members-panel{padding:0;border:0;border-radius:0;margin:0}.dialog-content .ingredient-fields{grid-template-columns:1fr 1fr;gap:0 18px}.dialog-content .ingredient-fields>.field:first-child{grid-column:1/-1}.dialog-content .editor-actions{flex-wrap:wrap}.dialog-content .editor-actions p{flex-basis:100%;max-width:none;margin-bottom:7px}.dialog-content .editor-heading{margin-bottom:4px}.dialog-content .member-list{margin-block:10px}.dialog-content .members-description{margin-top:12px}
-.ingredient-art{width:54px;height:54px;object-fit:contain;flex-shrink:0}.ingredient-symbol{width:58px;height:62px;background:var(--background);border-radius:14px}.ingredient-symbol img{max-width:100%}
-.eyebrow{font-size:11px}.inventory-intro .eyebrow{font-size:11px}.inventory-subtitle{font-size:15px}.pantry-header nav span{font-size:15px}.sign-out button{font-size:14px;min-height:44px}.fridge-switcher>span{font-size:12px}.fridge-switcher select{font-size:14px}.fridge-role{font-size:12px}.members-toggle{font-size:14px}.add-button,.secondary-button{font-size:15px;min-height:44px}.text-button{font-size:14px;min-height:44px}.inventory-search input{font-size:14px;min-height:44px;width:160px}.storage-filters button{font-size:14px;padding-inline:14px}.ingredient-group>header h2{font-size:15px}.ingredient-group>header p{font-size:12px;white-space:normal}.ingredient-name{font-size:17px;line-height:1.6}.ingredient-meta{font-size:13px}.expiry-badge{font-size:12px;margin-top:3px}.quantity-caption{font-size:12px}.quantity-caption output{font-size:15px}.ingredient-quantity{width:126px}.ingredient-quantity input[type=range]{min-height:44px}.delete-ingredient{font-size:12px;min-height:44px}.ingredient-row{padding:17px 18px}.inventory-bottom,.pantry-footer>span{font-size:12px}.inventory-error,.connection-banner,.inventory-notice{font-size:14px}.fridge-summary dt{font-size:13px}.fresh-tip>p:last-child{font-size:13px}.fresh-tip .eyebrow{font-size:10px}.summary-date{font-size:12px}.summary-heading p{font-size:14px}.summary-heading strong{font-size:18px}.empty-inventory p{font-size:14px}.inventory-loading{font-size:15px}.field-hint,.editor-actions p,.editor-hint{font-size:12px}.ingredient-fields .field{font-size:14px}.ingredient-fields input,.ingredient-fields select{font-size:16px}.editor-error{font-size:14px}.editor-error>span{font-size:12px}
-.members-description,.invite-management-title p,.created-link label,.created-link>p,.leave-fridge p{font-size:14px}.member-list strong{font-size:16px}.member-list>li>div>span,.invite-list span,.invite-list time{font-size:13px}.invite-list li{gap:12px}.created-link input{font-size:14px}.created-link label{overflow-wrap:anywhere}.invite-personal,.invite-back{font-size:14px}.invite-kicker,.invite-state,.invite-permissions{font-size:15px}.invitation-card [role=status]{font-size:14px}
-.form-description,.field,.switch-auth{font-size:15px}.form-message{font-size:14px}.forgot-row a,.story-footer{font-size:13px}.primary-button{font-size:16px}.auth-footer,.art-caption{font-size:12px}.story-description{font-size:16px}.auth-content{min-width:0}.auth-page{min-height:calc(100dvh - 61px)}.auth-story{min-height:calc(100dvh - 109px)}
-@media(max-width:850px){.fridge-summary{gap:16px 24px}.inventory-tools{gap:12px}.inventory-columns{gap:22px}.pantry-header>div{flex-wrap:wrap}.pantry-context{flex-wrap:wrap}.ingredient-fields .field{font-size:14px}}
-@media(max-width:540px){.theme-toolbar{padding:6px 18px}.theme-control label{font-size:12px}.pantry-header>div{padding:12px 18px;gap:16px}.pantry-header nav span{font-size:14px;min-height:44px}.pantry-context{padding:20px 18px 0;gap:9px;align-items:center}.fridge-switcher{flex-basis:calc(100% - 90px)}.fridge-switcher select{font-size:14px}.fridge-role{font-size:12px;margin:20px 0 0}.members-toggle{font-size:14px;margin-left:auto}.inventory-page{padding:24px 18px 32px}.inventory-intro{flex-wrap:wrap}.inventory-intro h1{font-size:28px}.inventory-subtitle{font-size:14px}.inventory-intro>.add-button{font-size:15px;margin-top:0}.storage-filters{display:flex;flex-wrap:wrap;gap:1px}.storage-filters button{font-size:14px;padding-inline:12px}.inventory-search{width:100%}.inventory-search input{width:100%;font-size:16px}.ingredient-group>header{flex-wrap:wrap;padding:12px 14px;gap:3px 12px}.ingredient-group>header h2{font-size:14px}.ingredient-group>header p{font-size:12px}.ingredient-row{padding:16px 14px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}.ingredient-main{gap:12px;min-height:62px}.ingredient-symbol{display:grid;width:52px;height:58px}.ingredient-name{font-size:16px}.ingredient-meta{font-size:12px;gap:5px}.expiry-badge{font-size:12px;margin-left:5px}.ingredient-quantity{width:100%;display:grid;grid-template-columns:72px minmax(50px,1fr) auto;align-items:center;gap:8px}.quantity-caption{font-size:12px;gap:4px}.quantity-caption output{font-size:14px}.delete-ingredient{font-size:12px;white-space:nowrap}.fridge-summary dt{font-size:12px}.fridge-summary dl{flex-wrap:wrap;gap:10px 15px}.fridge-summary dd small{font-size:12px}.pantry-footer{margin-inline:18px;flex-wrap:wrap;font-size:13px;gap:4px}.pantry-footer>span{font-size:12px}.inventory-bottom{font-size:12px;align-items:flex-start}.inventory-bottom>span{flex:1;min-width:0}.inventory-bottom button{flex-shrink:0}.dialog-backdrop{padding:12px}.dialog-panel{border-radius:16px;max-height:calc(100dvh - 24px)}.dialog-heading{padding:16px 18px}.dialog-heading h2{font-size:21px}.dialog-content{padding:19px 18px}.dialog-footer{padding:12px 18px;gap:8px}.dialog-footer>span{font-size:11px}.dialog-footer .theme-control label>span{display:none}.dialog-content .ingredient-fields{grid-template-columns:1fr;gap:0}.dialog-content .ingredient-fields>.field:first-child{grid-column:auto}.dialog-content .field input,.dialog-content .field select{font-size:16px}.members-panel .eyebrow{font-size:10px}.invite-management-title>.add-button,.created-link>.secondary-button{font-size:14px}.invitation-page{padding-inline:18px}.invitation-card{padding:28px 20px}.invite-personal{font-size:14px}.invite-permissions{font-size:15px}.auth-content{padding:24px 20px;min-height:calc(100dvh - 57px)}.auth-card{padding-block:32px}.field input::placeholder{font-size:14px}}
-@media(prefers-reduced-motion:no-preference){.inventory-loading span{animation:breathe 1.6s ease-in-out infinite alternate}@keyframes breathe{to{opacity:.9}}}
-.field input,.field select,.fridge-switcher select,.theme-control select,.created-link input{border-color:var(--control-border)}
-.fridge-switcher select:focus-visible,.field select:focus-visible{outline-color:var(--accent)}
+@font-face {
+  font-family: 'Hankan Pretendard';
+  src: url('/fonts/PretendardVariable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+:root {
+  --control-border: #7d9487;
+}
+:root[data-theme='dark'] {
+  --control-border: #6b8c78;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --control-border: #6b8c78;
+  }
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.view-state {
+  text-align: center;
+}
+.view-state .empty-leaf {
+  margin-inline: auto;
+}
+.retry-page {
+  margin: 24px auto 0;
+}
+html {
+  scrollbar-gutter: stable;
+}
+body {
+  font-size: 16px;
+}
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+button:disabled {
+  cursor: default;
+}
+button,
+input,
+select,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.theme-toolbar {
+  padding: 8px max(22px, calc((100vw - 1144px) / 2));
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+.theme-control {
+  min-width: 0;
+  position: relative;
+}
+.theme-control label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.theme-control select {
+  min-height: 44px;
+  padding: 8px 30px 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--foreground);
+  background: var(--surface);
+  font-size: 14px;
+  max-width: 100%;
+}
+.theme-feedback {
+  font-size: 12px;
+  color: var(--muted);
+  display: block;
+}
+.theme-error {
+  font-size: 13px;
+  color: var(--error);
+  max-width: 290px;
+  padding-block: 6px;
+}
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: #091c16a6;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.dialog-panel {
+  width: min(100%, 700px);
+  max-height: calc(100dvh - 56px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  box-shadow: 0 24px 90px #071d1733;
+  min-width: 0;
+  outline: none;
+}
+.dialog-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 23px 26px 19px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.dialog-heading h2 {
+  font-size: 23px;
+  letter-spacing: -0.7px;
+  overflow-wrap: anywhere;
+}
+.dialog-heading button {
+  flex-shrink: 0;
+}
+.dialog-heading button span {
+  margin-left: 9px;
+  font-size: 20px;
+}
+.dialog-content {
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 24px 26px;
+  min-height: 0;
+}
+.dialog-footer {
+  padding: 15px 26px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.dialog-footer > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.dialog-content .ingredient-editor,
+.dialog-content .members-panel {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+}
+.dialog-content .ingredient-fields {
+  grid-template-columns: 1fr 1fr;
+  gap: 0 18px;
+}
+.dialog-content .ingredient-fields > .field:first-child {
+  grid-column: 1/-1;
+}
+.dialog-content .editor-actions {
+  flex-wrap: wrap;
+}
+.dialog-content .editor-actions p {
+  flex-basis: 100%;
+  max-width: none;
+  margin-bottom: 7px;
+}
+.dialog-content .editor-heading {
+  margin-bottom: 4px;
+}
+.dialog-content .member-list {
+  margin-block: 10px;
+}
+.dialog-content .members-description {
+  margin-top: 12px;
+}
+.ingredient-art {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.ingredient-symbol {
+  width: 58px;
+  height: 62px;
+  background: var(--background);
+  border-radius: 14px;
+}
+.ingredient-symbol img {
+  max-width: 100%;
+}
+.eyebrow {
+  font-size: 11px;
+}
+.inventory-intro .eyebrow {
+  font-size: 11px;
+}
+.inventory-subtitle {
+  font-size: 15px;
+}
+.pantry-header nav span {
+  font-size: 15px;
+}
+.sign-out button {
+  font-size: 14px;
+  min-height: 44px;
+}
+.fridge-switcher > span {
+  font-size: 12px;
+}
+.fridge-switcher select {
+  font-size: 14px;
+}
+.fridge-role {
+  font-size: 12px;
+}
+.members-toggle {
+  font-size: 14px;
+}
+.add-button,
+.secondary-button {
+  font-size: 15px;
+  min-height: 44px;
+}
+.text-button {
+  font-size: 14px;
+  min-height: 44px;
+}
+.inventory-search input {
+  font-size: 14px;
+  min-height: 44px;
+  width: 160px;
+}
+.storage-filters button {
+  font-size: 14px;
+  padding-inline: 14px;
+}
+.ingredient-group > header h2 {
+  font-size: 15px;
+}
+.ingredient-group > header p {
+  font-size: 12px;
+  white-space: normal;
+}
+.ingredient-name {
+  font-size: 17px;
+  line-height: 1.6;
+}
+.ingredient-meta {
+  font-size: 13px;
+}
+.expiry-badge {
+  font-size: 12px;
+  margin-top: 3px;
+}
+.quantity-caption {
+  font-size: 12px;
+}
+.quantity-caption output {
+  font-size: 15px;
+}
+.ingredient-quantity {
+  width: 126px;
+}
+.ingredient-quantity input[type='range'] {
+  min-height: 44px;
+}
+.delete-ingredient {
+  font-size: 12px;
+  min-height: 44px;
+}
+.ingredient-row {
+  padding: 17px 18px;
+}
+.inventory-bottom,
+.pantry-footer > span {
+  font-size: 12px;
+}
+.inventory-error,
+.connection-banner,
+.inventory-notice {
+  font-size: 14px;
+}
+.fridge-summary dt {
+  font-size: 13px;
+}
+.fresh-tip > p:last-child {
+  font-size: 13px;
+}
+.fresh-tip .eyebrow {
+  font-size: 10px;
+}
+.summary-date {
+  font-size: 12px;
+}
+.summary-heading p {
+  font-size: 14px;
+}
+.summary-heading strong {
+  font-size: 18px;
+}
+.empty-inventory p {
+  font-size: 14px;
+}
+.inventory-loading {
+  font-size: 15px;
+}
+.field-hint,
+.editor-actions p,
+.editor-hint {
+  font-size: 12px;
+}
+.ingredient-fields .field {
+  font-size: 14px;
+}
+.ingredient-fields input,
+.ingredient-fields select {
+  font-size: 16px;
+}
+.editor-error {
+  font-size: 14px;
+}
+.editor-error > span {
+  font-size: 12px;
+}
+.members-description,
+.invite-management-title p,
+.created-link label,
+.created-link > p,
+.leave-fridge p {
+  font-size: 14px;
+}
+.member-list strong {
+  font-size: 16px;
+}
+.member-list > li > div > span,
+.invite-list span,
+.invite-list time {
+  font-size: 13px;
+}
+.invite-list li {
+  gap: 12px;
+}
+.created-link input {
+  font-size: 14px;
+}
+.created-link label {
+  overflow-wrap: anywhere;
+}
+.invite-personal,
+.invite-back {
+  font-size: 14px;
+}
+.invite-kicker,
+.invite-state,
+.invite-permissions {
+  font-size: 15px;
+}
+.invitation-card [role='status'] {
+  font-size: 14px;
+}
+.form-description,
+.field,
+.switch-auth {
+  font-size: 15px;
+}
+.form-message {
+  font-size: 14px;
+}
+.forgot-row a,
+.story-footer {
+  font-size: 13px;
+}
+.primary-button {
+  font-size: 16px;
+}
+.auth-footer,
+.art-caption {
+  font-size: 12px;
+}
+.story-description {
+  font-size: 16px;
+}
+.auth-content {
+  min-width: 0;
+}
+.auth-page {
+  min-height: calc(100dvh - 61px);
+}
+.auth-story {
+  min-height: calc(100dvh - 109px);
+}
+@media (max-width: 850px) {
+  .fridge-summary {
+    gap: 16px 24px;
+  }
+  .inventory-tools {
+    gap: 12px;
+  }
+  .inventory-columns {
+    gap: 22px;
+  }
+  .pantry-header > div {
+    flex-wrap: wrap;
+  }
+  .pantry-context {
+    flex-wrap: wrap;
+  }
+  .ingredient-fields .field {
+    font-size: 14px;
+  }
+}
+@media (max-width: 540px) {
+  .theme-toolbar {
+    padding: 6px 18px;
+  }
+  .theme-control label {
+    font-size: 12px;
+  }
+  .pantry-header > div {
+    padding: 12px 18px;
+    gap: 16px;
+  }
+  .pantry-header nav span {
+    font-size: 14px;
+    min-height: 44px;
+  }
+  .pantry-context {
+    padding: 20px 18px 0;
+    gap: 9px;
+    align-items: center;
+  }
+  .fridge-switcher {
+    flex-basis: calc(100% - 90px);
+  }
+  .fridge-switcher select {
+    font-size: 14px;
+  }
+  .fridge-role {
+    font-size: 12px;
+    margin: 20px 0 0;
+  }
+  .members-toggle {
+    font-size: 14px;
+    margin-left: auto;
+  }
+  .inventory-page {
+    padding: 24px 18px 32px;
+  }
+  .inventory-intro {
+    flex-wrap: wrap;
+  }
+  .inventory-intro h1 {
+    font-size: 28px;
+  }
+  .inventory-subtitle {
+    font-size: 14px;
+  }
+  .inventory-intro > .add-button {
+    font-size: 15px;
+    margin-top: 0;
+  }
+  .storage-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+  }
+  .storage-filters button {
+    font-size: 14px;
+    padding-inline: 12px;
+  }
+  .inventory-search {
+    width: 100%;
+  }
+  .inventory-search input {
+    width: 100%;
+    font-size: 16px;
+  }
+  .ingredient-group > header {
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    gap: 3px 12px;
+  }
+  .ingredient-group > header h2 {
+    font-size: 14px;
+  }
+  .ingredient-group > header p {
+    font-size: 12px;
+  }
+  .ingredient-row {
+    padding: 16px 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .ingredient-main {
+    gap: 12px;
+    min-height: 62px;
+  }
+  .ingredient-symbol {
+    display: grid;
+    width: 52px;
+    height: 58px;
+  }
+  .ingredient-name {
+    font-size: 16px;
+  }
+  .ingredient-meta {
+    font-size: 12px;
+    gap: 5px;
+  }
+  .expiry-badge {
+    font-size: 12px;
+    margin-left: 5px;
+  }
+  .ingredient-quantity {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 72px minmax(50px, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+  }
+  .quantity-caption {
+    font-size: 12px;
+    gap: 4px;
+  }
+  .quantity-caption output {
+    font-size: 14px;
+  }
+  .delete-ingredient {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .fridge-summary dt {
+    font-size: 12px;
+  }
+  .fridge-summary dl {
+    flex-wrap: wrap;
+    gap: 10px 15px;
+  }
+  .fridge-summary dd small {
+    font-size: 12px;
+  }
+  .pantry-footer {
+    margin-inline: 18px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    gap: 4px;
+  }
+  .pantry-footer > span {
+    font-size: 12px;
+  }
+  .inventory-bottom {
+    font-size: 12px;
+    align-items: flex-start;
+  }
+  .inventory-bottom > span {
+    flex: 1;
+    min-width: 0;
+  }
+  .inventory-bottom button {
+    flex-shrink: 0;
+  }
+  .dialog-backdrop {
+    padding: 12px;
+  }
+  .dialog-panel {
+    border-radius: 16px;
+    max-height: calc(100dvh - 24px);
+  }
+  .dialog-heading {
+    padding: 16px 18px;
+  }
+  .dialog-heading h2 {
+    font-size: 21px;
+  }
+  .dialog-content {
+    padding: 19px 18px;
+  }
+  .dialog-footer {
+    padding: 12px 18px;
+    gap: 8px;
+  }
+  .dialog-footer > span {
+    font-size: 11px;
+  }
+  .dialog-footer .theme-control label > span {
+    display: none;
+  }
+  .dialog-content .ingredient-fields {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .dialog-content .ingredient-fields > .field:first-child {
+    grid-column: auto;
+  }
+  .dialog-content .field input,
+  .dialog-content .field select {
+    font-size: 16px;
+  }
+  .members-panel .eyebrow {
+    font-size: 10px;
+  }
+  .invite-management-title > .add-button,
+  .created-link > .secondary-button {
+    font-size: 14px;
+  }
+  .invitation-page {
+    padding-inline: 18px;
+  }
+  .invitation-card {
+    padding: 28px 20px;
+  }
+  .invite-personal {
+    font-size: 14px;
+  }
+  .invite-permissions {
+    font-size: 15px;
+  }
+  .auth-content {
+    padding: 24px 20px;
+    min-height: calc(100dvh - 57px);
+  }
+  .auth-card {
+    padding-block: 32px;
+  }
+  .field input::placeholder {
+    font-size: 14px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .inventory-loading span {
+    animation: breathe 1.6s ease-in-out infinite alternate;
+  }
+  @keyframes breathe {
+    to {
+      opacity: 0.9;
+    }
+  }
+}
+.field input,
+.field select,
+.fridge-switcher select,
+.theme-control select,
+.created-link input {
+  border-color: var(--control-border);
+}
+.fridge-switcher select:focus-visible,
+.field select:focus-visible {
+  outline-color: var(--accent);
+}

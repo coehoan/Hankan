@@ -1,12 +1,56 @@
-import {afterEach,beforeEach,expect,it,vi} from 'vitest';
-import {POST} from '@/app/api/internal/worker/route';
-const state=vi.hoisted(()=>({runs:0,gate:null as Promise<void>|null,fail:false}));
-vi.mock('./worker',()=>({runCycle:async()=>{state.runs++;if(state.gate)await state.gate;if(state.fail)throw new Error('private worker error')}}));
-const secret='worker-secret-with-at-least-32-characters';
-const request=(key?:string)=>new Request('https://example.test/api/internal/worker',{method:'POST',headers:key?{Authorization:'Bearer '+key}:{}});
-beforeEach(()=>{vi.stubEnv('WORKER_SECRET',secret);state.runs=0;state.fail=false;state.gate=null});
-afterEach(()=>vi.unstubAllEnvs());
-it.each([undefined,'wrong-secret'])('unauthorized_worker_never_runs: %s',async key=>{expect((await POST(request(key))).status).toBe(401);expect(state.runs).toBe(0)});
-it('unconfigured_worker_is_unavailable',async()=>{vi.stubEnv('WORKER_SECRET','');expect((await POST(request(secret))).status).toBe(503);expect(state.runs).toBe(0)});
-it('authorized_worker_awaits_the_cycle_and_disables_cache',async()=>{let release!:()=>void;state.gate=new Promise(resolve=>{release=resolve});let settled=false;const pending=POST(request(secret)).then(r=>{settled=true;return r});await Promise.resolve();expect(settled).toBe(false);release();const response=await pending;expect(response.status).toBe(200);expect(response.headers.get('Cache-Control')).toContain('no-store');expect(state.runs).toBe(1)});
-it('failed_worker_returns_retryable_status_without_error_details',async()=>{state.fail=true;const response=await POST(request(secret));expect(response.status).toBe(503);expect(await response.text()).not.toContain('private worker error')});
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { POST } from '@/app/api/internal/worker/route';
+const state = vi.hoisted(() => ({ runs: 0, gate: null as Promise<void> | null, fail: false }));
+vi.mock('./worker', () => ({
+  runCycle: async () => {
+    state.runs++;
+    if (state.gate) await state.gate;
+    if (state.fail) throw new Error('private worker error');
+  },
+}));
+const secret = 'worker-secret-with-at-least-32-characters';
+const request = (key?: string) =>
+  new Request('https://example.test/api/internal/worker', {
+    method: 'POST',
+    headers: key ? { Authorization: 'Bearer ' + key } : {},
+  });
+beforeEach(() => {
+  vi.stubEnv('WORKER_SECRET', secret);
+  state.runs = 0;
+  state.fail = false;
+  state.gate = null;
+});
+afterEach(() => vi.unstubAllEnvs());
+it.each([undefined, 'wrong-secret'])('unauthorized_worker_never_runs: %s', async (key) => {
+  expect((await POST(request(key))).status).toBe(401);
+  expect(state.runs).toBe(0);
+});
+it('unconfigured_worker_is_unavailable', async () => {
+  vi.stubEnv('WORKER_SECRET', '');
+  expect((await POST(request(secret))).status).toBe(503);
+  expect(state.runs).toBe(0);
+});
+it('authorized_worker_awaits_the_cycle_and_disables_cache', async () => {
+  let release!: () => void;
+  state.gate = new Promise((resolve) => {
+    release = resolve;
+  });
+  let settled = false;
+  const pending = POST(request(secret)).then((r) => {
+    settled = true;
+    return r;
+  });
+  await Promise.resolve();
+  expect(settled).toBe(false);
+  release();
+  const response = await pending;
+  expect(response.status).toBe(200);
+  expect(response.headers.get('Cache-Control')).toContain('no-store');
+  expect(state.runs).toBe(1);
+});
+it('failed_worker_returns_retryable_status_without_error_details', async () => {
+  state.fail = true;
+  const response = await POST(request(secret));
+  expect(response.status).toBe(503);
+  expect(await response.text()).not.toContain('private worker error');
+});

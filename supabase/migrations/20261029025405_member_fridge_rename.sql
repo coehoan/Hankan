@@ -1,5 +1,6 @@
-create or replace function public.rename_fridge(target_fridge_id uuid,fridge_name text)
-returns public.fridges language plpgsql security definer set search_path='' as $$
+create or replace function public.rename_fridge (target_fridge_id uuid, fridge_name text) returns public.fridges language plpgsql security definer
+set
+  search_path = '' as $$
 declare cleaned text; renamed public.fridges;
 begin
  -- Match member removal/leave lock order, then recheck membership after waiting.
@@ -13,5 +14,12 @@ begin
  if not found then raise exception 'Fridge unavailable' using errcode='P0002';end if;
  return renamed;
 end;$$;
-revoke all on function public.rename_fridge(uuid,text) from public,anon,authenticated;
-grant execute on function public.rename_fridge(uuid,text) to authenticated;
+
+revoke all on function public.rename_fridge (uuid, text)
+from
+  public,
+  anon,
+  authenticated;
+
+grant
+execute on function public.rename_fridge (uuid, text) to authenticated;

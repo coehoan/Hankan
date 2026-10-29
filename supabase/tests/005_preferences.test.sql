@@ -1,22 +1,201 @@
 begin;
-create extension if not exists pgtap with schema extensions;
-set local search_path=public,extensions;
-select no_plan();
-select has_table('public','notification_preferences','personal notification preferences exist');
-select has_function('public','save_notification_preferences',array['jsonb'],'checked preference save exists');
-select has_function('private','next_notification_at',array['timestamp with time zone','text','text','date'],'UTC scheduler exists');
-select ok(coalesce((select relrowsecurity from pg_class where oid=to_regclass('public.notification_preferences')),false),'preferences use RLS');
-select ok(not coalesce(has_table_privilege('anon',to_regclass('public.notification_preferences'),'SELECT'),true),'anonymous cannot read preferences');
-select ok(not coalesce(has_table_privilege('authenticated',to_regclass('public.notification_preferences'),'UPDATE'),true),'clients cannot forge last sent date or next run');
-select is(private.next_notification_at('2026-10-26T00:00:00Z','Asia/Seoul','20:30',null),'2026-10-26T11:30:00Z'::timestamptz,'future time runs today');
-select is(private.next_notification_at('2026-10-26T10:00:00Z','Asia/Seoul','18:00',null),'2026-10-27T09:00:00Z'::timestamptz,'past time runs tomorrow');
-select is(private.next_notification_at('2026-10-26T00:00:00Z','Asia/Seoul','20:30','2026-10-26'),'2026-10-27T11:30:00Z'::timestamptz,'already sent today runs tomorrow');
-select is(private.next_notification_at('2026-10-26T11:30:00Z','Asia/Seoul','20:30',null),'2026-10-27T11:30:00Z'::timestamptz,'time equal to now counts as passed');
-select is(private.next_notification_at('2026-10-26T14:59:00Z','Asia/Seoul','00:05',null),'2026-10-26T15:05:00Z'::timestamptz,'before midnight');
-select is(private.next_notification_at('2026-10-26T15:00:00Z','Asia/Seoul','00:05',null),'2026-10-26T15:05:00Z'::timestamptz,'after midnight');
-select is(private.next_notification_at('2026-03-08T05:00:00Z','America/New_York','02:30',null),'2026-03-08T07:30:00Z'::timestamptz,'skipped DST time moves forwards');
-select is(private.next_notification_at('2026-11-01T04:00:00Z','America/New_York','01:30',null),'2026-11-01T06:30:00Z'::timestamptz,'repeated DST time uses later occurrence');
-select throws_ok($$select private.next_notification_at('2026-10-26T00:00:00Z','Invalid/Zone','09:00',null)$$,'22023','Invalid notification schedule','invalid timezone rejected');
-select throws_ok($$select private.next_notification_at('2026-10-26T00:00:00Z','Asia/Seoul','24:00',null)$$,'22023','Invalid notification schedule','invalid time rejected');
-select * from finish();
+
+create extension if not exists pgtap
+with
+  schema extensions;
+
+set
+  local search_path = public,
+  extensions;
+
+select
+  no_plan ();
+
+select
+  has_table (
+    'public',
+    'notification_preferences',
+    'personal notification preferences exist'
+  );
+
+select
+  has_function (
+    'public',
+    'save_notification_preferences',
+    array['jsonb'],
+    'checked preference save exists'
+  );
+
+select
+  has_function (
+    'private',
+    'next_notification_at',
+    array[
+      'timestamp with time zone',
+      'text',
+      'text',
+      'date'
+    ],
+    'UTC scheduler exists'
+  );
+
+select
+  ok (
+    coalesce(
+      (
+        select
+          relrowsecurity
+        from
+          pg_class
+        where
+          oid = to_regclass('public.notification_preferences')
+      ),
+      false
+    ),
+    'preferences use RLS'
+  );
+
+select
+  ok (
+    not coalesce(
+      has_table_privilege(
+        'anon',
+        to_regclass('public.notification_preferences'),
+        'SELECT'
+      ),
+      true
+    ),
+    'anonymous cannot read preferences'
+  );
+
+select
+  ok (
+    not coalesce(
+      has_table_privilege(
+        'authenticated',
+        to_regclass('public.notification_preferences'),
+        'UPDATE'
+      ),
+      true
+    ),
+    'clients cannot forge last sent date or next run'
+  );
+
+select
+  is (
+    private.next_notification_at (
+      '2026-10-26T00:00:00Z',
+      'Asia/Seoul',
+      '20:30',
+      null
+    ),
+    '2026-10-26T11:30:00Z'::timestamptz,
+    'future time runs today'
+  );
+
+select
+  is (
+    private.next_notification_at (
+      '2026-10-26T10:00:00Z',
+      'Asia/Seoul',
+      '18:00',
+      null
+    ),
+    '2026-10-27T09:00:00Z'::timestamptz,
+    'past time runs tomorrow'
+  );
+
+select
+  is (
+    private.next_notification_at (
+      '2026-10-26T00:00:00Z',
+      'Asia/Seoul',
+      '20:30',
+      '2026-10-26'
+    ),
+    '2026-10-27T11:30:00Z'::timestamptz,
+    'already sent today runs tomorrow'
+  );
+
+select
+  is (
+    private.next_notification_at (
+      '2026-10-26T11:30:00Z',
+      'Asia/Seoul',
+      '20:30',
+      null
+    ),
+    '2026-10-27T11:30:00Z'::timestamptz,
+    'time equal to now counts as passed'
+  );
+
+select
+  is (
+    private.next_notification_at (
+      '2026-10-26T14:59:00Z',
+      'Asia/Seoul',
+      '00:05',
+      null
+    ),
+    '2026-10-26T15:05:00Z'::timestamptz,
+    'before midnight'
+  );
+
+select
+  is (
+    private.next_notification_at (
+      '2026-10-26T15:00:00Z',
+      'Asia/Seoul',
+      '00:05',
+      null
+    ),
+    '2026-10-26T15:05:00Z'::timestamptz,
+    'after midnight'
+  );
+
+select
+  is (
+    private.next_notification_at (
+      '2026-03-08T05:00:00Z',
+      'America/New_York',
+      '02:30',
+      null
+    ),
+    '2026-03-08T07:30:00Z'::timestamptz,
+    'skipped DST time moves forwards'
+  );
+
+select
+  is (
+    private.next_notification_at (
+      '2026-11-01T04:00:00Z',
+      'America/New_York',
+      '01:30',
+      null
+    ),
+    '2026-11-01T06:30:00Z'::timestamptz,
+    'repeated DST time uses later occurrence'
+  );
+
+select
+  throws_ok (
+    $$select private.next_notification_at('2026-10-26T00:00:00Z','Invalid/Zone','09:00',null)$$,
+    '22023',
+    'Invalid notification schedule',
+    'invalid timezone rejected'
+  );
+
+select
+  throws_ok (
+    $$select private.next_notification_at('2026-10-26T00:00:00Z','Asia/Seoul','24:00',null)$$,
+    '22023',
+    'Invalid notification schedule',
+    'invalid time rejected'
+  );
+
+select
+  *
+from
+  finish ();
+
 rollback;

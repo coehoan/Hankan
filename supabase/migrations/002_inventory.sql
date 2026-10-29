@@ -1,11 +1,13 @@
 -- Whitespace matches ECMAScript String.trim, including Korean full-width spaces.
-create function private.ingredient_whitespace() returns text
-language sql immutable set search_path='' as $$
+create function private.ingredient_whitespace () returns text language sql immutable
+set
+  search_path = '' as $$
  select U&'\0009\000A\000B\000C\000D\0020\00A0\1680\2000\2001\2002\2003\2004\2005\2006\2007\2008\2009\200A\2028\2029\202F\205F\3000\FEFF'
 $$;
 
-create function private.clean_ingredient_name(value text) returns text
-language plpgsql immutable set search_path='' as $$
+create function private.clean_ingredient_name (value text) returns text language plpgsql immutable
+set
+  search_path = '' as $$
 declare cleaned text := btrim(value,private.ingredient_whitespace());
 begin
  if cleaned is null or char_length(cleaned) not between 1 and 80 then
@@ -15,13 +17,15 @@ begin
 end;
 $$;
 
-create function private.normalize_ingredient_name(value text) returns text
-language sql immutable set search_path='' as $$
+create function private.normalize_ingredient_name (value text) returns text language sql immutable
+set
+  search_path = '' as $$
  select lower(regexp_replace(value,'['||private.ingredient_whitespace()||']+',' ','g'))
 $$;
 
-create function private.ingredient_date(value text) returns date
-language plpgsql immutable set search_path='' as $$
+create function private.ingredient_date (value text) returns date language plpgsql immutable
+set
+  search_path = '' as $$
 begin
  if value is null or value !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' or left(value,4)='0000' then
   raise exception 'Invalid ingredient date' using errcode='22023';
@@ -33,42 +37,63 @@ end;
 $$;
 
 create table public.ingredients (
- id uuid primary key default gen_random_uuid(),
- fridge_id uuid not null references public.fridges(id) on delete cascade,
- name text not null check(name=private.clean_ingredient_name(name)),
- normalized_name text generated always as (private.normalize_ingredient_name(name)) stored,
- storage text not null check(storage in ('fridge','freezer','pantry')),
- expires_on date not null check(expires_on between date '0001-01-01' and date '9999-12-31'),
- remaining_percent integer not null default 100 check(remaining_percent between 0 and 100 and remaining_percent%5=0),
- version integer not null default 1 check(version>=1),
- -- Audit identifiers survive membership changes; they are always assigned from auth.uid().
- created_by uuid not null,
- updated_by uuid not null,
- created_at timestamptz not null default clock_timestamp(),
- updated_at timestamptz not null default clock_timestamp()
+  id uuid primary key default gen_random_uuid(),
+  fridge_id uuid not null references public.fridges (id) on delete cascade,
+  name text not null check (name = private.clean_ingredient_name (name)),
+  normalized_name text generated always as (private.normalize_ingredient_name (name)) stored,
+  storage text not null check (storage in ('fridge', 'freezer', 'pantry')),
+  expires_on date not null check (
+    expires_on between date '0001-01-01' and date '9999-12-31'
+  ),
+  remaining_percent integer not null default 100 check (
+    remaining_percent between 0 and 100
+    and remaining_percent % 5 = 0
+  ),
+  version integer not null default 1 check (version >= 1),
+  -- Audit identifiers survive membership changes; they are always assigned from auth.uid().
+  created_by uuid not null,
+  updated_by uuid not null,
+  created_at timestamptz not null default clock_timestamp(),
+  updated_at timestamptz not null default clock_timestamp()
 );
-create index ingredients_fridge_expiry_idx on public.ingredients(fridge_id,expires_on,created_at,id);
+
+create index ingredients_fridge_expiry_idx on public.ingredients (fridge_id, expires_on, created_at, id);
 
 create table public.ingredient_create_requests (
- fridge_id uuid not null references public.fridges(id) on delete cascade,
- user_id uuid not null references auth.users(id) on delete cascade,
- request_id uuid not null,
- payload jsonb not null,
- -- No FK to ingredients: a retry must remember a batch even after it is deleted.
- ingredient_id uuid not null,
- created_at timestamptz not null default clock_timestamp(),
- primary key(fridge_id,user_id,request_id)
+  fridge_id uuid not null references public.fridges (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  request_id uuid not null,
+  payload jsonb not null,
+  -- No FK to ingredients: a retry must remember a batch even after it is deleted.
+  ingredient_id uuid not null,
+  created_at timestamptz not null default clock_timestamp(),
+  primary key (fridge_id, user_id, request_id)
 );
-alter table public.ingredients enable row level security;
-alter table public.ingredient_create_requests enable row level security;
-revoke all on public.ingredients,public.ingredient_create_requests from anon,authenticated;
-grant select on public.ingredients to authenticated;
-grant all on public.ingredients,public.ingredient_create_requests to service_role;
-create policy ingredients_member_read on public.ingredients for select to authenticated
- using(private.is_fridge_member(fridge_id));
 
-create function private.lock_inventory_membership(target_fridge_id uuid) returns uuid
-language plpgsql security definer set search_path='' as $$
+alter table public.ingredients enable row level security;
+
+alter table public.ingredient_create_requests enable row level security;
+
+revoke all on public.ingredients,
+public.ingredient_create_requests
+from
+  anon,
+  authenticated;
+
+grant
+select
+  on public.ingredients to authenticated;
+
+grant all on public.ingredients,
+public.ingredient_create_requests to service_role;
+
+create policy ingredients_member_read on public.ingredients for
+select
+  to authenticated using (private.is_fridge_member (fridge_id));
+
+create function private.lock_inventory_membership (target_fridge_id uuid) returns uuid language plpgsql security definer
+set
+  search_path = '' as $$
 declare actor_id uuid := auth.uid();
 begin
  if actor_id is null then raise exception 'Authentication required' using errcode='42501'; end if;
@@ -79,8 +104,9 @@ begin
 end;
 $$;
 
-create function private.validate_ingredient_input(value jsonb,is_patch boolean) returns jsonb
-language plpgsql immutable set search_path='' as $$
+create function private.validate_ingredient_input (value jsonb, is_patch boolean) returns jsonb language plpgsql immutable
+set
+  search_path = '' as $$
 declare allowed text[]; result jsonb := '{}'; amount numeric;
 begin
  if jsonb_typeof(value) is distinct from 'object' or value='{}'::jsonb then
@@ -120,8 +146,9 @@ begin
 end;
 $$;
 
-create function public.create_ingredient(target_fridge_id uuid,input jsonb) returns public.ingredients
-language plpgsql security definer set search_path='' as $$
+create function public.create_ingredient (target_fridge_id uuid, input jsonb) returns public.ingredients language plpgsql security definer
+set
+  search_path = '' as $$
 declare actor_id uuid; canonical jsonb; request public.ingredient_create_requests; item public.ingredients; inserted integer;
 begin
  actor_id := private.lock_inventory_membership(target_fridge_id);
@@ -145,8 +172,14 @@ begin
 end;
 $$;
 
-create function public.update_ingredient(target_fridge_id uuid,ingredient_id uuid,expected_version integer,patch jsonb) returns public.ingredients
-language plpgsql security definer set search_path='' as $$
+create function public.update_ingredient (
+  target_fridge_id uuid,
+  ingredient_id uuid,
+  expected_version integer,
+  patch jsonb
+) returns public.ingredients language plpgsql security definer
+set
+  search_path = '' as $$
 declare actor_id uuid; canonical jsonb; item public.ingredients;
 begin
  actor_id := private.lock_inventory_membership(target_fridge_id);
@@ -167,8 +200,13 @@ begin
 end;
 $$;
 
-create function public.delete_ingredient(target_fridge_id uuid,ingredient_id uuid,expected_version integer) returns void
-language plpgsql security definer set search_path='' as $$
+create function public.delete_ingredient (
+  target_fridge_id uuid,
+  ingredient_id uuid,
+  expected_version integer
+) returns void language plpgsql security definer
+set
+  search_path = '' as $$
 declare item public.ingredients;
 begin
  perform private.lock_inventory_membership(target_fridge_id);
@@ -180,6 +218,26 @@ begin
 end;
 $$;
 
-revoke all on function private.ingredient_whitespace(),private.clean_ingredient_name(text),private.normalize_ingredient_name(text),private.ingredient_date(text),private.lock_inventory_membership(uuid),private.validate_ingredient_input(jsonb,boolean) from public,anon,authenticated;
-revoke all on function public.create_ingredient(uuid,jsonb),public.update_ingredient(uuid,uuid,integer,jsonb),public.delete_ingredient(uuid,uuid,integer) from public,anon,authenticated;
-grant execute on function public.create_ingredient(uuid,jsonb),public.update_ingredient(uuid,uuid,integer,jsonb),public.delete_ingredient(uuid,uuid,integer) to authenticated;
+revoke all on function private.ingredient_whitespace (),
+private.clean_ingredient_name (text),
+private.normalize_ingredient_name (text),
+private.ingredient_date (text),
+private.lock_inventory_membership (uuid),
+private.validate_ingredient_input (jsonb, boolean)
+from
+  public,
+  anon,
+  authenticated;
+
+revoke all on function public.create_ingredient (uuid, jsonb),
+public.update_ingredient (uuid, uuid, integer, jsonb),
+public.delete_ingredient (uuid, uuid, integer)
+from
+  public,
+  anon,
+  authenticated;
+
+grant
+execute on function public.create_ingredient (uuid, jsonb),
+public.update_ingredient (uuid, uuid, integer, jsonb),
+public.delete_ingredient (uuid, uuid, integer) to authenticated;

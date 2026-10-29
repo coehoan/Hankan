@@ -1,8 +1,275 @@
-.theme-control.theme-segmented{display:grid;gap:14px}.theme-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;border:1px solid var(--control-border);border-radius:12px;padding:5px;width:100%}.theme-options .theme-option{font-size:15px;position:relative;display:flex;justify-content:center;align-items:center;gap:9px;min-height:50px;border-radius:8px;color:var(--muted);font-weight:600;cursor:pointer}.theme-option[data-selected=true]{background:var(--soft);color:var(--accent)}.theme-option input{position:absolute;width:1px;height:1px;opacity:0}.theme-option:focus-within{outline:3px solid var(--accent);outline-offset:1px}.theme-option svg{width:23px;height:23px;flex-shrink:0}.theme-mode-description{font-size:14px;color:var(--muted)}
-.notification-form label.ios-switch{position:relative;justify-content:space-between;flex-direction:row-reverse}.notification-toggle.ios-switch input[type=checkbox]{position:absolute;width:1px;height:1px;min-height:0;opacity:0;flex:0 0 0}.ios-switch-track{width:50px;height:30px;flex:0 0 50px;border-radius:30px;background:var(--control-border);position:relative;transition:background .18s}.ios-switch-track:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 4px #0003;transition:transform .18s}.ios-switch input:checked+.ios-switch-track{background:var(--accent)}.ios-switch input:checked+.ios-switch-track:after{transform:translateX(20px)}.ios-switch input:focus-visible+.ios-switch-track{outline:3px solid var(--accent);outline-offset:4px}.ios-switch input:disabled+.ios-switch-track{opacity:.6}
-@media(max-width:540px){.theme-options .theme-option{gap:6px;font-size:14px;min-height:48px}.theme-option svg{width:20px;height:20px}}
-@media(prefers-reduced-motion:reduce){.ios-switch-track,.ios-switch-track:after{transition:none}}
-.profile-menu{position:relative;flex-shrink:0}.profile-avatar{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:2px solid var(--accent);background:var(--soft);color:var(--accent);font-weight:700;font-size:19px;padding:0}.profile-avatar:hover{box-shadow:0 0 0 4px var(--soft)}.profile-dropdown{position:absolute;right:0;top:calc(100% + 12px);min-width:190px;max-width:calc(100vw - 36px);padding:7px;background:var(--surface);border:1px solid var(--control-border);border-radius:14px;box-shadow:0 14px 45px #0003;z-index:40}.profile-dropdown>a,.profile-dropdown .sign-out button{display:flex;align-items:center;text-align:left;width:100%;min-height:46px;padding:10px 14px;border:0;border-radius:8px;text-decoration:none;font-size:15px;font-weight:500;color:var(--foreground);background:transparent}.profile-dropdown>a:hover,.profile-dropdown .sign-out button:hover{background:var(--soft)}.profile-dropdown .sign-out{text-align:left}.profile-dropdown .sign-out span{max-width:none;padding:4px 12px}
-.settings-row{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;min-height:58px;text-align:left;padding:16px 6px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--foreground);font:inherit;cursor:pointer}.settings-row:last-child{border-bottom:0}.settings-row:hover{color:var(--accent);background:var(--background)}.settings-row>span:last-child[aria-hidden]{font-size:25px;line-height:1;color:var(--muted)}.settings-row:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px}.management-actions{display:grid}.fridge-management .fridge-switcher{width:100%;margin:0}.fridge-management .fridge-switcher select{width:100%;min-width:0}.registration-methods{display:grid;gap:12px;margin-top:20px}.registration-methods .settings-row{padding:20px;border:1px solid var(--control-border);border-radius:12px;min-height:70px}.pantry-context .fridge-switcher{min-width:0}
-@media(max-width:540px){.pantry-header .brand-link{order:1}.pantry-header .profile-menu{order:2;margin-left:auto}.pantry-header nav{order:3}.pantry-context .fridge-switcher{flex:1 1 170px}.profile-avatar{width:42px;height:42px}.profile-dropdown{top:calc(100% + 8px)}}
-.account-password-row{border-radius:8px}.password-dialog .auth-card{max-width:none;width:100%;padding:0;border:0;background:transparent;box-shadow:none}.password-dialog .auth-card h2{font-size:21px}.password-dialog-actions{display:flex;justify-content:flex-end;margin-top:18px}.password-dialog-actions button{min-width:90px}
+.theme-control.theme-segmented {
+  display: grid;
+  gap: 14px;
+}
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  border: 1px solid var(--control-border);
+  border-radius: 12px;
+  padding: 5px;
+  width: 100%;
+}
+.theme-options .theme-option {
+  font-size: 15px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  min-height: 50px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+.theme-option[data-selected='true'] {
+  background: var(--soft);
+  color: var(--accent);
+}
+.theme-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.theme-option:focus-within {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+.theme-option svg {
+  width: 23px;
+  height: 23px;
+  flex-shrink: 0;
+}
+.theme-mode-description {
+  font-size: 14px;
+  color: var(--muted);
+}
+.notification-form label.ios-switch {
+  position: relative;
+  justify-content: space-between;
+  flex-direction: row-reverse;
+}
+.notification-toggle.ios-switch input[type='checkbox'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  opacity: 0;
+  flex: 0 0 0;
+}
+.ios-switch-track {
+  width: 50px;
+  height: 30px;
+  flex: 0 0 50px;
+  border-radius: 30px;
+  background: var(--control-border);
+  position: relative;
+  transition: background 0.18s;
+}
+.ios-switch-track:after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px #0003;
+  transition: transform 0.18s;
+}
+.ios-switch input:checked + .ios-switch-track {
+  background: var(--accent);
+}
+.ios-switch input:checked + .ios-switch-track:after {
+  transform: translateX(20px);
+}
+.ios-switch input:focus-visible + .ios-switch-track {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+.ios-switch input:disabled + .ios-switch-track {
+  opacity: 0.6;
+}
+@media (max-width: 540px) {
+  .theme-options .theme-option {
+    gap: 6px;
+    font-size: 14px;
+    min-height: 48px;
+  }
+  .theme-option svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ios-switch-track,
+  .ios-switch-track:after {
+    transition: none;
+  }
+}
+.profile-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--soft);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 19px;
+  padding: 0;
+}
+.profile-avatar:hover {
+  box-shadow: 0 0 0 4px var(--soft);
+}
+.profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  min-width: 190px;
+  max-width: calc(100vw - 36px);
+  padding: 7px;
+  background: var(--surface);
+  border: 1px solid var(--control-border);
+  border-radius: 14px;
+  box-shadow: 0 14px 45px #0003;
+  z-index: 40;
+}
+.profile-dropdown > a,
+.profile-dropdown .sign-out button {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--foreground);
+  background: transparent;
+}
+.profile-dropdown > a:hover,
+.profile-dropdown .sign-out button:hover {
+  background: var(--soft);
+}
+.profile-dropdown .sign-out {
+  text-align: left;
+}
+.profile-dropdown .sign-out span {
+  max-width: none;
+  padding: 4px 12px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 58px;
+  text-align: left;
+  padding: 16px 6px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  cursor: pointer;
+}
+.settings-row:last-child {
+  border-bottom: 0;
+}
+.settings-row:hover {
+  color: var(--accent);
+  background: var(--background);
+}
+.settings-row > span:last-child[aria-hidden] {
+  font-size: 25px;
+  line-height: 1;
+  color: var(--muted);
+}
+.settings-row:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+.management-actions {
+  display: grid;
+}
+.fridge-management .fridge-switcher {
+  width: 100%;
+  margin: 0;
+}
+.fridge-management .fridge-switcher select {
+  width: 100%;
+  min-width: 0;
+}
+.registration-methods {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+.registration-methods .settings-row {
+  padding: 20px;
+  border: 1px solid var(--control-border);
+  border-radius: 12px;
+  min-height: 70px;
+}
+.pantry-context .fridge-switcher {
+  min-width: 0;
+}
+@media (max-width: 540px) {
+  .pantry-header .brand-link {
+    order: 1;
+  }
+  .pantry-header .profile-menu {
+    order: 2;
+    margin-left: auto;
+  }
+  .pantry-header nav {
+    order: 3;
+  }
+  .pantry-context .fridge-switcher {
+    flex: 1 1 170px;
+  }
+  .profile-avatar {
+    width: 42px;
+    height: 42px;
+  }
+  .profile-dropdown {
+    top: calc(100% + 8px);
+  }
+}
+.account-password-row {
+  border-radius: 8px;
+}
+.password-dialog .auth-card {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.password-dialog .auth-card h2 {
+  font-size: 21px;
+}
+.password-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+.password-dialog-actions button {
+  min-width: 90px;
+}

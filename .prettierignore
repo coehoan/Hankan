@@ -1,0 +1,16 @@
+node_modules/
+.next/
+dist/
+work/
+.superpowers/
+.idea/
+.vercel/
+supabase/.temp/
+.env*
+.npmrc
+package-lock.json
+next-env.d.ts
+AGENTS.md
+docs/
+**/*.md
+**/*.svg

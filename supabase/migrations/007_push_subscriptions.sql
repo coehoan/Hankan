@@ -1,19 +1,37 @@
 create table public.push_subscriptions (
- id uuid primary key default gen_random_uuid(),
- user_id uuid not null references auth.users(id) on delete cascade,
- endpoint text not null unique,
- p256dh text not null,
- auth text not null,
- created_at timestamptz not null default now()
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  created_at timestamptz not null default now()
 );
-alter table public.push_subscriptions enable row level security;
-revoke all on public.push_subscriptions from anon,authenticated;
-grant select(id,user_id,endpoint,created_at) on public.push_subscriptions to authenticated;
-grant all on public.push_subscriptions to service_role;
-create policy push_self_read on public.push_subscriptions for select to authenticated using(user_id=(select auth.uid()));
 
-create function public.save_push_subscription(input jsonb) returns uuid
-language plpgsql security definer set search_path='' as $$
+alter table public.push_subscriptions enable row level security;
+
+revoke all on public.push_subscriptions
+from
+  anon,
+  authenticated;
+
+grant
+select
+  (id, user_id, endpoint, created_at) on public.push_subscriptions to authenticated;
+
+grant all on public.push_subscriptions to service_role;
+
+create policy push_self_read on public.push_subscriptions for
+select
+  to authenticated using (
+    user_id = (
+      select
+        auth.uid ()
+    )
+  );
+
+create function public.save_push_subscription (input jsonb) returns uuid language plpgsql security definer
+set
+  search_path = '' as $$
 declare actor uuid:=auth.uid(); result uuid; address text:=input->>'endpoint';
 begin
  if actor is null then raise exception 'Authentication required' using errcode='42501'; end if;
@@ -31,19 +49,38 @@ begin
  return result;
 end;
 $$;
-create function public.delete_push_subscription(subscription_id uuid) returns void
-language sql security definer set search_path='' as $$
+
+create function public.delete_push_subscription (subscription_id uuid) returns void language sql security definer
+set
+  search_path = '' as $$
  delete from public.push_subscriptions where id=subscription_id and user_id=auth.uid();
 $$;
-revoke all on function public.save_push_subscription(jsonb),public.delete_push_subscription(uuid) from public,anon;
-grant execute on function public.save_push_subscription(jsonb),public.delete_push_subscription(uuid) to authenticated;
 
-create function private.clear_disabled_push() returns trigger
-language plpgsql security definer set search_path='' as $$
+revoke all on function public.save_push_subscription (jsonb),
+public.delete_push_subscription (uuid)
+from
+  public,
+  anon;
+
+grant
+execute on function public.save_push_subscription (jsonb),
+public.delete_push_subscription (uuid) to authenticated;
+
+create function private.clear_disabled_push () returns trigger language plpgsql security definer
+set
+  search_path = '' as $$
 begin
  if not new.enabled then delete from public.push_subscriptions where user_id=new.user_id; end if;
  return new;
 end;
 $$;
-create trigger notification_disable_push after update of enabled on public.notification_preferences for each row execute function private.clear_disabled_push();
-revoke all on function private.clear_disabled_push() from public,anon,authenticated;
+
+create trigger notification_disable_push
+after update of enabled on public.notification_preferences for each row
+execute function private.clear_disabled_push ();
+
+revoke all on function private.clear_disabled_push ()
+from
+  public,
+  anon,
+  authenticated;

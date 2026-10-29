@@ -12,9 +12,34 @@ import './fridge-invite-controls.css';
 import { isThemePreference } from '@/features/shell/theme';
 import { PwaProvider } from '@/features/notifications/pwa-provider';
 
+const title = '한칸 · 신선한 냉장고의 시작';
+const description = '식재료와 유통기한을 함께 관리하고, 남은 재료로 오늘의 한 끼를 찾아보세요.';
+const shareImage = {
+  url: '/social/hankan-share.jpg',
+  width: 1200,
+  height: 630,
+  alt: '한칸 · 식재료와 유통기한을 한눈에',
+  type: 'image/jpeg',
+};
+
 export const metadata: Metadata = {
-  title: { default: '한칸 · 신선한 냉장고의 시작', template: '%s · 한칸' },
-  description: '식재료와 유통기한을 함께 관리하고, 남은 재료로 오늘의 한 끼를 찾아보세요.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://hankan-murex.vercel.app'),
+  title: { default: title, template: '%s · 한칸' },
+  description,
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    siteName: '한칸',
+    title,
+    description,
+    images: [shareImage],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title,
+    description,
+    images: [shareImage],
+  },
   appleWebApp: { capable: true, statusBarStyle: 'default', title: '한칸' },
   icons: { apple: '/icons/icon-192.png' },
 };

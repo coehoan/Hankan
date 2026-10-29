@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Ingredient } from './contracts';
 import { useInventory } from './use-inventory';
 import { InventoryScreen } from './inventory-screen';
+vi.mock('./inventory-realtime', () => ({ subscribeToInventory: () => () => {} }));
 
 const A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   B = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -138,7 +139,7 @@ describe('inventory request isolation and synchronization', () => {
     });
     expect(view.result.current.items[0]?.name).toBe('서버 목록 3');
   });
-  it('polls_every_three_seconds_and_pauses_when_hidden_or_offline', async () => {
+  it('does_not_poll_and_refreshes_only_when_returning_visible_or_online', async () => {
     vi.useFakeTimers();
     let reads = 0;
     vi.stubGlobal(
@@ -153,27 +154,27 @@ describe('inventory request isolation and synchronization', () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(3000);
     });
-    expect(view.result.current.items[0]?.name).toBe('재료 2');
+    expect(view.result.current.items[0]?.name).toBe('재료 1');
     visibility = 'hidden';
     act(() => document.dispatchEvent(new Event('visibilitychange')));
     await act(async () => {
       await vi.advanceTimersByTimeAsync(6000);
     });
-    expect(view.result.current.items[0]?.name).toBe('재료 2');
+    expect(view.result.current.items[0]?.name).toBe('재료 1');
     visibility = 'visible';
     await act(async () => document.dispatchEvent(new Event('visibilitychange')));
-    expect(view.result.current.items[0]?.name).toBe('재료 3');
+    expect(view.result.current.items[0]?.name).toBe('재료 2');
     online = false;
     act(() => window.dispatchEvent(new Event('offline')));
     await act(async () => {
       await vi.advanceTimersByTimeAsync(6000);
     });
-    expect(view.result.current.items[0]?.name).toBe('재료 3');
+    expect(view.result.current.items[0]?.name).toBe('재료 2');
     expect(view.result.current.online).toBe(false);
     await expect(view.result.current.update('a', 1, { remainingPercent: 5 })).rejects.toThrow();
     online = true;
     await act(async () => window.dispatchEvent(new Event('online')));
-    expect(view.result.current.items[0]?.name).toBe('재료 4');
+    expect(view.result.current.items[0]?.name).toBe('재료 3');
   });
   it('clears_inventory_on_revocation', async () => {
     let revoked = false;

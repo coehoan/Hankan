@@ -2,6 +2,9 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { AppShell } from './app-shell';
+vi.mock('@/features/inventory/inventory-realtime', () => ({
+  subscribeToInventory: () => () => {},
+}));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: () => {}, replace: () => {}, refresh: () => {} }),
 }));

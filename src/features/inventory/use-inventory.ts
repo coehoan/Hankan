@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CreateIngredientInput, Ingredient, IngredientPatch } from './contracts';
+import { subscribeToInventory } from './inventory-realtime';
 
 type Failure = { code: string; message: string };
 type Snapshot = {
@@ -9,6 +10,7 @@ type Snapshot = {
   loading: boolean;
   readError: Failure | null;
   mutationError: Failure | null;
+  syncError: Failure | null;
   online: boolean;
   revoked: boolean;
   pendingId: string | null;
@@ -21,6 +23,10 @@ type Scope = {
   sequence: number;
   read: AbortController | null;
   writes: Set<AbortController>;
+  invalidated: boolean;
+  refreshTimer: ReturnType<typeof setTimeout> | null;
+  schedule: (() => void) | null;
+  stopRealtime: (() => void) | null;
 };
 const blank = (fridgeId: string): Snapshot => ({
   fridgeId,
@@ -28,6 +34,7 @@ const blank = (fridgeId: string): Snapshot => ({
   loading: true,
   readError: null,
   mutationError: null,
+  syncError: null,
   online: true,
   revoked: false,
   pendingId: null,
@@ -80,6 +87,11 @@ export function useInventory(fridgeId: string) {
       scope.revoked = true;
       scope.sequence++;
       scope.read?.abort();
+      for (const controller of scope.writes) controller.abort();
+      if (scope.refreshTimer) clearTimeout(scope.refreshTimer);
+      scope.refreshTimer = null;
+      scope.stopRealtime?.();
+      scope.stopRealtime = null;
       publish(scope, {
         items: [],
         loading: false,
@@ -87,6 +99,7 @@ export function useInventory(fridgeId: string) {
         pendingId: null,
         readError: error,
         mutationError: null,
+        syncError: null,
       });
     },
     [publish],
@@ -96,6 +109,7 @@ export function useInventory(fridgeId: string) {
       if (!current(scope) || scope.revoked || scope.busy || !foreground() || (scope.read && !force))
         return;
       scope.read?.abort();
+      scope.invalidated = false;
       const controller = new AbortController();
       scope.read = controller;
       const request = ++scope.sequence;
@@ -115,6 +129,7 @@ export function useInventory(fridgeId: string) {
         else publish(scope, { loading: false, readError: problem });
       } finally {
         if (scope.read === controller) scope.read = null;
+        if (scope.invalidated) scope.schedule?.();
       }
     },
     [current, publish, revoke],
@@ -128,15 +143,81 @@ export function useInventory(fridgeId: string) {
       sequence: 0,
       read: null,
       writes: new Set(),
+      invalidated: false,
+      refreshTimer: null,
+      schedule: null,
+      stopRealtime: null,
     };
     scopeRef.current = scope;
     publish(scope, { ...blank(fridgeId), online: navigator.onLine !== false });
     void load(scope);
+    const schedule = () => {
+      if (!current(scope) || scope.revoked || !foreground()) return;
+      scope.invalidated = true;
+      if (scope.read || scope.busy || scope.refreshTimer) return;
+      scope.refreshTimer = setTimeout(() => {
+        scope.refreshTimer = null;
+        void load(scope);
+      }, 150);
+    };
+    scope.schedule = schedule;
+    let subscriptionVersion = 0;
+    const disconnect = () => {
+      subscriptionVersion++;
+      const stop = scope.stopRealtime;
+      scope.stopRealtime = null;
+      stop?.();
+      if (scope.refreshTimer) clearTimeout(scope.refreshTimer);
+      scope.refreshTimer = null;
+    };
+    const connect = () => {
+      if (!current(scope) || scope.revoked || !foreground() || scope.stopRealtime) return;
+      const version = ++subscriptionVersion;
+      const valid = () =>
+        current(scope) && !scope.revoked && foreground() && version === subscriptionVersion;
+      try {
+        scope.stopRealtime = subscribeToInventory(fridgeId, {
+          onChange: () => {
+            if (valid()) schedule();
+          },
+          onAccessLost: () => {
+            if (valid()) revoke(scope, { code: 'unauthenticated', message: '로그인이 필요해요.' });
+          },
+          onStatus: (status) => {
+            if (!valid()) return;
+            if (status === 'SUBSCRIBED') {
+              publish(scope, { syncError: null });
+              schedule();
+            } else {
+              publish(scope, {
+                syncError: {
+                  code: 'realtime_connection',
+                  message:
+                    '실시간 연결이 끊겼어요. 연결이 복구되면 다시 갱신해요. 필요하면 새로고침해 주세요.',
+                },
+              });
+            }
+          },
+        });
+      } catch {
+        publish(scope, {
+          syncError: {
+            code: 'realtime_connection',
+            message: '실시간 연결을 시작하지 못했어요. 새로고침하거나 화면에 다시 들어와 주세요.',
+          },
+        });
+      }
+    };
+    connect();
     const resume = () => {
       publish(scope, { online: navigator.onLine !== false });
-      if (foreground()) void load(scope);
+      if (foreground()) {
+        connect();
+        void load(scope);
+      }
     };
     const pause = () => {
+      disconnect();
       scope.sequence++;
       scope.read?.abort();
       scope.read = null;
@@ -146,25 +227,23 @@ export function useInventory(fridgeId: string) {
       if (document.visibilityState === 'hidden') pause();
       else resume();
     };
-    const timer = setInterval(() => {
-      void load(scope);
-    }, 3000);
     window.addEventListener('focus', resume);
     window.addEventListener('online', resume);
     window.addEventListener('offline', pause);
     document.addEventListener('visibilitychange', visibility);
     return () => {
       scope.active = false;
+      disconnect();
+      scope.schedule = null;
       scope.sequence++;
       scope.read?.abort();
       for (const controller of scope.writes) controller.abort();
-      clearInterval(timer);
       window.removeEventListener('focus', resume);
       window.removeEventListener('online', resume);
       window.removeEventListener('offline', pause);
       document.removeEventListener('visibilitychange', visibility);
     };
-  }, [fridgeId, load, publish]);
+  }, [current, fridgeId, load, publish, revoke]);
   const refresh = useCallback(async () => {
     const scope = scopeRef.current;
     if (!scope || scope.fridgeId !== fridgeId) return;
@@ -220,7 +299,7 @@ export function useInventory(fridgeId: string) {
         }
         return value;
       } catch (error) {
-        if (current(scope)) {
+        if (current(scope) && !scope.revoked) {
           const problem = failure(error);
           if (problem.code === 'forbidden' || problem.code === 'unauthenticated')
             revoke(scope, problem);
@@ -261,7 +340,7 @@ export function useInventory(fridgeId: string) {
   return {
     items: visible.items,
     loading: visible.loading,
-    error: visible.mutationError ?? visible.readError,
+    error: visible.mutationError ?? visible.readError ?? visible.syncError,
     online: visible.online,
     revoked: visible.revoked,
     pendingId: visible.pendingId,

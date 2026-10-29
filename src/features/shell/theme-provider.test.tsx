@@ -6,6 +6,9 @@ import { useState } from 'react';
 import { ThemeProvider, ThemeSelector, useThemePreference } from './theme-provider';
 import { Dialog } from '@/components/ui/dialog';
 import { InventoryScreen } from '@/features/inventory/inventory-screen';
+vi.mock('@/features/inventory/inventory-realtime', () => ({
+  subscribeToInventory: () => () => {},
+}));
 
 let dark = false,
   online = true;

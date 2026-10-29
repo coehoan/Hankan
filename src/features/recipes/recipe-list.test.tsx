@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+vi.mock('@/features/inventory/inventory-realtime', () => ({
+  subscribeToInventory: () => () => {},
+}));
 import { RecipeList } from './recipe-list';
 import type { Ingredient } from '@/features/inventory/contracts';
 const A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',

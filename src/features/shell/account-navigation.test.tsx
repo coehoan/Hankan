@@ -2,6 +2,9 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { AppShell } from './app-shell';
+vi.mock('@/features/inventory/inventory-realtime', () => ({
+  subscribeToInventory: () => () => {},
+}));
 import { ThemeProvider } from './theme-provider';
 const id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 vi.mock('next/navigation', () => ({

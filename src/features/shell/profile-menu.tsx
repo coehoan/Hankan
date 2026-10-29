@@ -3,7 +3,7 @@ import {useEffect,useId,useRef,useState} from 'react';
 import Link from 'next/link';
 import {SignOutButton} from '@/features/auth/sign-out-button';
 
-export function ProfileMenu({accountName}:{accountName:string}){
+export function ProfileMenu({accountName,fridgeId}:{accountName:string;fridgeId:string}){
  const [open,setOpen]=useState(false),root=useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null),menu=useRef<HTMLDivElement>(null),id=useId();
  const name=accountName.trim()||'사용자',initial=[...name][0].toLocaleUpperCase('ko-KR');
  useEffect(()=>{
@@ -20,6 +20,6 @@ export function ProfileMenu({accountName}:{accountName:string}){
   const next=event.key==='Home'?0:event.key==='End'?items.length-1:(index+(event.key==='ArrowUp'?-1:1)+items.length)%items.length;items[next]?.focus();
  }}>
   <button className="profile-avatar" ref={trigger} aria-label={name+' 계정 메뉴'} aria-haspopup="menu" aria-expanded={open} aria-controls={open?id:undefined} onClick={()=>setOpen(value=>!value)}>{initial}</button>
-  {open&&<div className="profile-dropdown" ref={menu} id={id} role="menu" aria-label="계정 메뉴"><Link role="menuitem" href="/mypage" onClick={()=>setOpen(false)}>마이페이지</Link><Link role="menuitem" href="/fridges/manage" onClick={()=>setOpen(false)}>냉장고 관리</Link><SignOutButton menuItem/></div>}
+  {open&&<div className="profile-dropdown" ref={menu} id={id} role="menu" aria-label="계정 메뉴"><Link role="menuitem" href="/mypage" onClick={()=>setOpen(false)}>마이페이지</Link><Link role="menuitem" href={'/fridges/manage?fridgeId='+encodeURIComponent(fridgeId)} onClick={()=>setOpen(false)}>냉장고 관리</Link><SignOutButton menuItem/></div>}
  </div>;
 }

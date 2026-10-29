@@ -4,6 +4,7 @@ import type { Database } from '../../src/lib/supabase/database.types';
 import { cleanupTestGroup,localAdmin,seedTestGroup,type GroupFixture } from '../support/db';
 import { GET,PATCH } from '../../src/app/api/fridges/route';
 import { loadFridgeDirectory } from '../../src/features/shell/service';
+import FridgeManagementPage from '../../src/app/(app)/fridges/manage/page';
 let activeClient:SupabaseClient<Database>;
 vi.mock('@/lib/supabase/server',()=>({createServerSupabaseClient:()=>Promise.resolve(activeClient)}));
 
@@ -29,6 +30,15 @@ describe('fridge directory and private last selection',()=>{
   await localAdmin().from('profiles').update({display_name:'fresh_member'}).eq('user_id',group.member.userId);
   await localAdmin().from('profiles').update({display_name:'other_person'}).eq('user_id',group.outsider.userId);
   activeClient=group.member.client;expect((await loadFridgeDirectory()).accountName).toBe('fresh_member');
+ });
+ it('management_keeps_the_opened_fridge_even_when_saved_selection_differs',async()=>{
+  activeClient=group.member.client;const own=(await loadFridgeDirectory()).fridges.find(fridge=>fridge.role==='owner')!;
+  await PATCH(request({fridgeId:own.id}));
+  const page=await FridgeManagementPage({searchParams:Promise.resolve({fridgeId:group.fridgeId})});expect(page.props.selectedId).toBe(group.fridgeId);
+ });
+ it('management_query_cannot_select_an_inaccessible_fridge',async()=>{
+  activeClient=group.outsider.client;const directory=await loadFridgeDirectory();
+  const page=await FridgeManagementPage({searchParams:Promise.resolve({fridgeId:group.fridgeId})});expect(page.props.selectedId).toBe(directory.selectedId);expect(page.props.fridges.some((fridge:{id:string})=>fridge.id===group.fridgeId)).toBe(false);
  });
  it('cannot_select_an_inaccessible_fridge_or_override_another_users_preference',async()=>{
   activeClient=group.outsider.client;

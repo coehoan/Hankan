@@ -25,12 +25,12 @@ export function AppShell({fridges,selectedId,initialToday,timeZone,view='invento
   try{
    const response=await fetch('/api/fridges',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fridgeId:id})});
    const json=await response.json();if(!response.ok){if(response.status===401||response.status===403)accessLost();throw new Error(json.error?.message??'냉장고를 열지 못했어요.')}
-   if(view==='management')router.refresh();else router.push('/fridges/'+id+(view==='recipes'?'/recipes':''));
+   if(view==='management')router.push('/fridges/manage?fridgeId='+encodeURIComponent(id));else router.push('/fridges/'+id+(view==='recipes'?'/recipes':''));
   }catch(caught){setError(caught instanceof Error?caught.message:'연결을 확인해 주세요.')}
   finally{switchingRef.current=false;setSwitching(false)}
  }
  return <div className="pantry-app">
-  <header className="pantry-header"><div><Link className="brand-link" href={'/fridges/'+selectedId}><Brand/></Link><nav aria-label="메인 메뉴"><Link href={'/fridges/'+selectedId} aria-current={view==='inventory'?'page':undefined}>내 냉장고</Link><Link href={'/fridges/'+selectedId+'/recipes'} aria-current={view==='recipes'?'page':undefined}>요리 추천</Link><Link href="/mypage" aria-current={view==='mypage'?'page':undefined}>마이페이지</Link></nav><ProfileMenu key={accountName} accountName={accountName}/></div></header>
+  <header className="pantry-header"><div><Link className="brand-link" href={'/fridges/'+selectedId}><Brand/></Link><nav aria-label="메인 메뉴"><Link href={'/fridges/'+selectedId} aria-current={view==='inventory'?'page':undefined}>내 냉장고</Link><Link href={'/fridges/'+selectedId+'/recipes'} aria-current={view==='recipes'?'page':undefined}>요리 추천</Link><Link href="/mypage" aria-current={view==='mypage'?'page':undefined}>마이페이지</Link></nav><ProfileMenu key={accountName+':'+selectedId} accountName={accountName} fridgeId={selectedId}/></div></header>
   {(view==='inventory'||view==='recipes')&&<div className="pantry-context"><FridgeSwitcher fridges={fridges} selectedId={selectedId} onSelect={id=>void select(id)} disabled={switching||!online}/><Link className="secondary-button" href="/mypage#notifications">알림 설정</Link>{switching&&<p role="status">냉장고를 열고 있어요…</p>}</div>}
   {error&&<p className="shell-error" role="alert">{error}</p>}
   {view==='inventory'&&receiptFor===selectedId&&<UploadForm key={'receipt:'+selectedId} fridgeId={selectedId} fridgeName={selected.name} onClose={()=>setReceiptFor(null)} onCreated={id=>router.push('/receipts/'+id)}/>}

@@ -24,20 +24,30 @@
 ### Task 1: 테마·토글·선택 박스
 **Files:** shell/theme-provider, fridge-switcher, notifications/settings-form, CSS, 관련 단위 테스트.
 **Interfaces:** ThemeSelector 기존 공급자 사용, 알림 draft.enabled와 저장 API 유지.
-- [ ] RED: 테마 라디오 세 항목·아이콘/설명·선택 변경, 알림 switch 상태·시간 표시, 소유/공유 option 확인.
-- [ ] GREEN: 3분할 테마, switch 스타일, 별도 역할 영역 제거 준비.
-- [ ] Run targeted tests; expected PASS. Local checkpoint.
+- [x] RED: 테마 라디오 세 항목·아이콘/설명·선택 변경, 알림 switch 상태·시간 표시, 소유/공유 option 확인.
+- [x] GREEN: 3분할 테마, switch 스타일, 별도 역할 영역 제거 준비.
+- [x] Run targeted tests; expected PASS. Local checkpoint.
 
 ### Task 2: 프로필·냉장고 관리·등록 선택
 **Files:** shell/service/contracts/app-shell, 새 profile-menu/fridge-management, app routes, inventory-screen, 관련 테스트.
 **Interfaces:** directory.accountName:string → AppShell; AppShell view management; InventoryScreen.onReceiptUpload 콜백 → 기존 UploadForm.
-- [ ] RED: 프로필 이니셜과 세 메뉴·닫힘/키보드, 관리 화면 전환/모달, 등록 방식 선택 및 기존 메인 버튼 부재.
-- [ ] GREEN: 표시명 조회·보호된 관리 페이지·프로필 메뉴·등록 선택 연결, 기존 공유/영수증 로직 재사용.
-- [ ] Run focused unit + local fridge integration tests; expected PASS. Local checkpoint.
+- [x] RED: 프로필 이니셜과 세 메뉴·닫힘/키보드, 관리 화면 전환/모달, 등록 방식 선택 및 기존 메인 버튼 부재.
+- [x] GREEN: 표시명 조회·보호된 관리 페이지·프로필 메뉴·등록 선택 연결, 기존 공유/영수증 로직 재사용.
+- [x] Run focused unit + local fridge integration tests; expected PASS. Local checkpoint.
 
 ### Task 3: 비밀번호 팝업과 전체 검증
 **Files:** auth/auth-form, 새 password-dialog, shell/my-page, 관련 테스트와 CSS.
 **Interfaces:** AuthForm.onSuccess?/onPendingChange? → PasswordDialog; 독립 페이지 기본 라우팅 유지.
-- [ ] RED: 계정 긴 행 키보드 열기, 닫기, 두 비밀번호 검증, 성공 시 닫힘/확인, pending 닫기 차단.
-- [ ] GREEN: 모달용 콜백·닫기·링크 제거, 마이페이지 연결·로그아웃 제거.
-- [ ] Run units(maxWorkers4), local integration, typecheck, lint, build. Expected PASS. One fresh read-only whole-change review, one Important RED→GREEN fix pass. No release.
+- [x] RED: 계정 긴 행 키보드 열기, 닫기, 두 비밀번호 검증, 성공 시 닫힘/확인, pending 닫기 차단.
+- [x] GREEN: 모달용 콜백·닫기·링크 제거, 마이페이지 연결·로그아웃 제거.
+- [x] Run units(maxWorkers4), local integration, typecheck, lint, build. Expected PASS. One fresh read-only whole-change review, one Important RED→GREEN fix pass. No release.
+
+## Verification — 2026-10-29
+
+- Task 1: observed RED (nine failures), then GREEN (14 passes) for theme choices/system behavior and notification switch persistence.
+- Task 2: observed RED (three UI failures, one local directory failure), then GREEN (22 UI tests, six directory tests). Current account name comes from the authenticated user's profile; all actual shell routes pass it.
+- Task 3: observed RED for missing password modal and old account row, then GREEN (nine password/auth/account tests). Pending close blocking, password mismatch, failure input preservation and modal success without navigation are covered.
+- One fresh read-only review found an Important current-fridge context issue. Regression tests reproduced two UI failures and a real local route failure when saved fridge A differed from displayed fridge B. Profile menu now carries current fridgeId; route accepts only IDs in the user's accessible directory; management selection changes the query while remaining on the same management path. Inaccessible requested IDs fall back safely. Fixed in one pass; no further Critical/Important findings.
+- Final fresh unit suite: 237 passed (`work/profile-final-unit.log`). Final local integration suite: 121 passed, two opt-in cases skipped (`work/profile-final-integration.log`). Total executed assertions: 358. Typecheck, lint and Next build exited 0. Three existing lint warnings remain unchanged (blob preview image and two typed mock parameters).
+- Actual browser appearance/responsive validation remains unverified because the saved local-origin permission denied access earlier. No alternate browser/origin or policy workaround used.
+- Existing dev checkout retained per user release policy. No push, deployment, cloud database mutation, dependency or environment-file changes. Unrelated .idea preserved.

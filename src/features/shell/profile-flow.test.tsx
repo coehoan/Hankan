@@ -10,7 +10,7 @@ beforeEach(()=>{vi.clearAllMocks();vi.stubGlobal('fetch',vi.fn(async()=>Response
 afterEach(()=>{cleanup();vi.unstubAllGlobals()});
 it('profile_initial_opens_three_actions_and_supports_keyboard_and_outside_close',()=>{
  render(<AppShell {...props}/>);const avatar=screen.getByRole('button',{name:'fresh_user 계정 메뉴'});expect(avatar).toHaveTextContent('F');fireEvent.click(avatar);
- const menu=screen.getByRole('menu',{name:'계정 메뉴'});expect(within(menu).getAllByRole('menuitem')).toHaveLength(3);const mypage=within(menu).getByRole('menuitem',{name:'마이페이지'});expect(mypage).toHaveAttribute('href','/mypage');expect(mypage).toHaveFocus();expect(within(menu).getByRole('menuitem',{name:'냉장고 관리'})).toHaveAttribute('href','/fridges/manage');expect(within(menu).getByRole('menuitem',{name:'로그아웃'})).toBeVisible();
+ const menu=screen.getByRole('menu',{name:'계정 메뉴'});expect(within(menu).getAllByRole('menuitem')).toHaveLength(3);const mypage=within(menu).getByRole('menuitem',{name:'마이페이지'});expect(mypage).toHaveAttribute('href','/mypage');expect(mypage).toHaveFocus();expect(within(menu).getByRole('menuitem',{name:'냉장고 관리'})).toHaveAttribute('href','/fridges/manage?fridgeId='+id);expect(within(menu).getByRole('menuitem',{name:'로그아웃'})).toBeVisible();
  fireEvent.keyDown(menu,{key:'ArrowDown'});expect(within(menu).getByRole('menuitem',{name:'냉장고 관리'})).toHaveFocus();fireEvent.keyDown(menu,{key:'Escape'});expect(screen.queryByRole('menu')).not.toBeInTheDocument();expect(avatar).toHaveFocus();fireEvent.click(avatar);fireEvent.pointerDown(document.body);expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 });
 it('inventory_registration_chooses_manual_or_receipt_without_old_toolbar_actions',async()=>{
@@ -20,5 +20,5 @@ it('inventory_registration_chooses_manual_or_receipt_without_old_toolbar_actions
 });
 it('management_owns_name_and_members_and_stays_on_management_after_switch',async()=>{
  render(<AppShell {...props} view="management"/>);expect(screen.getByRole('heading',{name:'냉장고 관리'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'냉장고 이름 변경'}));expect(screen.getByRole('dialog',{name:'냉장고 이름 변경'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'냉장고 이름 변경 닫기'}));fireEvent.click(screen.getByRole('button',{name:'멤버 관리'}));expect(await screen.findByRole('dialog',{name:'함께 쓰는 사람들'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'함께 쓰는 사람들 닫기'}));
- fireEvent.change(screen.getByRole('combobox',{name:'냉장고 선택'}),{target:{value:shared}});await waitFor(()=>expect(router.refresh).toHaveBeenCalled());expect(router.push).not.toHaveBeenCalled();expect(vi.mocked(fetch)).toHaveBeenCalledWith('/api/fridges',expect.objectContaining({method:'PATCH',body:JSON.stringify({fridgeId:shared})}));
+ fireEvent.change(screen.getByRole('combobox',{name:'냉장고 선택'}),{target:{value:shared}});await waitFor(()=>expect(router.push).toHaveBeenCalledWith('/fridges/manage?fridgeId='+shared));expect(vi.mocked(fetch)).toHaveBeenCalledWith('/api/fridges',expect.objectContaining({method:'PATCH',body:JSON.stringify({fridgeId:shared})}));
 });

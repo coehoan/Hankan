@@ -1,6 +1,6 @@
 # dev push 통합 배포 설정
 
-이 설정은 아직 로컬 파일이다. 사용자 승인 후 커밋과 dev push를 해야 GitHub/Vercel에 반영된다. 설정을 확인하기 위해 운영 마이그레이션이나 배포를 실행하지 않는다.
+dev push는 아래 워크플로를 실행한다. 로컬 수정은 커밋과 push 전까지 운영에 반영되지 않는다. 설정을 확인하기 위해 운영 마이그레이션이나 배포를 실행하지 않는다.
 
 ## 최초 등록: GitHub Secrets
 
@@ -49,6 +49,7 @@
 - 앱 배포 실패: 적용된 DB 변경은 자동으로 되돌리지 않는다. 기존 앱과 호환되는 추가 위주의 DB 변경을 작성한다. 이미 적용한 migration 파일을 수정해 재실행하려 하지 않는다.
 - 자격 증명/변수 누락: 기존 Vercel 직접 배포로 우회하지 말고 등록을 완료한 뒤 현재 dev 커밋의 작업을 다시 실행한다. 오래된 커밋의 실행을 재시도하면 과거 앱을 배포할 수 있으므로 먼저 실행 커밋을 확인한다.
 - `vercel pull`에서 `User not found (404)`: 이전 `--scope` 옵션과 팀 범위 토큰의 개인 사용자 조회 충돌을 확인한다. 해당 옵션을 제거한 최신 커밋으로 실행해야 한다. 여전히 실패하면 Vercel 토큰의 만료·회수 여부와 Hankan 팀 접근 범위를 확인하고 GitHub `VERCEL_TOKEN`을 갱신한다. 실제 토큰 값을 로그나 채팅으로 보내지 않는다.
+- prebuilt 배포에서 `.env.example` 등의 `ENOENT` 또는 `.vercelignore` 충돌: 환경파일이 Next.js 파일 추적에 포함된 경우다. `next.config.ts`의 `outputFileTracingExcludes`로 루트 `.env*`를 빌드 파일 목록에서 제외한다. `.vercelignore`의 환경파일 제외 규칙은 유지한다. 수정 후 새로 빌드한 결과물을 배포하며, 앞서 적용된 DB 마이그레이션은 다음 실행에서 다시 적용하지 않는다.
 - 결과는 GitHub **Actions → Deploy Hankan production**에서 확인한다. 실제 운영 로그·사이트·DB 상태 점검은 첫 승인 배포 후 별도로 수행한다.
 
 DB reset, seed, 자동 migration repair, 강제 rollback, 운영 데이터 복사는 수행하지 않는다. 배포용 토큰과 DB 비밀번호는 테스트·앱 빌드 명령에 전달하지 않고 필요한 자식 프로세스에만 전달한다. 비밀 파일과 prebuilt 산출물을 GitHub artifact로 업로드하지 않는다.

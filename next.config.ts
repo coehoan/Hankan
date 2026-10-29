@@ -2,6 +2,8 @@ import type { NextConfig } from 'next';
 
 const config: NextConfig = {
   poweredByHeader: false,
+  // Vercel provides runtime environment variables; local env files are not assets.
+  outputFileTracingExcludes: { '/*': ['./.env*'] },
   logging: { incomingRequests: false },
   async headers() {
     return [

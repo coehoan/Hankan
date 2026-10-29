@@ -7,5 +7,5 @@ export default async function RecipesPage({params}:{params:Promise<{fridgeId:str
  if(!directory.fridges.some(fridge=>fridge.id===fridgeId))redirect('/fridges/'+directory.fridges.find(fridge=>fridge.role==='owner')!.id+'/recipes');
  const parts=new Intl.DateTimeFormat('en',{timeZone:directory.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts();
  const today=['year','month','day'].map(type=>parts.find(part=>part.type===type)!.value).join('-');
- return <AppShell view="recipes" fridges={directory.fridges} selectedId={fridgeId} initialToday={today} timeZone={directory.timeZone}/>;
+ return <AppShell accountName={directory.accountName} view="recipes" fridges={directory.fridges} selectedId={fridgeId} initialToday={today} timeZone={directory.timeZone}/>;
 }

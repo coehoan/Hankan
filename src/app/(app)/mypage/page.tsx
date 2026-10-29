@@ -4,5 +4,5 @@ import {localDateAt} from '@/features/notifications/schedule';
 export const metadata={title:'마이페이지'};
 export default async function MyPageRoute(){
  const directory=await loadFridgeDirectory();
- return <AppShell view="mypage" fridges={directory.fridges} selectedId={directory.selectedId} initialToday={localDateAt(new Date().toISOString(),directory.timeZone)} timeZone={directory.timeZone}/>;
+ return <AppShell accountName={directory.accountName} view="mypage" fridges={directory.fridges} selectedId={directory.selectedId} initialToday={localDateAt(new Date().toISOString(),directory.timeZone)} timeZone={directory.timeZone}/>;
 }

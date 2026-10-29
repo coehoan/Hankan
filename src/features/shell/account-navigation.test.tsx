@@ -13,7 +13,7 @@ it('header_brand_opens_selected_inventory_and_account_controls_live_in_mypage',(
 });
 it('mypage_has_inline_notifications_and_logout_at_the_bottom',async()=>{
  render(<ThemeProvider initialPreference="system"><AppShell view="mypage" fridges={[{id,name:'우리집',role:'member'}]} selectedId={id} initialToday="2026-10-29" timeZone="Asia/Seoul"/></ThemeProvider>);
- expect(await screen.findByRole('heading',{name:'마이페이지'})).toBeVisible();expect(screen.getByLabelText('화면 테마')).toBeVisible();expect(screen.getByRole('link',{name:'비밀번호 변경'})).toHaveAttribute('href','/change-password');expect(await screen.findByLabelText('알림 받기')).toBeVisible();expect(screen.queryByRole('region',{name:'브라우저 알림 연결'})).not.toBeInTheDocument();
+ expect(await screen.findByRole('heading',{name:'마이페이지'})).toBeVisible();expect(screen.getByRole('radiogroup',{name:'화면 테마'})).toBeVisible();expect(screen.getByRole('link',{name:'비밀번호 변경'})).toHaveAttribute('href','/change-password');expect(await screen.findByLabelText('알림 받기')).toBeVisible();expect(screen.queryByRole('region',{name:'브라우저 알림 연결'})).not.toBeInTheDocument();
  expect(screen.getByRole('link',{name:'마이페이지'})).toHaveAttribute('aria-current','page');expect(screen.getByRole('link',{name:'요리 추천'})).not.toHaveAttribute('aria-current');
  const main=screen.getByRole('main');expect(main.lastElementChild).toContainElement(screen.getByRole('button',{name:'로그아웃'}));expect(screen.getByRole('button',{name:'로그아웃'}).closest('.my-page-logout')).not.toBeNull();fireEvent.click(screen.getByLabelText('알림 받기'));expect(screen.getByLabelText('매일 받을 시각')).toBeVisible();expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 });

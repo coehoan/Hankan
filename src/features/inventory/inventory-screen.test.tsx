@@ -99,7 +99,7 @@ describe('inventory controls with real hook and HTTP boundary',()=>{
  it('creates_once_with_required_date_and_preserves_form_during_offline',async()=>{
   const saving=deferred();let rows:Ingredient[]=[];let writes=0;
   vi.stubGlobal('fetch',vi.fn((_url:RequestInfo|URL,init?:RequestInit)=>init?.method==='POST'?(writes++,saving.promise):Promise.resolve(response(rows))));
-  show();fireEvent.click(screen.getByRole('button',{name:'재료 등록'}));
+  show();fireEvent.click(screen.getByRole('button',{name:'재료 등록'}));fireEvent.click(screen.getByRole('button',{name:'직접 입력'}));
   const form=screen.getByRole('form',{name:'재료 등록'});
   fireEvent.change(within(form).getByLabelText('재료 이름'),{target:{value:'방울토마토'}});
   fireEvent.change(within(form).getByLabelText('유통기한'),{target:{value:'2026-11-02'}});

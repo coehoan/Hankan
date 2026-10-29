@@ -8,5 +8,5 @@ export default async function FridgePage({params}:{params:Promise<{fridgeId:stri
  if(!directory.fridges.some(fridge=>fridge.id===fridgeId))redirect('/fridges/'+directory.fridges.find(fridge=>fridge.role==='owner')!.id);
  const parts=new Intl.DateTimeFormat('en',{timeZone:directory.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts();
  const today=['year','month','day'].map(type=>parts.find(part=>part.type===type)!.value).join('-');
- return <AppShell fridges={directory.fridges} selectedId={fridgeId} initialToday={today} timeZone={directory.timeZone}/>;
+ return <AppShell accountName={directory.accountName} fridges={directory.fridges} selectedId={fridgeId} initialToday={today} timeZone={directory.timeZone}/>;
 }

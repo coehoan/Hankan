@@ -25,6 +25,11 @@ describe('fridge directory and private last selection',()=>{
   expect((await loadFridgeDirectory()).selectedId).toBe(group.fridgeId);
   expect((await localAdmin().from('profiles').select('last_fridge_id').eq('user_id',group.outsider.userId).single()).data?.last_fridge_id).not.toBe(group.fridgeId);
  });
+ it('directory_includes_only_the_current_accounts_display_name',async()=>{
+  await localAdmin().from('profiles').update({display_name:'fresh_member'}).eq('user_id',group.member.userId);
+  await localAdmin().from('profiles').update({display_name:'other_person'}).eq('user_id',group.outsider.userId);
+  activeClient=group.member.client;expect((await loadFridgeDirectory()).accountName).toBe('fresh_member');
+ });
  it('cannot_select_an_inaccessible_fridge_or_override_another_users_preference',async()=>{
   activeClient=group.outsider.client;
   expect((await PATCH(request({fridgeId:group.fridgeId}))).status).toBe(403);

@@ -221,9 +221,11 @@ export function ReviewScreen({
         <section className="receipt-review" aria-label="확인할 품목">
           <div className="receipt-analysis">
             <p>
-              {status === 'analyzing'
+              {status === 'analyzing' || busy === 'analyze'
                 ? 'AI가 품목을 읽고 있어요. 잠시 후 상태를 다시 확인합니다.'
-                : 'AI 분석은 선택 사항이에요. 연결 전에도 아래에서 품목을 직접 추가할 수 있어요.'}
+                : ['uploaded', 'failed'].includes(status)
+                  ? 'AI 분석을 완료하지 못했어요. 다시 시도하거나 품목을 직접 추가해 주세요.'
+                  : 'AI가 읽은 품목을 확인하고 유통기한을 직접 선택해 주세요.'}
             </p>
             {['uploaded', 'failed'].includes(status) && (
               <Button
@@ -239,7 +241,7 @@ export function ReviewScreen({
                   })
                 }
               >
-                AI로 품목 읽기
+                분석 다시 시도
               </Button>
             )}
           </div>

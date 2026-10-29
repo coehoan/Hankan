@@ -28,6 +28,7 @@ beforeEach(() => {
     if (url === 'https://storage.test/upload') return Response.json({ Key: 'owned-path' });
     if (url === '/api/receipts/uploads/complete')
       return Response.json({ data: { draftId: 'new-draft' } });
+    if (url === '/api/receipts/new-draft/analyze') return Response.json({ data: [] });
     throw new Error('Unexpected request');
   });
 });
@@ -44,7 +45,7 @@ const show = () =>
       onCreated={created}
     />,
   );
-it('photo_selection_previews_without_upload_then_confirmation_creates_draft', async () => {
+it('photo_selection_previews_without_upload_then_confirmation_uploads_and_analyzes', async () => {
   show();
   expect(screen.getByRole('button', { name: '사진 업로드' })).toBeVisible();
   fireEvent.change(screen.getByLabelText('영수증 사진 선택'), {
@@ -61,8 +62,50 @@ it('photo_selection_previews_without_upload_then_confirmation_creates_draft', as
     '/api/receipts/uploads',
     'https://storage.test/upload',
     '/api/receipts/uploads/complete',
+    '/api/receipts/new-draft/analyze',
   ]);
 });
+it('waits_for_analysis_before_opening_results_and_prevents_duplicate_confirmation', async () => {
+  const originalFetch = fetch;
+  let finish!: (response: Response) => void;
+  const analysis = new Promise<Response>((resolve) => {
+    finish = resolve;
+  });
+  const analyze = vi.fn(() => analysis);
+  vi.stubGlobal('fetch', (url: string, init?: RequestInit) =>
+    url.endsWith('/analyze') ? analyze() : originalFetch(url, init),
+  );
+  show();
+  fireEvent.change(screen.getByLabelText('영수증 사진 선택'), {
+    target: { files: [new File(['png'], 'receipt.png', { type: 'image/png' })] },
+  });
+  fireEvent.click(screen.getByRole('button', { name: '품목 확인' }));
+  await waitFor(() => expect(analyze).toHaveBeenCalledTimes(1));
+  expect(screen.getByRole('button', { name: 'AI 분석 중…' })).toBeDisabled();
+  expect(created).not.toHaveBeenCalled();
+  fireEvent.submit(screen.getByRole('form', { name: '우리집 영수증 등록' }));
+  expect(analyze).toHaveBeenCalledTimes(1);
+  finish(Response.json({ data: [] }));
+  await waitFor(() => expect(created).toHaveBeenCalledExactlyOnceWith('new-draft'));
+});
+it.each(['server', 'network'])(
+  'analysis_%s_failure_opens_existing_draft_for_retry',
+  async (failure) => {
+    const originalFetch = fetch;
+    vi.stubGlobal('fetch', (url: string, init?: RequestInit) => {
+      if (!url.endsWith('/analyze')) return originalFetch(url, init);
+      if (failure === 'network') return Promise.reject(new Error('Connection lost'));
+      return Promise.resolve(Response.json({ error: { message: '분석 실패' } }, { status: 502 }));
+    });
+    show();
+    fireEvent.change(screen.getByLabelText('영수증 사진 선택'), {
+      target: { files: [new File(['png'], 'receipt.png', { type: 'image/png' })] },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '품목 확인' }));
+    await waitFor(() => expect(created).toHaveBeenCalledExactlyOnceWith('new-draft'));
+    expect(requests.filter((r) => r.url === '/api/receipts/uploads/complete')).toHaveLength(1);
+  },
+);
 it('invalid_photo_never_enables_confirmation_or_uploads', async () => {
   show();
   fireEvent.change(screen.getByLabelText('영수증 사진 선택'), {

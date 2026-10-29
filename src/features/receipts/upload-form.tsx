@@ -19,6 +19,7 @@ export function UploadForm({
   const [file, setFile] = useState<File | null>(null),
     [preview, setPreview] = useState(''),
     [busy, setBusy] = useState(false),
+    [analyzing, setAnalyzing] = useState(false),
     [error, setError] = useState(''),
     [drafts, setDrafts] = useState<{ id: string; created_at: string }[]>([]);
   const pending = useRef(false),
@@ -73,12 +74,24 @@ export function UploadForm({
     setBusy(true);
     setError('');
     try {
-      onCreated(await uploadReceipt(fridgeId, file));
+      const draftId = await uploadReceipt(fridgeId, file);
+      setAnalyzing(true);
+      try {
+        await fetch('/api/receipts/' + draftId + '/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+      } catch {
+        // Keep the uploaded draft so the review screen can recover or retry analysis.
+      }
+      onCreated(draftId);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : '연결을 확인해 주세요.');
     } finally {
       pending.current = false;
       setBusy(false);
+      setAnalyzing(false);
     }
   }
   return (
@@ -128,7 +141,7 @@ export function UploadForm({
         )}
         <div className="receipt-upload-actions">
           <Button type="submit" disabled={!online || busy || !file}>
-            {busy ? '사진 확인 중…' : '품목 확인'}
+            {analyzing ? 'AI 분석 중…' : busy ? '사진 확인 중…' : '품목 확인'}
           </Button>
         </div>
       </form>

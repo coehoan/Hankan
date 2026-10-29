@@ -105,9 +105,41 @@ it('recovered_analysis_enables_retry_and_manual_editing_without_losing_review_ro
   );
   expect(screen.getByRole('button', { name: '품목 직접 추가' })).toBeDisabled();
   fireEvent.click(screen.getByRole('button', { name: '사진·상태 다시 확인' }));
-  await waitFor(() => expect(screen.getByRole('button', { name: 'AI로 품목 읽기' })).toBeEnabled());
+  await waitFor(() => expect(screen.getByRole('button', { name: '분석 다시 시도' })).toBeEnabled());
   expect(screen.getByLabelText('재료 이름 1')).toBeEnabled();
   expect(screen.getByLabelText('재료 이름 1')).toHaveValue('저장한 두부');
   expect(screen.getByLabelText('유통기한 1')).toHaveValue('');
   expect(screen.getByRole('button', { name: '품목 직접 추가' })).toBeEnabled();
+});
+it('shows_retry_for_an_incomplete_analysis_without_a_separate_initial_analysis_step', () => {
+  render(
+    <ReviewScreen
+      draft={{ ...draft, status: 'uploaded', items: [] }}
+      onSaved={() => {}}
+      onCancel={() => {}}
+    />,
+  );
+  expect(screen.queryByRole('button', { name: 'AI로 품목 읽기' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '분석 다시 시도' })).toBeEnabled();
+  expect(screen.getByText(/AI 분석을 완료하지 못했어요/)).toBeVisible();
+});
+it('retry_reads_the_existing_photo_and_requires_confirmation_before_importing', async () => {
+  const fetcher = vi.fn(async () => Response.json({ data: draft.items }));
+  vi.stubGlobal('fetch', fetcher);
+  render(
+    <ReviewScreen
+      draft={{ ...draft, status: 'failed', items: [] }}
+      onSaved={() => {}}
+      onCancel={() => {}}
+    />,
+  );
+  fireEvent.click(screen.getByRole('button', { name: '분석 다시 시도' }));
+  expect(await screen.findByLabelText('재료 이름 1')).toHaveValue('두부');
+  expect(screen.getByLabelText('유통기한 1')).toHaveValue('');
+  expect(screen.getByRole('button', { name: '확인한 재료 저장' })).toBeDisabled();
+  expect(screen.queryByRole('button', { name: '분석 다시 시도' })).not.toBeInTheDocument();
+  expect(fetcher).toHaveBeenCalledExactlyOnceWith(
+    '/api/receipts/' + draft.draftId + '/analyze',
+    expect.objectContaining({ method: 'POST' }),
+  );
 });

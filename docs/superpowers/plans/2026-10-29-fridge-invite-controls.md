@@ -24,17 +24,26 @@
 ### Task 1: 선택·헤더·비밀번호 버튼
 **Files:** shell/fridge-switcher, app-shell, auth/auth-form/password-dialog, CSS, 관련 테스트.
 **Interfaces:** 기존 FridgeSwitcher props 유지; AuthForm formId?/externalSubmit?로 modal 하단 button form 속성 연결.
-- [ ] RED: 배지 listbox 선택/키보드/닫힘, 헤더 알림·마이페이지 탭 부재, 취소/제출 같은 action 영역 및 실제 폼 연결.
-- [ ] GREEN: 커스텀 선택, 가로 확장·헤더 정리, 외부 submit 배치. Targeted tests PASS; 로컬 checkpoint.
+- [x] RED: 배지 listbox 선택/키보드/닫힘, 헤더 알림·마이페이지 탭 부재, 취소/제출 같은 action 영역 및 실제 폼 연결.
+- [x] GREEN: 커스텀 선택, 가로 확장·헤더 정리, 외부 submit 배치. Targeted tests PASS; 로컬 checkpoint.
 
 ### Task 2: 초대 기간·비활성 정리 DB/API
 **Files:** CLI-generated migration, generated types, sharing/service, api/fridges/[fridgeId]/invites/history, integration/sharing tests.
 **Interfaces:** clearInviteHistory(access):Promise<number>; DELETE history returns {deletedCount:number}.
-- [ ] RED: 24시간 TTL, owner scoped purge preserving active links/memberships, forbidden member/outsider/cross-origin; deletion/accept race fails closed.
-- [ ] GREEN: 24h create RPC, owner lock purge, accept reread existence guard; 로컬 DB에서만 적용하고 types 갱신. Local tests/advisors PASS; 로컬 checkpoint.
+- [x] RED: 24시간 TTL, owner scoped purge preserving active links/memberships, forbidden member/outsider/cross-origin; deletion/accept race fails closed.
+- [x] GREEN: 24h create RPC, owner lock purge, accept reread existence guard; 로컬 DB에서만 적용하고 types 갱신. Local tests/advisors PASS; 로컬 checkpoint.
 
 ### Task 3: 내역 UI와 검증
 **Files:** sharing/members-dialog and tests, CSS.
-- [ ] RED: 24시간 표시, inactive-only cleanup action, 실패 재시도/성공 갱신/활성 링크 유지.
-- [ ] GREEN: 명시적 전체 정리 버튼과 서버 결과 표시, 새 링크 1일 안내.
-- [ ] Full unit(maxWorkers4), local DB/integration, typecheck/lint/build, one fresh read-only review and one Important RED→GREEN fix pass. No release.
+- [x] RED: 24시간 표시, inactive-only cleanup action, 실패 재시도/성공 갱신/활성 링크 유지.
+- [x] GREEN: 명시적 전체 정리 버튼과 서버 결과 표시, 새 링크 1일 안내.
+- [x] Full unit(maxWorkers4), local DB/integration, typecheck/lint/build, one fresh read-only review and one Important RED→GREEN fix pass. No release.
+
+## Verification — 2026-10-29
+
+- Task1: six observed RED failures, then13 focused passes. Selector role badges, keyboard selection/cancel/focus, simplified navigation and native form-linked footer submit verified.
+- Task2: four observed RED failures, then17 local sharing/history tests passed. New links have exactly24h TTL; existing expiry unchanged; owner-only current-fridge cleanup preserves active/other-fridge links and memberships. Direct RPC and HTTP forbidden/cross-origin cases covered. A real blocked-transaction test reproduced deleted-token acceptance, then passed with locked reread existence check. Migration applied local only; local security advisors at warn/error level found no issues.
+- Task3: two observed UI RED failures, then four passes for24h display, inactive history deletion preserving active link, and failed-delete retry.
+- One fresh read-only review found an Important long-list visibility issue in the custom selector. A10-fridge viewport test reproduced an offscreen active row(480px bottom versus288px viewport); layout-effect scrolling now keeps End/Home and initial selected option visible. Fixed in one pass; no further Important/Critical findings or Minor findings.
+- Final unit243 passed (`work/invite-controls-final-unit.log`), local DB101 passed (`work/invite-controls-all-db.log`), local integration125 passed/two opt-in skipped (`work/invite-controls-all-integration.log`): total469 assertions. Typecheck, lint and build exited0. Three existing lint warnings remain unchanged. A test-only unsupported query option was removed after typecheck caught it; final typecheck/build passed.
+- Actual browser/mobile appearance remains unverified due saved local-origin access denial. No policy bypass attempted. No push, deployment, cloud DB or environment-file change. Existing .idea remains untouched. Work stays on dev locally.

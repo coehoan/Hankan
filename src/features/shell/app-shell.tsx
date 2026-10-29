@@ -30,7 +30,7 @@ export function AppShell({fridges,selectedId,initialToday,timeZone,view='invento
   finally{switchingRef.current=false;setSwitching(false)}
  }
  return <div className="pantry-app">
-  <header className="pantry-header"><div><Link className="brand-link" href={'/fridges/'+selectedId}><Brand/></Link><nav aria-label="메인 메뉴"><Link href={'/fridges/'+selectedId} aria-current={view==='inventory'?'page':undefined}>내 냉장고</Link><Link href={'/fridges/'+selectedId+'/recipes'} aria-current={view==='recipes'?'page':undefined}>요리 추천</Link></nav><ProfileMenu key={accountName+':'+selectedId} accountName={accountName} fridgeId={selectedId}/></div></header>
+  <header className="pantry-header"><div><Link className="brand-link" href={'/fridges/'+selectedId}><Brand/></Link><ProfileMenu key={accountName+':'+selectedId} accountName={accountName} fridgeId={selectedId}/></div></header>
   {(view==='inventory'||view==='recipes')&&<div className="pantry-context"><FridgeSwitcher fridges={fridges} selectedId={selectedId} onSelect={id=>void select(id)} disabled={switching||!online}/>{switching&&<p role="status">냉장고를 열고 있어요…</p>}</div>}
   {error&&<p className="shell-error" role="alert">{error}</p>}
   {view==='inventory'&&receiptFor===selectedId&&<UploadForm key={'receipt:'+selectedId} fridgeId={selectedId} fridgeName={selected.name} onClose={()=>setReceiptFor(null)} onCreated={id=>router.push('/receipts/'+id)}/>}

@@ -48,8 +48,14 @@ function harness({ fail, overrides = {} } = {}) {
         return value;
       },
       list: async function* () {
-        yield '.next/server/app/page.js.nft.json';
-        yield '.vercel/output/functions/index.func/.vc-config.json';
+        for (const file of [
+          '.next/next-server.js.nft.json',
+          '.next/next-minimal-server.js.nft.json',
+          '.next/server/app/page.js.nft.json',
+          '.vercel/output/functions/index.func/.vc-config.json',
+        ]) {
+          if ({ ...files, ...overrides }[file] !== undefined) yield file;
+        }
       },
     },
   };
@@ -218,6 +224,7 @@ for (const file of [
   '.vercel/output/functions/index.func/.vc-config.json',
 ]) {
   for (const value of [undefined, 'not json']) {
+    if (value === undefined && file.endsWith('.nft.json')) continue;
     test(
       'blocks_database_when_build_manifest_is_missing_or_invalid_' + file + '_' + value,
       async () => {

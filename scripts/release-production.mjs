@@ -17,12 +17,10 @@ const databaseOrigin = 'https://' + target.SUPABASE_PROJECT_ID + '.supabase.co';
 const siteOrigin = 'https://hankan-murex.vercel.app';
 
 export async function checkBuildArtifacts({ read = readFile, list = glob } = {}) {
-  const manifests = new Set([
-    '.next/next-server.js.nft.json',
-    '.next/next-minimal-server.js.nft.json',
-  ]);
+  const manifests = new Set();
   let functions = 0;
   for await (const file of list([
+    '.next/*.nft.json',
     '.next/server/**/*.nft.json',
     '.vercel/output/functions/**/.vc-config.json',
   ])) {

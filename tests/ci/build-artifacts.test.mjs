@@ -38,6 +38,14 @@ async function fixture(t, overrides = {}) {
 test('checks_real_nested_manifests_and_accepts_runtime_dependencies_and_edge_functions', async (t) => {
   await checkBuildArtifacts(await fixture(t));
 });
+test('accepts_valid_prebuilt_functions_when_optional_shared_next_traces_are_not_emitted', async (t) => {
+  await checkBuildArtifacts(
+    await fixture(t, {
+      '.next/next-server.js.nft.json': undefined,
+      '.next/next-minimal-server.js.nft.json': undefined,
+    }),
+  );
+});
 test('rejects_environment_references_in_real_nested_function_output', async (t) => {
   await assert.rejects(
     checkBuildArtifacts(

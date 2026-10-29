@@ -196,6 +196,67 @@ describe('inventory request isolation and synchronization', () => {
 describe('inventory controls with real hook and HTTP boundary', () => {
   const show = () =>
     render(<InventoryScreen fridgeId={A} fridgeName="우리집 냉장고" initialToday="2026-10-26" />);
+  it('remaining_save_uses_progress_and_success_notice_can_be_dismissed', async () => {
+    const pending = deferred();
+    let rows = [item('a', '두부')];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((_url: RequestInfo | URL, init?: RequestInit) =>
+        init?.method === 'PATCH' ? pending.promise : Promise.resolve(response(rows)),
+      ),
+    );
+    show();
+    const slider = await screen.findByRole('slider', { name: '두부 남은 양' });
+    fireEvent.change(slider, { target: { value: '45' } });
+    fireEvent.pointerUp(slider);
+    expect(screen.getByRole('progressbar', { name: '두부 남은 양 저장 중' })).toBeVisible();
+    expect(screen.queryByText('저장 중…')).not.toBeInTheDocument();
+    rows = [item('a', '두부', A, { version: 2, remainingPercent: 45 })];
+    await act(async () => pending.resolve(response(rows[0])));
+    expect(await screen.findByText('남은 양을 저장했어요.')).toBeVisible();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '알림 닫기' }));
+    expect(screen.queryByText('남은 양을 저장했어요.')).not.toBeInTheDocument();
+  });
+  it('success_notice_expires_three_seconds_after_the_latest_identical_message', async () => {
+    vi.useFakeTimers();
+    let row = item('a', '두부');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+        if (init?.method === 'PATCH') {
+          row = { ...row, ...JSON.parse(String(init.body)).patch, version: row.version + 1 };
+          return response(row);
+        }
+        return response([row]);
+      }),
+    );
+    show();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    async function save(value: string) {
+      const slider = screen.getByRole('slider', { name: '두부 남은 양' });
+      fireEvent.change(slider, { target: { value } });
+      await act(async () => {
+        fireEvent.pointerUp(slider);
+      });
+    }
+    await save('45');
+    expect(screen.getByText('남은 양을 저장했어요.')).toBeVisible();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+    await save('40');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2999);
+    });
+    expect(screen.getByText('남은 양을 저장했어요.')).toBeVisible();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(screen.queryByText('남은 양을 저장했어요.')).not.toBeInTheDocument();
+  });
   it('rollback_failed_remaining_update', async () => {
     vi.stubGlobal(
       'fetch',

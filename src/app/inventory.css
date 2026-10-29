@@ -346,6 +346,37 @@
   color: var(--foreground);
   font-variant-numeric: tabular-nums;
 }
+.quantity-save-slot {
+  height: 3px;
+  margin: 2px 0;
+}
+.quantity-save-progress {
+  height: 100%;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--soft);
+}
+.quantity-save-progress > span {
+  display: block;
+  width: 40%;
+  height: 100%;
+  background: var(--accent);
+  animation: quantity-save-loading 1s linear infinite;
+}
+@keyframes quantity-save-loading {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(350%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quantity-save-progress > span {
+    width: 100%;
+    animation: none;
+  }
+}
 .ingredient-quantity input[type='range'] {
   display: block;
   width: 100%;
@@ -468,6 +499,31 @@
   padding: 12px 15px;
   border-radius: 8px;
   margin-bottom: 14px;
+}
+.inventory-page .inventory-notice {
+  position: relative;
+  padding-right: 46px;
+}
+.inventory-notice-close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+}
+.inventory-notice-close:hover {
+  background: var(--surface);
+}
+.inventory-notice-close svg {
+  width: 14px;
+  height: 14px;
 }
 .inventory-loading {
   color: var(--muted);

@@ -86,9 +86,9 @@
   gap: 12px;
 }
 .password-dialog-actions button {
-  width: 140px;
+  width: 90px;
   min-width: 0;
-  flex: 0 1 140px;
+  flex: 0 0 90px;
   min-height: 44px;
 }
 .invite-history-heading {

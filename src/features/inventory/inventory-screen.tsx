@@ -1,10 +1,11 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Ingredient, StoragePlace } from './contracts';
 import { sortIngredients, urgencyOf } from './domain';
 import { useInventory } from './use-inventory';
 import { IngredientForm } from './ingredient-form';
 import { IngredientArt } from './ingredient-art';
+import { InventoryNotice } from './inventory-notice';
 import Link from 'next/link';
 import { RecipeResults } from '@/features/recipes/recipe-results';
 import { Dialog } from '@/components/ui/dialog';
@@ -95,9 +96,9 @@ function IngredientRow({
           </span>
         </span>
       </button>
-      <div className="ingredient-quantity">
+      <div className="ingredient-quantity" aria-busy={saving}>
         <div className="quantity-caption">
-          <span>{saving ? '저장 중…' : '남은 양'}</span>
+          <span>남은 양</span>
           <output>{value}%</output>
         </div>
         <input
@@ -129,6 +130,17 @@ function IngredientRow({
               void commit();
           }}
         />
+        <div className="quantity-save-slot">
+          {saving && (
+            <div
+              className="quantity-save-progress"
+              role="progressbar"
+              aria-label={item.name + ' 남은 양 저장 중'}
+            >
+              <span />
+            </div>
+          )}
+        </div>
         <button
           className="delete-ingredient"
           aria-label={item.name + ' 삭제'}
@@ -162,9 +174,16 @@ export function InventoryScreen({
   const [query, setQuery] = useState(''),
     [filter, setFilter] = useState<StoragePlace | 'all'>('all'),
     [editor, setEditor] = useState<Editor | null>(null),
-    [notice, setNotice] = useState(''),
+    [notice, setNotice] = useState({ id: 0, message: '' }),
     [today, setToday] = useState(initialToday);
   const [addingFor, setAddingFor] = useState<string | null>(null);
+  const dismissNotice = useCallback(
+    () => setNotice((current) => ({ ...current, message: '' })),
+    [],
+  );
+  function showNotice(message: string) {
+    setNotice((current) => ({ id: current.id + 1, message }));
+  }
   useEffect(() => {
     const timer = setInterval(() => setToday(dateInZone(timeZone)), 30_000);
     return () => clearInterval(timer);
@@ -210,7 +229,7 @@ export function InventoryScreen({
           aria-label="재료 등록"
           onClick={() => {
             setAddingFor(fridgeId);
-            setNotice('');
+            showNotice('');
           }}
           disabled={disabled}
         >
@@ -268,7 +287,7 @@ export function InventoryScreen({
           onCancel={() => setEditor(null)}
           onComplete={() => {
             setEditor((current) => (current?.fridgeId === fridgeId ? null : current));
-            setNotice('재료를 저장했어요.');
+            showNotice('재료를 저장했어요.');
           }}
           onReload={() => {
             const latest = inventory.items.find((item) => item.id === activeEditor.item?.id);
@@ -313,10 +332,8 @@ export function InventoryScreen({
               </button>
             </div>
           )}
-          {notice && (
-            <p className="inventory-notice" role="status">
-              {notice}
-            </p>
+          {notice.message && (
+            <InventoryNotice key={notice.id} message={notice.message} onClose={dismissNotice} />
           )}
           {inventory.loading ? (
             <div className="inventory-loading" role="status">
@@ -389,19 +406,19 @@ export function InventoryScreen({
                         saving={inventory.pendingId === item.id}
                         onEdit={() => {
                           setEditor({ fridgeId, item });
-                          setNotice('');
+                          showNotice('');
                         }}
                         onUpdate={async (value) => {
                           await inventory.update(item.id, item.version, {
                             remainingPercent: value,
                           });
-                          setNotice('남은 양을 저장했어요.');
+                          showNotice('남은 양을 저장했어요.');
                         }}
                         onDelete={() => {
-                          setNotice('');
+                          showNotice('');
                           void inventory
                             .remove(item.id, item.version)
-                            .then(() => setNotice('재료를 삭제했어요.'))
+                            .then(() => showNotice('재료를 삭제했어요.'))
                             .catch(() => {});
                         }}
                       />

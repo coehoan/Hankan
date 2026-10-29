@@ -83,7 +83,9 @@ export async function releaseProduction({
     run({
       name,
       command: 'vercel',
-      args: [...args, '--token', VERCEL_TOKEN, '--scope', target.VERCEL_ORG_ID],
+      // --scope can force a user lookup unsupported by team-scoped tokens.
+      // The validated VERCEL_ORG_ID / VERCEL_PROJECT_ID already select the target.
+      args: [...args, '--token', VERCEL_TOKEN],
       env: vercelEnv,
     });
   const supabase = (name, args) =>

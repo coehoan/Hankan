@@ -79,6 +79,15 @@ test('configuration_errors_never_print_credential_values', () => {
       !error.message.includes(env.VERCEL_TOKEN),
   );
 });
+test('uses_explicit_project_environment_without_forcing_user_scope_lookup', async () => {
+  const h = harness();
+  await releaseProduction(h.options);
+  for (const call of h.calls.filter((c) => ['pull', 'build', 'deploy'].includes(c.name))) {
+    assert.equal(call.args.includes('--scope'), false);
+    assert.equal(call.env.VERCEL_ORG_ID, env.VERCEL_ORG_ID);
+    assert.equal(call.env.VERCEL_PROJECT_ID, env.VERCEL_PROJECT_ID);
+  }
+});
 for (const stage of ['pull', 'build', 'link', 'dry-run', 'migrate', 'deploy']) {
   test(stage + '_failure_stops_all_following_commands_without_rollback_or_reset', async () => {
     const h = harness({ fail: stage });

@@ -1,0 +1,12 @@
+.git/
+.idea/
+.vercel/
+.superpowers/
+.next/
+node_modules/
+dist/
+coverage/
+work/
+.env*
+*.log
+*.tsbuildinfo

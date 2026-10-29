@@ -19,11 +19,17 @@ let running=false;
 export async function runCycle():Promise<void>{
  if(running)return;running=true;
  try{
+  let failed=false;
   const transport=createWebPushTransport();
-  if(transport){for(const job of await claimDueDigests(new Date().toISOString(),20))try{await dispatchDigest(job,transport,databaseOutbox)}catch{console.error('Notification job deferred; lease will recover')}}
+  if(transport){for(const job of await claimDueDigests(new Date().toISOString(),20))try{await dispatchDigest(job,transport,databaseOutbox)}catch{failed=true;console.error('Notification job deferred; lease will recover')}}
   else console.info('Push unconfigured; cleanup remains active');
-  const result=await cleanupReceiptFiles(new Date().toISOString());console.info('Receipt cleanup',result);
-  const staged=await cleanupStagedUploads(new Date().toISOString());console.info('Staged receipt cleanup',staged);
+  const results=await Promise.allSettled([cleanupReceiptFiles(new Date().toISOString()),cleanupStagedUploads(new Date().toISOString())]);
+  for(let i=0;i<results.length;i++){
+   const result=results[i],label=i===0?'Receipt cleanup':'Staged receipt cleanup';
+   if(result.status==='rejected'){failed=true;console.error(label+' failed')}
+   else{console.info(label,result.value);if(result.value.failed>0)failed=true}
+  }
+  if(failed)throw new Error('Worker cycle incomplete; retry required');
  }finally{running=false}
 }
 async function main(){

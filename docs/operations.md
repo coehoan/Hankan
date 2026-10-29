@@ -16,7 +16,7 @@ Vercel 함수의4.5MB 요청 한도를 피하기 위해 브라우저는10MB 이�
 
 ## 릴리스 상태
 
-2026-10-28 기준 로컬 구현과 자동 검증을 진행했다. [인수 문서](acceptance.md)에 결과와 미검증 항목을 기록한다. 저장된 브라우저 접근 정책으로 이번 CUA 화면 검수가 차단됐고, 사용자는 HTTPS·지원 기기 환경이 없다고 확인했다. 실제 Android/데스크톱 푸시와 iOS 홈 화면 설치 수신 검증 전에는 공개 릴리스 완료로 판정하지 않는다. 호스팅 계정·도메인·DNS·외부 메일 변경은 이 로컬 작업의 승인에 포함되지 않는다.
+2026-10-29 사용자 승인으로 Vercel 웹 공개 배포를 완료했다. [인수 문서](acceptance.md)에 자동429건·실제 Production28건과 미검증 항목을 기록한다. 로컬 CUA 차단과 별도로 새 HTTPS 로그인 화면은 브라우저에서 확인했다. 실제 Android/데스크톱 푸시와 iOS 홈 화면 설치 수신 등 전체 기기 인수는 별도 확인이 남아 있다. 사용자 도메인·DNS·외부 메일은 변경하지 않았다.
 
 ## 설정 목록과 아이디 인증
 
@@ -55,7 +55,7 @@ DB 변경 시 타입 파일을 재생성하고 전체 검사를 반복한다. �
 
 ## 로컬 실행
 
-Node 24.15 이상(25 미만), 로컬 Supabase를 사용한다. `npm run dev`와 `npm run dev:worker`를 각각 실행한다. worker는 60초 간격이며 한 주기가 끝나기 전 다음 주기를 실행하지 않는다. `npm run build:worker` 후 `node dist/worker.cjs --once`로 한 주기만 실행할 수 있다. 배포 웹은 `npm run build` 후 `npm start`, worker는 `npm run start:worker`로 별도 실행한다. HTTP cron URL이나 비밀 토큰은 사용하지 않는다.
+로컬/별도 서버 방식은 Node24.15 이상(25 미만)을 사용한다. `npm run dev`와 `npm run dev:worker`를 각각 실행한다. worker는60초 간격이며 한 주기가 끝나기 전 다음 주기를 실행하지 않는다. `npm run build:worker` 후 `node dist/worker.cjs --once`로 한 주기만 실행할 수 있다. 별도 서버 배포 웹은 `npm run build` 후 `npm start`, worker는 `npm run start:worker`다. Vercel 배포는 위의 인증된 HTTP 예약 방식을 사용한다.
 
 `.env.local`에 기존 Supabase 설정과 `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`를 설정한다. 로컬용 키는 생성되어 있다. 배포마다 별도 키를 생성하고 subject에는 실제 연락 가능한 `mailto:` 주소 또는 HTTPS 주소를 사용한다. 키를 바꾸면 기존 브라우저 구독을 다시 연결해야 한다. 개인 키·service role 키는 공개 저장소, 로그, 클라이언트 번들에 넣지 않는다. VAPID가 없으면 푸시는 처리하지 않고 사진 정리만 실행한다.
 
@@ -89,7 +89,7 @@ Node 24.15 이상(25 미만), 로컬 Supabase를 사용한다. `npm run dev`와 
 
 ## 장애 확인과 재개
 
-웹과 지속 실행 Node worker를 모두 지원하는 호스트가 필요하다. worker를 요청 종료 때 중단되는 일회성 웹 함수에만 배치하지 않는다. 프로세스 관리자/Compose의 재시작 정책을 켜고, 배포 후 시작 로그와 60초 주기의 정리 개수 로그를 확인한다. 종료 중 전송 결과 기록이 남지 않은 작업은 5분 임대 만료 후 재개된다. DB 작업/구독 키를 수정해 임의로 다시 발송하지 않는다.
+Compose/지속 프로세스 방식을 선택하면 웹과 Node worker를 모두 지원하는 호스트가 필요하다. `setInterval` 루프를 웹 함수에 배치하지 않는다. 프로세스 관리자/Compose의 재시작 정책을 켜고 시작 로그와60초 주기의 정리 개수를 확인한다. Vercel은 한 주기를 await하는 HTTP 함수를 예약 호출한다. 종료 중 기록이 남지 않은 작업은5분 임대 만료 후 재개된다. DB 작업/구독 키를 수정해 임의로 다시 발송하지 않는다.
 
 알림이 오지 않으면 사용자 일정 enabled/시간대/다음 시각→브라우저 연결/OS 권한→worker 생존→VAPID 쌍과 연락처→DB/RPC 연결 순으로 확인한다. 404/410은 구독 제거 후 브라우저에서 재연결한다. 인증/403 등 설정 오류는 키와 설정을 고치고 재시작한다. 재시도는 최대 10회로 제한되므로 실패 작업을 운영에서 확인해야 한다. 상세 큐 조회는 관리자 서버 환경에서만 하며 endpoint·인증 키를 로그에 출력하지 않는다.
 
@@ -105,6 +105,6 @@ Node 24.15 이상(25 미만), 로컬 Supabase를 사용한다. `npm run dev`와 
 
 현재 .env.local은 클라우드 접속을 사용한다. 변경 전 설정은 Git에서 제외된 work/env-backups/.env.local.before-cloud에 보관한다. 전체 DB 통합 검사는 .env.test.local의 기존 로컬 연결을 쓰도록 분리했다. .env.cloud.local은 준비 파일이며 Next가 자동으로 읽지 않는다. 키 값이나 백업 파일을 커밋하지 않는다.
 
-클라우드 SDK 검사32건과 실제 Next 서버 로그인·알림 설정·구독 등록·로그아웃 API 흐름, worker 한 주기를 확인했다. 아이디 인증 변경 후 실제 클라우드 가입·중복 가입·미로그인 거부·비밀번호 변경·관리자 CLI 초기화·이전 비밀번호 거부 등18건도 통과했다. 검증용 사용자/사진은 제거했다. 실제 브라우저/기기 푸시 수신과 웹 공개 호스팅은 별도 검증 대상이다.
+클라우드 SDK 검사32건과 실제 Next 서버 로그인·알림 설정·구독 등록·로그아웃 API 흐름, worker 한 주기를 확인했다. 아이디 인증 변경 후 실제 클라우드18건도 통과했다. 2026-10-29 Vercel에서 실제 Production28건과 예약 worker HTTP200까지 확인했다. 검증용 사용자/사진은 제거했다. 실제 기기 푸시 수신은 별도 검증 대상이다. 추가 버킷/예약 extension 마이그레이션2건을 적용한 뒤 클라우드 이력도 저장소 파일 버전과 정합화했다.
 
 보안 Advisor의 authenticated SECURITY DEFINER 실행 경고20건은 소유권·멤버십을 검사하는 의도된 원자적 RPC다. [경고 설명](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable)을 확인하고 실제 접근 차단을 검사했으며 경고 제거를 위해 권한을 풀지 않았다. RLS 정책 없음 정보3건은 클라이언트가 접근하면 안 되는 서버 전용 표의 기본 거부다. [설명](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).

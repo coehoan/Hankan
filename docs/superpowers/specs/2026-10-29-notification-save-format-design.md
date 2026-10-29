@@ -7,3 +7,5 @@
 전체 추적 소스·테스트·스크립트·스타일·JSON/YAML 설정·SQL에 Prettier와 SQL 플러그인 버전을 고정하여 포맷한다. 2칸 들여쓰기, 세미콜론, 작은따옴표, LF를 사용한다. 개인/생성/비밀/의존성 파일(.idea, .env*, .next, .vercel, dist, work, .superpowers, node_modules, lockfile, next-env.d.ts), 생성 지침 AGENTS.md와 문서는 제외한다. SQL 함수 본문을 포함한 문자열 내용은 보존하며 포맷 전후 SQL 의미 토큰을 비교한다.
 
 로컬 변경·검증만 수행한다. 푸시/배포/클라우드 변경 금지. 기존 환경파일과 데이터, .idea 보존. 브라우저 접근 거부를 우회하지 않는다.
+
+Git에도 지원 코드 확장자의 LF 규칙을 지정해 Windows 체크아웃 후에도 동일한 정렬 기준을 유지한다.

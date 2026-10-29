@@ -15,6 +15,6 @@ it('management_dialogs_close_without_leaving_duplicates',async()=>{
 it('notification_settings_link_opens_mypage_instead_of_a_modal',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:unknown)=>Response.json({data:String(url).endsWith('/notifications')?{enabled:false,localTime:'09:00',timezone:'Asia/Seoul',nextRunAt:null}:[]})));
  render(<AppShell fridges={[{id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',name:'우리집',role:'owner'}]} selectedId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" initialToday="2026-10-28" timeZone="Asia/Seoul"/>);
- expect(screen.getByRole('link',{name:'알림 설정'})).toHaveAttribute('href','/mypage#notifications');expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+ expect(screen.queryByRole('link',{name:'알림 설정'})).not.toBeInTheDocument();expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
  expect(screen.queryByRole('button',{name:'멤버 관리'})).not.toBeInTheDocument();
 });

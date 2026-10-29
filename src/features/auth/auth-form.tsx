@@ -11,7 +11,7 @@ const copy:Record<FormAction,{title:string;description:string;submit:string}>={
  'sign-up':{title:'싱싱한 일상을 시작해요',description:'아이디와 비밀번호로 가입하고 바로 시작해요.',submit:'회원가입'},
  'update-password':{title:'새 비밀번호를 정해 주세요',description:'같은 비밀번호를 두 번 입력해 주세요.',submit:'비밀번호 변경'},
 };
-export function AuthForm({mode,nextPath='/',onSuccess,onPendingChange}:{mode:FormAction;nextPath?:string;notice?:string;onSuccess?:()=>void;onPendingChange?:(pending:boolean)=>void}){
+export function AuthForm({mode,nextPath='/',onSuccess,onPendingChange,formId,externalSubmit=false}:{mode:FormAction;nextPath?:string;notice?:string;onSuccess?:()=>void;onPendingChange?:(pending:boolean)=>void;formId?:string;externalSubmit?:boolean}){
  const router=useRouter(),[pending,setPending]=useState(false),[error,setError]=useState(''),text=copy[mode];
  async function submit(event:React.SubmitEvent<HTMLFormElement>){
   event.preventDefault();if(pending)return;const fields=new FormData(event.currentTarget);setError('');setPending(true);onPendingChange?.(true);
@@ -22,12 +22,12 @@ export function AuthForm({mode,nextPath='/',onSuccess,onPendingChange}:{mode:For
    if(onSuccess)onSuccess();else router.replace(safeNextPath(result.data?.nextPath));router.refresh();
   }catch(caught){setError(caught instanceof Error?caught.message:'연결을 확인하고 다시 시도해 주세요.')}finally{setPending(false);onPendingChange?.(false)}
  }
- return <div className="auth-card"><h2>{text.title}</h2><p className="form-description">{text.description}</p><form onSubmit={submit} aria-label={text.submit}>
+ return <div className="auth-card"><h2>{text.title}</h2><p className="form-description">{text.description}</p><form id={formId} onSubmit={submit} aria-label={text.submit}>
  {mode!=='update-password'&&<label className="field">아이디<input name="username" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="영문·숫자·밑줄 4~24자" required minLength={4} maxLength={24} disabled={pending}/></label>}
  <label className="field">{mode==='update-password'?'새 비밀번호':'비밀번호'}<input name="password" type="password" autoComplete={mode==='sign-in'?'current-password':'new-password'} placeholder="8자 이상 입력해 주세요" required minLength={8} maxLength={72} disabled={pending}/></label>
  {mode==='update-password'&&<label className="field">새 비밀번호 확인<input name="confirmPassword" type="password" autoComplete="new-password" placeholder="한 번 더 입력해 주세요" required minLength={8} maxLength={72} disabled={pending}/></label>}
 
  {error&&<p className="form-message error" role="alert">{error}</p>}
- <Button className="primary-button" type="submit" disabled={pending}>{pending?'잠시만 기다려 주세요':text.submit}<span aria-hidden="true">↗</span></Button>
+ {!externalSubmit&&<Button className="primary-button" type="submit" disabled={pending}>{pending?'잠시만 기다려 주세요':text.submit}<span aria-hidden="true">↗</span></Button>}
  </form>{mode==='sign-in'?<p className="switch-auth">아직 한칸 계정이 없나요? <Link href={'/signup?next='+encodeURIComponent(safeNextPath(nextPath))}>회원가입</Link></p>:mode==='sign-up'?<p className="switch-auth"><Link href={'/login?next='+encodeURIComponent(safeNextPath(nextPath))}>로그인으로 돌아가기</Link></p>:null}</div>;
 }

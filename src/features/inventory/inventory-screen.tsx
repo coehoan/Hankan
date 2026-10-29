@@ -255,7 +255,6 @@ export function InventoryScreen({
               }}
             >
               <span>직접 입력</span>
-              <span aria-hidden="true">›</span>
             </button>
             <button
               className="settings-row"
@@ -266,7 +265,6 @@ export function InventoryScreen({
               }}
             >
               <span>영수증 등록</span>
-              <span aria-hidden="true">›</span>
             </button>
           </div>
         </Dialog>

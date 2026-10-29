@@ -11,6 +11,8 @@
 .my-page-section-heading,.my-page-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
 .my-page-actions{justify-content:flex-start}.my-page-actions .secondary-button{display:inline-flex;align-items:center;min-height:44px;text-decoration:none}
 .my-page-section-heading h2{margin:0}.my-page-section-heading{margin-bottom:18px}.my-page-card .push-controls{margin-top:0}
+.my-page-logout{margin-top:32px}.my-page-logout .sign-out{display:block;width:100%}.my-page-logout .sign-out button{display:block;width:100%;min-height:50px;padding:12px 20px;border:1px solid var(--control-border);border-radius:12px;background:var(--surface);color:var(--foreground);font-weight:600}.my-page-logout .sign-out [role=alert]{display:block;margin-top:10px;color:var(--error)}
+.my-page-card .notification-settings{display:grid;gap:18px}.notification-time-settings{display:grid;gap:12px;padding:18px;border:1px solid var(--border);border-radius:12px;background:var(--background)}.notification-time-settings>label{display:grid;gap:8px}.my-page-card .notification-form>button{justify-self:start;min-height:44px}.my-page-card[id=notifications]{scroll-margin-top:24px}
 .receipt-photo-box{min-height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:22px;border:1px dashed var(--control-border);border-radius:14px;background:var(--background)}
 .receipt-photo-preview{display:block;width:100%;max-height:360px;object-fit:contain;border-radius:8px}
 .receipt-upload-actions{display:flex;justify-content:flex-end;margin-top:22px}.receipt-upload-actions button{min-width:130px}

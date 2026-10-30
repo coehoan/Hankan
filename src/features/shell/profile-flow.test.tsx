@@ -54,6 +54,17 @@ it('profile_initial_opens_three_actions_and_supports_keyboard_and_outside_close'
   fireEvent.pointerDown(document.body);
   expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 });
+it('profile_menu_stays_open_when_touch_tap_blurs_without_focusing_the_item', () => {
+  render(<AppShell {...props} />);
+  fireEvent.click(screen.getByRole('button', { name: 'fresh_user 계정 메뉴' }));
+  const menu = screen.getByRole('menu', { name: '계정 메뉴' });
+  const manage = within(menu).getByRole('menuitem', { name: '냉장고 관리' });
+  fireEvent.pointerDown(manage);
+  fireEvent.blur(within(menu).getByRole('menuitem', { name: '마이페이지' }), {
+    relatedTarget: null,
+  });
+  expect(screen.getByRole('menu', { name: '계정 메뉴' })).toContainElement(manage);
+});
 it('inventory_registration_chooses_manual_or_receipt_without_old_toolbar_actions', async () => {
   const { container } = render(<AppShell {...props} />);
   expect(container.querySelector('.fridge-role')).toBeNull();

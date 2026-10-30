@@ -25,7 +25,8 @@ export function ProfileMenu({ accountName, fridgeId }: { accountName: string; fr
       className="profile-menu"
       ref={root}
       onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget))
+          setOpen(false);
       }}
       onKeyDown={(event) => {
         if (event.key === 'Escape' && open) {

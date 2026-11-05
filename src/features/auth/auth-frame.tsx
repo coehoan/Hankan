@@ -4,9 +4,10 @@ export function Brand() {
   return (
     <span className="brand">
       <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <path d="M7 23C1 12 11 4 26 5c1 14-8 24-19 18Z" fill="currentColor" opacity=".22" />
+        <rect x="6" y="2" width="20" height="28" rx="4" fill="currentColor" opacity=".14" />
+        <rect x="6" y="2" width="20" height="28" rx="4" stroke="currentColor" strokeWidth="1.7" />
         <path
-          d="m7 25 16-17M11 21l-2-7m8 1 7 1"
+          d="M6 14h20M11 7v3m0 9v6"
           stroke="currentColor"
           strokeWidth="1.7"
           strokeLinecap="round"

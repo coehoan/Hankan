@@ -118,6 +118,8 @@
 }
 .notification-time-settings {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 12px;
   padding: 18px;
   border: 1px solid var(--border);
@@ -126,6 +128,8 @@
 }
 .notification-time-settings > label {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 8px;
 }
 .my-page-card .notification-form > button {

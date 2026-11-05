@@ -441,7 +441,17 @@ export function InventoryScreen({
         </div>
         <aside className="fridge-summary" aria-label="냉장고 요약">
           <div className="summary-heading">
-            <span aria-hidden="true">✳</span>
+            <span aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9 5l3 3 3-3M9 19l3-3 3 3" />
+              </svg>
+            </span>
             <p>
               조금 더 신선한
               <br />

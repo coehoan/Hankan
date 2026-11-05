@@ -45,6 +45,22 @@ select,
 textarea {
   font-family: inherit;
 }
+/* Keep native mobile date/time controls inside their grid and padded fields. */
+input[type='date'],
+input[type='time'] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type='date']::-webkit-date-and-time-value,
+input[type='time']::-webkit-date-and-time-value {
+  min-width: 0;
+  text-align: left;
+}
 button:disabled {
   cursor: default;
 }
@@ -536,7 +552,7 @@ textarea:focus-visible {
   .ingredient-quantity {
     width: 100%;
     display: grid;
-    grid-template-columns: 72px minmax(50px, 1fr) auto;
+    grid-template-columns: max-content minmax(0, 1fr);
     align-items: center;
     gap: 8px;
   }
@@ -547,9 +563,14 @@ textarea:focus-visible {
   .quantity-caption output {
     font-size: 14px;
   }
+  .ingredient-quantity .quantity-save-slot,
+  .ingredient-quantity .delete-ingredient {
+    grid-column: 1 / -1;
+  }
   .delete-ingredient {
     font-size: 12px;
     white-space: nowrap;
+    justify-self: start;
   }
   .fridge-summary dt {
     font-size: 12px;

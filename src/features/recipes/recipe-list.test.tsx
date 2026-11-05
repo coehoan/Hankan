@@ -97,7 +97,46 @@ it('recipe_request_does_not_change_remaining', async () => {
   expect(screen.getByText('2개')).toBeVisible();
   expect(screen.getByText('달걀을 풀어요.')).toBeVisible();
   expect(rows[0].remainingPercent).toBe(100);
-  expect(screen.getByText(/AI가 만든 조리법/)).toBeVisible();
+  expect(screen.queryByText(/AI가 만든 조리법/)).not.toBeInTheDocument();
+});
+it('shows_both_sources_in_one_list_without_source_or_invented_metadata', async () => {
+  const catalogMatch = {
+    ...match,
+    recipe: {
+      ...match.recipe,
+      id: 'foodsafety:28',
+      name: '새우 두부 계란찜',
+      prepMinutes: null,
+      servings: null,
+      ingredientsText: '주재료: 달걀(2개)\n양념: 물 약간',
+      origin: {
+        kind: 'catalog',
+        provider: '식품의약품안전처 조리식품 레시피 DB',
+        recordId: '28',
+        sourceUrl: 'https://www.foodsafetykorea.go.kr/api/openApiInfo.do?svc_no=COOKRCP01',
+      },
+    },
+  };
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: RequestInfo | URL) =>
+      Promise.resolve(
+        String(url).endsWith('/recipes') ? response([match, catalogMatch]) : response(rows),
+      ),
+    ),
+  );
+  show();
+  const button = await screen.findByRole('button', { name: '요리 추천 받기' });
+  await waitFor(() => expect(button).toBeEnabled());
+  await user.click(button);
+  expect(await screen.findByText('조리 시간 미제공 · 인분 미제공')).toBeVisible();
+  expect(screen.getByRole('button', { name: '계란찜 조리법 보기' })).toBeVisible();
+  await user.click(screen.getByRole('button', { name: '새우 두부 계란찜 조리법 보기' }));
+  expect(screen.getByText('주재료: 달걀(2개) 양념: 물 약간')).toBeVisible();
+  expect(screen.queryByText(/식품의약품안전처|식약처|레시피 출처/)).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: '출처 보기' })).not.toBeInTheDocument();
+  expect(screen.queryByText(/AI가 만든 조리법/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/null인분|약 0분/)).not.toBeInTheDocument();
 });
 it('shows_both_groups_and_missing_ingredients', async () => {
   vi.stubGlobal(

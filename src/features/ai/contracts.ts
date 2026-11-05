@@ -14,8 +14,9 @@ export type RecipeCandidate = {
   name: string;
   ingredients: { name: string; amountText: string }[];
   steps: string[];
-  prepMinutes: number;
-  servings: number;
+  ingredientsText?: string;
+  prepMinutes: number | null;
+  servings: number | null;
   origin:
     | { kind: 'generated' }
     | { kind: 'catalog'; provider: string; recordId: string; sourceUrl?: string };

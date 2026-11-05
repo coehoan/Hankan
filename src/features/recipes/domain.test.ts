@@ -36,6 +36,17 @@ it('egg_alias_matches', () => {
     classifyRecipes([recipe('달걀 요리', ['달걀'])], [item('egg', '계란')], today)[0].kind,
   ).toBe('available');
 });
+it('matches_preparation_words_without_substring_or_specialty_substitution', () => {
+  expect(normalizeIngredientName('다진 마늘')).toBe('마늘');
+  expect(normalizeIngredientName('달걀①')).toBe('계란');
+  expect(
+    classifyRecipes([recipe('마늘찜', ['다진 마늘'])], [item('garlic', '마늘')], today)[0].kind,
+  ).toBe('available');
+  expect(classifyRecipes([recipe('연두부찜', ['연두부'])], [item('tofu', '두부')], today)).toEqual(
+    [],
+  );
+  expect(classifyRecipes([recipe('찹쌀죽', ['찹쌀'])], [item('rice', '쌀')], today)).toEqual([]);
+});
 it('normalizes_nfkc_spaces_without_changing_the_display_name', () => {
   expect(normalizeIngredientName('  Ａ　소스  ')).toBe('a 소스');
   const food = item('egg', '  달걀 ');

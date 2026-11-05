@@ -3,6 +3,7 @@ import { Dialog } from '@/components/ui/dialog';
 import type { Ingredient } from '@/features/inventory/contracts';
 import type { RecipeMatch } from './domain';
 import { normalizeIngredientName } from './domain';
+import { recipeMetadata } from './recipe-metadata';
 export function RecipeDetail({
   match,
   ingredients,
@@ -18,8 +19,6 @@ export function RecipeDetail({
     const item = ingredients.find((item) => item.id === id);
     return item ? [item] : [];
   });
-  const source = recipe.origin.kind === 'catalog' ? recipe.origin : null;
-  const sourceUrl = source?.sourceUrl?.startsWith('https://') ? source.sourceUrl : undefined;
   return (
     <Dialog
       open
@@ -29,9 +28,7 @@ export function RecipeDetail({
       }}
     >
       <article className="recipe-detail">
-        <p className="recipe-detail-meta">
-          약 {recipe.prepMinutes}분 <span aria-hidden="true">·</span> {recipe.servings}인분 기준
-        </p>
+        <p className="recipe-detail-meta">{recipeMetadata(recipe)}</p>
         <p className="recipe-quantity-note">
           보유 여부는 재료 종류 기준이에요. 아래 필요한 양과 실제 남은 양을 확인해 주세요.
         </p>
@@ -53,6 +50,11 @@ export function RecipeDetail({
         )}
         <section>
           <h3>필요한 재료와 양</h3>
+          {recipe.ingredientsText && (
+            <p style={{ whiteSpace: 'pre-line' }}>
+              {recipe.ingredientsText.replace(/<br\s*\/?>/giu, '\n')}
+            </p>
+          )}
           <ul className="recipe-ingredients">
             {recipe.ingredients.map((item, index) => (
               <li key={index}>
@@ -75,29 +77,6 @@ export function RecipeDetail({
             ))}
           </ol>
         </section>
-        <footer className="recipe-origin">
-          {source ? (
-            <p>
-              레시피 출처: {source.provider} · {source.recordId}
-              {sourceUrl && (
-                <>
-                  {' '}
-                  ·{' '}
-                  <a
-                    href={sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    referrerPolicy="no-referrer"
-                  >
-                    원문 보기
-                  </a>
-                </>
-              )}
-            </p>
-          ) : (
-            <p>AI가 만든 조리법이에요. 재료의 양과 익힘 상태를 확인하며 조리해 주세요.</p>
-          )}
-        </footer>
       </article>
     </Dialog>
   );

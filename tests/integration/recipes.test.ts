@@ -14,12 +14,19 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 vi.mock('@/features/ai/registry', () => ({
   getAiProvider: () => ({
-    recommendRecipes: async (input: unknown) => {
-      received = input;
-      if (providerAction) await providerAction();
-      return output;
+    recommendRecipes: async () => {
+      throw new Error('AI unavailable in catalog regression fixture');
     },
   }),
+}));
+vi.mock('@/features/recipes/catalog', () => ({
+  getRecipeCandidates: async (input: unknown) => {
+    received = input;
+    if (providerAction) await providerAction();
+    return output;
+  },
+  getRegisteredRecipe: async (provider: string, recordId: string) =>
+    provider === '식품의약품안전처 조리식품 레시피 DB' && recordId === '28' ? candidate : null,
 }));
 const candidate = {
   id: 'egg',
@@ -29,9 +36,10 @@ const candidate = {
     { name: '소금', amountText: '조금' },
   ],
   steps: ['잘 익혀요.'],
-  prepMinutes: 10,
-  servings: 1,
-  origin: { kind: 'generated' },
+  prepMinutes: null,
+  servings: null,
+  ingredientsText: '달걀 2개, 소금 조금',
+  origin: { kind: 'catalog', provider: '식품의약품안전처 조리식품 레시피 DB', recordId: '28' },
 };
 beforeAll(async () => {
   group = await seedTestGroup();

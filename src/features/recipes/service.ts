@@ -5,10 +5,9 @@ import { AppError } from '@/lib/errors';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { listIngredients } from '@/features/inventory/service';
 import { parseId } from '@/features/inventory/domain';
-import { getAiProvider } from '@/features/ai/registry';
+import { getMixedRecipeCandidates } from './recommendations';
 import type { RecipeMatch } from './domain';
 import { classifyRecipes, inventoryVersion, usableIngredients } from './domain';
-import { validateRecipeCandidates } from './validation';
 async function todayForUser(userId: string) {
   const client = await createServerSupabaseClient();
   const profile = await client.from('profiles').select('timezone').eq('user_id', userId).single();
@@ -38,19 +37,18 @@ export async function recommendForFridgeSnapshot(
   let timer: ReturnType<typeof setTimeout> | undefined;
   let matches: RecipeMatch[];
   try {
-    const provider = getAiProvider();
     const output = await Promise.race([
-      provider.recommendRecipes({ today, ingredients: usable.map((item) => ({ ...item })) }),
+      getMixedRecipeCandidates({ today, ingredients: usable.map((item) => ({ ...item })) }),
       new Promise<never>((_, reject) => {
         timer = setTimeout(() => reject(new Error('Recommendation timed out')), 60_000);
       }),
     ]);
-    matches = classifyRecipes(await validateRecipeCandidates(output), items, today);
+    matches = classifyRecipes(output, items, today);
   } catch (error) {
     if (error instanceof AppError && error.code === 'provider_unconfigured')
       throw new AppError(
         'provider_unconfigured',
-        '요리 추천 AI가 아직 연결되지 않았어요. 재료 관리는 계속 이용할 수 있어요.',
+        '요리 추천이 아직 연결되지 않았어요. 재료 관리는 계속 이용할 수 있어요.',
       );
     throw new AppError(
       'provider_failed',

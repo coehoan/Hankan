@@ -32,8 +32,9 @@ const recipe = z
       .min(1)
       .max(50),
     steps: z.array(text(2000)).min(1).max(40),
-    prepMinutes: z.number().int().min(1).max(1440),
-    servings: z.number().int().min(1).max(20),
+    ingredientsText: text(10000).optional(),
+    prepMinutes: z.number().int().min(1).max(1440).nullable(),
+    servings: z.number().int().min(1).max(20).nullable(),
     origin,
   })
   .strict();

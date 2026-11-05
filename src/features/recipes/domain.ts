@@ -8,7 +8,13 @@ export type RecipeMatch = {
   kind: 'available' | 'needs-shopping';
 };
 export function normalizeIngredientName(name: string): string {
-  const normalized = name.normalize('NFKC').trim().replace(/\s+/gu, ' ').toLocaleLowerCase('ko-KR');
+  const normalized = name
+    .replace(/[①-⑳]/gu, '')
+    .normalize('NFKC')
+    .trim()
+    .replace(/^(?:다진|다져진|채 ?썬|썬|잘게 ?썬)\s+/u, '')
+    .replace(/\s+/gu, ' ')
+    .toLocaleLowerCase('ko-KR');
   return normalized === '달걀' ? '계란' : normalized;
 }
 export function inventoryVersion(ingredients: Ingredient[]): string {

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import type { Ingredient } from '@/features/inventory/contracts';
 import { inventoryVersion, usableIngredients, type RecipeMatch } from './domain';
 import { RecipeDetail } from './recipe-detail';
+import { recipeMetadata } from './recipe-metadata';
 type Props = {
   fridgeId: string;
   ingredients: Ingredient[];
@@ -167,7 +168,7 @@ export function RecipeResults({
         </Button>
       </header>
       <p className="recipe-quantity-note">
-        재료 종류를 기준으로 찾아요. 조리법의 필요한 양은 따로 확인해 주세요.
+        보유한 재료 종류를 기준으로 찾아요. 필요한 양은 따로 확인해 주세요.
       </p>
       {!online && (
         <p className="connection-banner" role="status">
@@ -237,9 +238,7 @@ export function RecipeResults({
                         </p>
                       )}
                       <h4>{item.recipe.name}</h4>
-                      <p className="recipe-card-meta">
-                        약 {item.recipe.prepMinutes}분 · {item.recipe.servings}인분
-                      </p>
+                      <p className="recipe-card-meta">{recipeMetadata(item.recipe)}</p>
                       {item.missing.length > 0 && (
                         <p className="recipe-missing">추가할 재료: {item.missing.join(', ')}</p>
                       )}

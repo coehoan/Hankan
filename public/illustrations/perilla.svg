@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs>
+  <linearGradient id="perilla-tone-0" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#A3C28D"/><stop offset="1" stop-color="#649463"/></linearGradient>
+</defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+<path d="M48 12c4 8 10 10 16 13l-1 6q10 1 12 7l-4 5q8 5 6 11l-7 3q2 9-4 13l-7-1q-4 8-11 10-7-2-11-10l-7 1q-6-4-4-13l-7-3q-2-6 6-11l-4-5q2-6 12-7l-1-6c6-3 12-5 16-13Z" fill="url(#perilla-tone-0)" stroke="#477058"/><path d="M48 26v58m0-37L36 35m12 24L31 45m17 23L32 57m16-10 12-12M48 59l17-14M48 68l16-11" stroke="#D4E2B5"/><path d="M48 78v8" stroke="#477058" stroke-width="3"/>
+</svg>

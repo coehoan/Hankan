@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="honey-gold" x1=".15" y1="0" x2=".8" y2="1"><stop stop-color="#F1D699"/><stop offset="1" stop-color="#CAA067"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+<path d="M31 30q-5 7-5 16v29q0 8 8 8h28q8 0 8-8V46q0-9-5-16Z" fill="url(#honey-gold)" stroke="#A58A63"/>
+<rect x="29" y="20" width="38" height="12" rx="4" fill="#B8BD94" stroke="#88966F"/>
+<rect x="28" y="46" width="40" height="24" rx="3" fill="#F5E7C3"/>
+<g fill="#DFC089" stroke="#B89B6C" stroke-width="1.4"><path d="m40 51 6 3v7l-6 3-6-3v-7Z"/><path d="m52 51 6 3v7l-6 3-6-3v-7Z"/><path d="m46 61 6 3v7l-6 3-6-3v-7Z"/></g>
+<path d="M32 36v8" stroke="#FFF4CD" opacity=".55"/>
+</svg>

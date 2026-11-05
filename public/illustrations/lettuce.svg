@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="lettuce-leaf" x1="24" y1="16" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#B8D29A"/><stop offset=".5" stop-color="#8CB77B"/><stop offset="1" stop-color="#729D6D"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+
+<path d="M44 80c-12 0-19-7-18-15-12 1-18-9-12-18-8-9-1-21 9-20-1-11 10-17 18-11 7-9 20-6 22 4 11-5 21 3 18 13 10 6 10 19 1 25 2 12-7 21-20 18l-7 7Z" fill="url(#lettuce-leaf)" stroke="#648264"/>
+<path d="M48 80C46 64 48 47 44 24m4 37C31 53 29 39 25 34m23 34c13-12 18-24 22-34M46 47l12-18m-23 26-15-5m39 9 15-9" stroke="#D1DFB5" stroke-width="2.5"/>
+<path d="M38 77q9-2 20 0l-4 8H44Z" fill="#E8E8C5" stroke="#8C9D78"/>
+
+</svg>

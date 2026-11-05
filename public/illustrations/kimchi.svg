@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <linearGradient id="kimchi-cabbage" x1="25" y1="29" x2="65" y2="62" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EBC9A0"/>
+      <stop offset=".35" stop-color="#D48F6A"/>
+      <stop offset="1" stop-color="#B96B50"/>
+    </linearGradient>
+    <linearGradient id="kimchi-bowl" x1="48" y1="60" x2="48" y2="82" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DAE7DD"/>
+      <stop offset="1" stop-color="#AAC7B5"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+  <g fill="url(#kimchi-cabbage)" stroke="#AA6C51">
+    <path d="M22 53q-6-5-2-11l11-20q4-5 9-1l11 12q3 4-2 9L38 61Z"/>
+    <path d="M34 56q-5-6-1-11l16-20q3-4 7 0l11 9q4 4-1 9L51 63Z"/>
+    <path d="m50 58 14-21q3-5 7-2l10 8q4 4-1 9L69 64Z"/>
+  </g>
+  <path d="M35 26c-4 12-8 20-1 29M53 30c-6 8-12 16-7 25m25-16c-5 5-9 10-8 16" stroke="#F5D8AE" stroke-width="4"/>
+  <path d="m30 36 7 1m-11 9 8 1m15-8 7 1m-15 8 9 2m15-3 7 1" stroke="#E8B68C" stroke-width="1.5"/>
+  <path d="M14 57h68c-4 17-14 24-34 24S18 74 14 57Z" fill="url(#kimchi-bowl)" stroke="#709480"/>
+  <path d="M19 59h58M23 64c3 6 7 9 12 11" stroke="#EDF4E9" stroke-width="3"/>
+</svg>

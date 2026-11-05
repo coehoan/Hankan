@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="kelp-tone-0" x1=".18" y1="0" x2=".85" y2="1"><stop stop-color="#A0AB80"/><stop offset=".55" stop-color="#A0AB80"/><stop offset="1" stop-color="#758B67"/></linearGradient><linearGradient id="kelp-tone-1" x1=".18" y1="0" x2=".85" y2="1"><stop stop-color="#BBC49B"/><stop offset=".55" stop-color="#BBC49B"/><stop offset="1" stop-color="#8EAA7E"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+<path d="M23 16c7 4 13-4 20 0-5 16 0 22-4 37-2 10-6 20-3 28-6-3-11 2-18-1 3-10 1-18 4-30 3-13-1-21 1-34Z" fill="url(#kelp-tone-0)" stroke="#718362"/>
+<path d="M49 22c8-4 13 3 21-1-4 11 4 19 2 31-2 10-8 19-5 29-7-4-12 3-20-1 1-10-1-21 2-31 3-12-2-19 0-27Z" fill="url(#kelp-tone-1)" stroke="#718A65"/>
+<path d="M29 23c0 13 3 21-1 35-1 6-2 11-1 16m31-46c-1 14 5 19 0 33-1 6-2 10-1 15" stroke="#D2D7AF" stroke-width="2.5" opacity=".7"/>
+<path d="m35 39-4 8m34 1-3 6" stroke="#82976E"/>
+</svg>

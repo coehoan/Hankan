@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs><linearGradient id="cheese-body" x1="25" y1="25" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#F3DFAC"/><stop offset="1" stop-color="#E6C782"/></linearGradient></defs>
+  <ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+  <g stroke="#827659"><path d="m15 54 43-28 23 29v23H15Z" fill="url(#cheese-body)" stroke="#A18E61"/><path d="m15 54 43-28 23 29-66-1Z" fill="#F5E5B8" stroke="#A18E61"/><path d="M24 63a5 5 0 1 0 10 0 5 5 0 0 0-10 0Zm28 6a4 4 0 1 0 8 0 4 4 0 0 0-8 0Zm16-8a3 3 0 1 0 6 0 3 3 0 0 0-6 0Z" fill="#D7B773" stroke="#BA9E64" stroke-width="1.5"/><ellipse cx="53" cy="43" rx="5" ry="3" transform="rotate(-11 53 43)" fill="#E2C88E" stroke="none"/></g>
+</svg>

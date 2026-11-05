@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="chives-blade" x1="48" y1="16" x2="48" y2="83" gradientUnits="userSpaceOnUse"><stop stop-color="#6D9A72"/><stop offset=".5" stop-color="#9EBB88"/><stop offset="1" stop-color="#DBDEB9"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+
+<g fill="url(#chives-blade)" stroke="#67876A" stroke-width="1.7"><path d="m38 83-22-58 5-3 23 60Z"/><path d="m42 83-14-69 5-1 15 69Z"/><path d="M46 83 44 10l5-1 3 74Z"/><path d="m51 83 8-69 5 1-7 69Z"/><path d="m55 83 19-61 5 2-18 60Z"/><path d="m36 81-14-36 4-2 17 38Z"/></g>
+<path d="m37 75 23 2-1 7-20-1Z" fill="#D0C39F" stroke="#A79877" stroke-width="1.5"/>
+<path d="m42 84-1 4m7-4v5m6-4 2 4" stroke="#B2AB8A" stroke-width="1.5"/>
+
+</svg>

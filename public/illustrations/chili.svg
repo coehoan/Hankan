@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="chili-skin" x1="24" y1="39" x2="72" y2="65" gradientUnits="userSpaceOnUse"><stop stop-color="#DFAE9A"/><stop offset=".5" stop-color="#CC8C7D"/><stop offset="1" stop-color="#B5726D"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+
+<path d="M28 33c12-3 22 7 26 17 7 16 16 21 28 20-11 12-28 10-39-3C31 55 18 55 18 43c0-4 4-9 10-10Z" fill="url(#chili-skin)" stroke="#A17869"/>
+<path d="M21 37c-1-8 0-13 6-17l7 4c-5 4-6 7-6 12l9 5-8 3-7-1-6 4 1-8Z" fill="#9FB285" stroke="#748D65"/>
+<path d="M32 43c12 5 17 24 32 28" stroke="#E6B9A4" stroke-width="3"/>
+
+</svg>

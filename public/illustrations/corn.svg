@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="corn-kernel" x1="24" y1="16" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#F5E2A8"/><stop offset=".5" stop-color="#EBD08B"/><stop offset="1" stop-color="#D6B673"/></linearGradient><linearGradient id="corn-husk" x1="24" y1="16" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#BFCEA0"/><stop offset=".5" stop-color="#9AB783"/><stop offset="1" stop-color="#7C9F74"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+
+<path d="M34 66C28 45 35 15 48 13c14 2 21 32 14 53l-14 12Z" fill="url(#corn-kernel)" stroke="#AC9D68"/>
+<path d="M41 21c-3 14-3 32 1 46m7-48v49m7-45c4 14 4 29-1 44M35 30q13 5 26 0M33 40q15 5 30 0M33 50q15 5 30 0M35 60q13 4 26 0" stroke="#D1B67C" stroke-width="1.2"/>
+<path d="M47 82C24 80 17 57 17 39c14 6 23 16 31 34 4-20 13-31 30-38-1 23-8 42-26 47Z" fill="url(#corn-husk)" stroke="#718C63"/>
+<path d="M25 49c6 13 12 21 22 28m22-31c-9 10-14 20-17 31" stroke="#CBD7AC" stroke-width="2"/>
+<path d="m44 14-3-5m7 4 2-5m3 7 4-4" stroke="#CCB981" stroke-width="1.5"/>
+
+</svg>

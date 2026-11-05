@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <linearGradient id="onion-skin" x1="29" y1="28" x2="66" y2="77" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F1D6A1"/>
+      <stop offset=".5" stop-color="#DBB781"/>
+      <stop offset="1" stop-color="#BD9467"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+  <path d="M42 16c1 9-3 13-11 19-10 7-15 15-14 25 1 14 13 22 31 22s30-8 31-22c1-10-4-18-14-25-8-6-12-10-11-19" fill="url(#onion-skin)" stroke="#987A56"/>
+  <path d="M44 24c-3 15-14 20-14 36 0 9 5 15 11 18m11-54c3 15 14 20 14 36 0 9-5 15-11 18M48 29c-3 14-4 31 0 47" stroke="#F7E2B7" opacity=".8"/>
+  <path d="m42 18-3-7m8 7 1-9m6 10 4-7" stroke="#A28F67" stroke-width="3"/>
+  <path d="m44 82-3 6m7-5v6m4-7 4 5" stroke="#A28F67" stroke-width="1.5"/>
+</svg>

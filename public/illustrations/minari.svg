@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="minari-leaf" x1="24" y1="16" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#B6CE9B"/><stop offset=".5" stop-color="#8CB47F"/><stop offset="1" stop-color="#729C70"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+
+<path d="M36 83 31 34m12 49 7-56m-1 57 18-48m-16 29 21-12M39 62 21 49m9 8-10-8m21 0 15-9" stroke="#789773" stroke-width="2.5"/>
+<g fill="url(#minari-leaf)" stroke="#72956C" stroke-width="1.7"><path d="M29 35c-9-1-13-7-8-12-4-7 5-12 10-7 6-6 14 1 10 7 4 8-4 13-12 12Z"/><path d="M48 30c-7-3-10-10-5-13-1-8 9-10 12-4 8-3 14 5 7 10 1 8-8 11-14 7Z"/><path d="M66 40c-9-1-13-7-8-12-3-8 6-12 11-7 6-5 13 1 10 8 5 7-4 13-13 11Z"/><path d="M22 53c-9-1-13-6-8-11-3-6 4-11 9-6 6-5 13 1 9 6 3 7-3 12-10 11Z"/><path d="M72 57c-9-1-13-6-8-11-3-6 4-11 9-6 6-5 13 1 9 6 3 7-3 12-10 11Z"/></g>
+<path d="m28 23 3 9m21-15-2 10m17 2-1 8m-44 5v8m51-3-1 7" stroke="#D0DDB7" stroke-width="1.4"/>
+<path d="m34 77 19 2" stroke="#CAB894" stroke-width="3"/>
+
+</svg>

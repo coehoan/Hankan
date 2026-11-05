@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs>
+  <linearGradient id="tuna-sauce-tone-0" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#DABF8C"/><stop offset="1" stop-color="#B88D5A"/></linearGradient>
+  <linearGradient id="tuna-sauce-tone-1" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#BA955D"/><stop offset="1" stop-color="#9A7046"/></linearGradient>
+  <linearGradient id="tuna-sauce-tone-2" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#7B9B7E"/><stop offset="1" stop-color="#4F735D"/></linearGradient>
+</defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+<path d="M37 23v14c-1 5-11 9-11 17v24c0 4 3 6 7 6h30c4 0 7-2 7-6V54c0-8-10-12-11-17V23Z" fill="url(#tuna-sauce-tone-0)" stroke="#826849"/><path d="M28 56h40v21c0 3-2 5-5 5H33c-3 0-5-2-5-5Z" fill="url(#tuna-sauce-tone-1)"/><rect x="34" y="12" width="28" height="14" rx="3" fill="url(#tuna-sauce-tone-2)" stroke="#3D624C"/><path d="M39 17h18" stroke="#88A58A"/><rect x="30" y="51" width="36" height="23" rx="3" fill="#F8EDD3"/><path d="M37 62c5-8 12-8 17-2l6-4v12l-6-4c-5 6-12 6-17-2Z" fill="#648F87"/><circle cx="42" cy="61" r="1.3" fill="#F8EDD3"/><path d="M33 46c2-3 6-5 8-8" stroke="#E4BE86" stroke-width="3"/>
+</svg>

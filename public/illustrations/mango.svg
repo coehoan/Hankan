@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs><linearGradient id="mango-body" x1="25" y1="25" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#F0DBA3"/><stop offset="1" stop-color="#DFB184"/></linearGradient></defs>
+  <ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+  <g stroke="#827659"><path d="M57 22c20 2 29 21 21 40-7 17-23 23-39 18-12-4-17-13-14-23 4-12 11-18 11-25 1-9 12-11 21-10Z" fill="url(#mango-body)" stroke="#A18B68"/><path d="M38 34c1-5 8-6 12-5" stroke="#F9EAC3" stroke-width="4"/><path d="M57 22c0-6 3-10 6-13" stroke="#8C805B"/><path d="M58 20c-8-12-21-11-28-3 10 8 19 9 28 3Z" fill="#AEC195" stroke="#758E69"/><path d="M66 39c7 12 1 26-9 32" stroke="#DBA18A" stroke-width="6" opacity=".4"/></g>
+</svg>

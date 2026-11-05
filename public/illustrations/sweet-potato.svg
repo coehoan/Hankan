@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="sweet-potato-skin" x1="24" y1="16" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#D3B0B0"/><stop offset=".5" stop-color="#B88E9B"/><stop offset="1" stop-color="#9D788C"/></linearGradient><linearGradient id="sweet-potato-flesh" x1="24" y1="16" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#F6E6B9"/><stop offset=".5" stop-color="#EED79B"/><stop offset="1" stop-color="#DFBE7C"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+
+<path d="M15 67c6-20 23-25 34-34 12-10 24-10 31-17-2 13 7 19-1 36-8 18-34 31-52 29-6-1-12-5-12-14Z" fill="url(#sweet-potato-skin)" stroke="#987183"/>
+<path d="M29 63c11-13 25-18 36-27" stroke="#DEC0BC" stroke-width="2.5"/>
+<path d="m40 51 3 2m21-10 3 1m-15 20 3 1m18-12 2-1m-37 18 3 1" stroke="#9C7886" stroke-width="1.6"/>
+<path d="M24 59c-7 4-9 16-4 22 5 5 16 2 21-4 5-7 0-18-7-19-4-1-7 0-10 1Z" fill="url(#sweet-potato-flesh)" stroke="#A5808C"/>
+<path d="M25 64c-4 4-5 10-1 13 4 2 9 0 12-4" stroke="#F7EBC7" stroke-width="2.5"/>
+
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs><linearGradient id="blueberry-body" x1="25" y1="25" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#AEBAD1"/><stop offset="1" stop-color="#899DB9"/></linearGradient></defs>
+  <ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+  <g stroke="#827659"><path d="M47 35c-3-10-1-18 4-24" stroke="#7D8C69"/><path d="M48 24c8-12 22-10 29-3-11 10-21 10-29 3Z" fill="#A7BD96" stroke="#728C69"/><g fill="url(#blueberry-body)" stroke="#6C7E98"><circle cx="30" cy="48" r="17"/><circle cx="57" cy="43" r="17"/><circle cx="65" cy="67" r="16"/><circle cx="38" cy="67" r="18"/></g><g fill="#9AAAC4" stroke="#73869F" stroke-width="1.5"><path d="m29 37 3 3 4-1-1 4 3 3-5 1-1 4-4-3-4 1 1-4-3-3 5-1Z"/><path d="m56 31 3 3 4-1-1 4 3 3-4 1-2 4-3-3-4 1 1-4-3-3 4-1Z"/><path d="m38 56 3 4 5-1-2 4 3 4-5 0-2 4-3-3-5 1 1-5-3-3 5-1Z"/></g><path d="M57 60c2-3 5-4 8-4" stroke="#D1DAE5" stroke-width="3"/></g>
+</svg>

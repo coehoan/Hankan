@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="seaweed-tone-0" x1=".18" y1="0" x2=".85" y2="1"><stop stop-color="#9AB19A"/><stop offset=".55" stop-color="#9AB19A"/><stop offset="1" stop-color="#648870"/></linearGradient><linearGradient id="seaweed-tone-1" x1=".18" y1="0" x2=".85" y2="1"><stop stop-color="#BED0A8"/><stop offset=".55" stop-color="#BED0A8"/><stop offset="1" stop-color="#85A883"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+<path d="M48 80c-2-16 0-39-5-63m5 47c-9-5-17-9-22-19m22 26c10-10 18-19 22-33" stroke="#64836A" stroke-width="3"/>
+<path d="M43 25c-17-3-27 2-19 10 6 5 8 5 2 10-9 8-4 16 9 13-3-12 11-15 8-33Z" fill="url(#seaweed-tone-0)" stroke="#628269"/>
+<path d="M44 37c11 3 21-5 14-12-5-4-1-6 3-10-8-5-18 0-17 8Z" fill="url(#seaweed-tone-1)" stroke="#6F9172"/>
+<path d="M51 65c-3-14 6-27 17-31 14-5 15 4 7 10-10 7 10 9 0 17-7 6-15 2-24 4Z" fill="url(#seaweed-tone-0)" stroke="#628269"/>
+<path d="M44 75c-3-13-13-21-23-17-11 5 1 10 4 13 3 4-6 8 4 10 7 2 11-3 15-6Z" fill="url(#seaweed-tone-1)" stroke="#6F9172"/>
+<path d="m31 33 10 9m20 12 10-12m-40 25 10 7" stroke="#B8CDA5"/>
+</svg>

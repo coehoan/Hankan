@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs><linearGradient id="tomato-body" x1="25" y1="25" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#E6B19D"/><stop offset="1" stop-color="#D58E7B"/></linearGradient></defs>
+  <ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+  <g stroke="#A47B66"><path d="M48 31c20-11 36 1 35 20-1 20-16 31-35 31S14 71 13 51c-1-19 15-31 35-20Z" fill="url(#tomato-body)"/><path d="m48 39-16-8 12-2 4-16 5 15 13-2-10 9 3 8-11-4-9 5Z" fill="#9CB38B" stroke="#698564"/><path d="m48 27 3-14" stroke="#6F855E"/><path d="M28 41c-5 4-7 10-5 16" stroke="#F5CEB9" stroke-width="4"/></g>
+</svg>

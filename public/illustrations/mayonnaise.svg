@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="mayonnaise-body" x1=".15" y1="0" x2=".8" y2="1"><stop stop-color="#F3EBC9"/><stop offset="1" stop-color="#DCCEA4"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+<path d="M43 13h10l2 16q14 9 14 24l-2 25q-19 9-38 0l-2-25q0-15 14-24Z" fill="url(#mayonnaise-body)" stroke="#8D8D73"/>
+<rect x="40" y="24" width="16" height="8" rx="2" fill="#9FB7B0" stroke="#8D8D73"/>
+<path d="M33 45q15-9 30 0v22q-15 9-30 0Z" fill="#F5EDDA"/>
+<path d="M40 61q2-4 9-5-6-2-5-5 2-4 8-6-2 5 3 8 5 5 2 8 8 7-5 8H41q-9-2-1-8Z" fill="#FFFAE8" stroke="#B8AF8A"/><path d="M34 44q-3 9-1 18" stroke="#FFF" opacity=".35"/>
+</svg>

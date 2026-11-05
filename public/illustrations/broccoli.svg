@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="broccoli-crown" x1="24" y1="16" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#A4C292"/><stop offset=".5" stop-color="#7CA779"/><stop offset="1" stop-color="#648D6D"/></linearGradient><linearGradient id="broccoli-stem" x1="24" y1="16" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#D5DCAD"/><stop offset=".5" stop-color="#B4C78D"/><stop offset="1" stop-color="#98AF7A"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+
+<path d="M39 46c4 12 1 22-4 35 9 5 19 5 28 0-6-11-9-23-7-35Z" fill="url(#broccoli-stem)" stroke="#7B956B"/>
+<path d="m43 65-14-14m24 16 14-18M48 54v23" stroke="#8DA574" stroke-width="2"/>
+<path d="M23 55c-11-1-15-13-8-20-4-10 4-20 15-18 4-11 18-13 25-5 11-4 21 2 22 13 12 3 15 16 7 23-1 12-15 17-24 10-6 8-19 7-24-1-5 3-9 3-13-2Z" fill="url(#broccoli-crown)" stroke="#5F8062"/>
+<path d="M25 29q4-6 11-4m7-7q6-4 10 1m11 9q8 0 10 7M23 43q4 6 10 3m11-12q7-5 13 1m-10 14q5 5 10 0m12-4 5-3" stroke="#B2CBA1" stroke-width="2"/>
+
+</svg>

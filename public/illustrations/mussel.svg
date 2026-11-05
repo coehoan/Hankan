@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="mussel-tone-0" x1=".18" y1="0" x2=".85" y2="1"><stop stop-color="#94A69B"/><stop offset=".55" stop-color="#94A69B"/><stop offset="1" stop-color="#657E76"/></linearGradient><linearGradient id="mussel-tone-1" x1=".18" y1="0" x2=".85" y2="1"><stop stop-color="#C0CBB4"/><stop offset=".55" stop-color="#C0CBB4"/><stop offset="1" stop-color="#98AE99"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+<path d="M30 74c-12-5-14-24-8-42 6-16 18-24 28-17 10 6 9 20 2 35-7 16-15 26-22 24Z" fill="url(#mussel-tone-0)" stroke="#5E7770"/>
+<path d="M31 68c-3-15 1-33 10-45m-11 44c7-9 13-18 16-29" stroke="#B9C7B4" opacity=".7"/>
+<path d="M47 80c-10-8-7-28 5-44 10-14 24-18 31-8 7 10 1 24-10 36-10 12-19 20-26 16Z" fill="url(#mussel-tone-0)" stroke="#5E7770"/>
+<path d="M49 75c1-16 12-33 26-44-3 19-14 35-26 44Z" fill="url(#mussel-tone-1)"/>
+<path d="M49 75c5-15 12-27 21-36" stroke="#6D8C7D"/>
+</svg>

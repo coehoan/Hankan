@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="cucumber-skin" x1="29" y1="27" x2="70" y2="73" gradientUnits="userSpaceOnUse"><stop stop-color="#A4BC80"/><stop offset=".5" stop-color="#7F9F69"/><stop offset="1" stop-color="#66855B"/></linearGradient><linearGradient id="cucumber-flesh" x1="24" y1="16" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#F1EDCF"/><stop offset=".5" stop-color="#DBE2B2"/><stop offset="1" stop-color="#C6D49E"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+
+<path d="M24 67C31 51 45 29 59 17c7-6 18 0 17 9C69 44 55 65 40 78c-8 7-21-1-16-11Z" fill="url(#cucumber-skin)" stroke="#58765B"/>
+<path d="M33 65c10-17 19-29 32-40" stroke="#BAD098" stroke-width="2.5"/>
+<path d="m37 54 2 1m9-15 2 1m9-11 2 1m-3 22 2 1m-13 11 2 1m-18 2 2 1m22-24 2 1" stroke="#55794F" stroke-width="2.5"/>
+<path d="m67 16 3-5 5 1" stroke="#7B9262"/>
+<ellipse cx="29" cy="73" rx="16" ry="12" transform="rotate(-24 29 73)" fill="url(#cucumber-flesh)" stroke="#6D8B60"/>
+<g fill="#C1CC95"><ellipse cx="25" cy="69" rx="2" ry="3" transform="rotate(-24 25 69)"/><ellipse cx="34" cy="71" rx="2" ry="3" transform="rotate(35 34 71)"/><ellipse cx="28" cy="78" rx="2" ry="3" transform="rotate(70 28 78)"/></g>
+
+</svg>

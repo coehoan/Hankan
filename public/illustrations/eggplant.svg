@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="eggplant-skin" x1="32" y1="32" x2="64" y2="78" gradientUnits="userSpaceOnUse"><stop stop-color="#B4A7BE"/><stop offset=".5" stop-color="#8E85A4"/><stop offset="1" stop-color="#706A8B"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+
+<path d="M59 24c16 12 18 31 6 47-10 13-26 17-43 11-7-2-9-10-4-14 10-9 14-15 15-25 1-12 11-22 26-19Z" fill="url(#eggplant-skin)" stroke="#777083"/>
+<path d="M58 27c-5 4-10 7-17 7l5-7-10-1 8-8c6-4 12-4 18-1l6 9-10 1Z" fill="#91AC7E" stroke="#6D8963"/>
+<path d="M54 17c0-5 3-8 8-8" stroke="#71865F" stroke-width="4"/>
+<path d="M45 39c-1 14-10 27-19 32" stroke="#D0C4D6" stroke-width="3" opacity=".8"/>
+
+</svg>

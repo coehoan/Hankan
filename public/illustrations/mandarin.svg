@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs><linearGradient id="mandarin-body" x1="25" y1="25" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#F2CCA0"/><stop offset="1" stop-color="#E8A66E"/></linearGradient></defs>
+  <ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+  <g stroke="#827659"><path d="M49 29c20-4 33 7 33 25 0 17-14 28-34 28S14 71 14 54c0-18 14-29 35-25Z" fill="url(#mandarin-body)"/><path d="m41 28 6-5 2-10 4 11 7 4-11 3Z" fill="#93AC78" stroke="#658360"/><path d="M51 22c6-11 17-12 25-7-6 9-15 12-25 7Z" fill="#A3B98A" stroke="#658360"/><path d="M28 42c-5 4-7 10-5 15" stroke="#FBE0BB" stroke-width="4"/><path d="m40 73 1 0m12-5 1 0m13-8 1 0m-9 14 1 0" stroke="#C58D59" opacity=".5"/></g>
+</svg>

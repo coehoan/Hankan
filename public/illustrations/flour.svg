@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs><linearGradient id="flour-body" x1="25" y1="25" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#F6EAD0"/><stop offset="1" stop-color="#E3D5B4"/></linearGradient></defs>
+  <ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+  <g stroke="#827659"><path d="m31 25-5-11h44l-5 11 10 46c2 9-7 12-27 12s-29-3-27-12Z" fill="url(#flour-body)" stroke="#A29576"/><path d="M31 25h34m-34-5h34" stroke="#C1B18B"/><path d="M30 43h36v26H30Z" fill="#EFE8D2" stroke="#C1B497"/><path d="M48 65V47m0 10c-8 0-10-6-9-9 6 0 10 4 9 9Zm0 6c8 0 10-6 9-9-6 0-10 4-9 9Z" fill="#C8B27D" stroke="#A39568"/><path d="m28 72 3-13m35 15-2-8" stroke="#D0C2A2"/></g>
+</svg>

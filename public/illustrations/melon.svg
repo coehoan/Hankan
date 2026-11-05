@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs><linearGradient id="melon-body" x1="25" y1="25" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#F0DF9C"/><stop offset="1" stop-color="#E4C779"/></linearGradient></defs>
+  <ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+  <g stroke="#9C9260"><path d="M46 22c25-2 38 15 34 34-3 19-20 29-37 26-19-3-29-18-26-35 2-14 14-24 29-25Z" fill="url(#melon-body)"/><path d="M38 25C24 42 25 65 40 80m5-57c-9 18-8 41 1 58m8-57c11 17 12 40 0 56m7-51c18 16 18 34 3 47" stroke="#FFF2CA" stroke-width="4"/><path d="m46 22 2-9 8-2" stroke="#829768" stroke-width="3"/><path d="M29 42c-2 4-3 8-2 12" stroke="#FFF6DA" stroke-width="3" opacity=".6"/></g>
+</svg>

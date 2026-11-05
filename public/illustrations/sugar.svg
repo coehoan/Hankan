@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="sugar-paper" x1=".15" y1="0" x2=".8" y2="1"><stop stop-color="#F4EBDD"/><stop offset="1" stop-color="#D9C7B3"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+<path d="m27 23 9-7h24l9 7-3 55q-18 8-36 0Z" fill="url(#sugar-paper)" stroke="#AA947C"/>
+<path d="m27 23 9 6h24l9-6m-33-7v13" stroke="#AA947C"/>
+<path d="M32 43h32v27H32Z" fill="#E8D2C3"/>
+<path d="m37 53 10-4 10 4v12l-10 4-10-4Z" fill="#FAF7EB" stroke="#B9AD94"/>
+<path d="m37 53 10 4 10-4m-10 4v12" stroke="#B9AD94"/>
+<path d="m64 74 9-4 9 4v10l-9 4-9-4Z" fill="#F8F5E8" stroke="#B9AD94"/><path d="m64 74 9 4 9-4m-9 4v10" stroke="#B9AD94"/>
+</svg>

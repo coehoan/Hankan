@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs>
+  <linearGradient id="pork-tone-0" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#E8B3A0"/><stop offset="1" stop-color="#CA887D"/></linearGradient>
+  <linearGradient id="pork-tone-1" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#F9E5D7"/><stop offset="1" stop-color="#E8C0AE"/></linearGradient>
+</defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+<path d="M16 45c2-16 16-26 33-25 15 1 26 10 31 25 7 18-1 32-17 33H34c-15 0-22-16-18-33Z" fill="url(#pork-tone-1)" stroke="#A87368"/><path d="M24 45c2-11 12-18 25-17 12 1 20 7 24 20 5 14 0 22-12 23H36c-11 0-15-13-12-26Z" fill="url(#pork-tone-0)"/><path d="M39 32c-3 11 1 18 10 24s12 9 12 15M25 50c8-3 17-2 24 6m0 0 19-12" stroke="#FAE8D9" stroke-width="4"/><path d="m31 41 5-3m23 0 4 4M34 61l4 2" stroke="#BF7D73"/>
+</svg>

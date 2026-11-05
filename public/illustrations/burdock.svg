@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="burdock-skin" x1="24" y1="16" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#D9C1A0"/><stop offset=".5" stop-color="#BFA484"/><stop offset="1" stop-color="#AA8F74"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+
+<g fill="url(#burdock-skin)" stroke="#957C62"><path d="M22 74 61 14c3-4 10-1 8 4L33 79c-4 6-15 3-11-5Z"/><path d="m39 78 34-48c3-4 9 0 7 4L51 83c-4 6-16 1-12-5Z"/></g>
+<path d="m54 27 6 4m-14 8 7 4m-16 9 7 4m-14 7 6 4m28-22 6 4m-14 7 7 4m-14 7 6 4" stroke="#927A64" stroke-width="1.5"/>
+<path d="m28 74 32-51m-15 55 29-43" stroke="#E6D2B5" stroke-width="1.7"/>
+<ellipse cx="27" cy="77" rx="6" ry="3.5" transform="rotate(30 27 77)" fill="#EAD8B6" stroke="#957C62"/>
+<ellipse cx="45" cy="81" rx="6" ry="3.5" transform="rotate(30 45 81)" fill="#EAD8B6" stroke="#957C62"/>
+
+</svg>

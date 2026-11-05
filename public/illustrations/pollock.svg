@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="pollock-tone-0" x1=".18" y1="0" x2=".85" y2="1"><stop stop-color="#E9D7AA"/><stop offset=".55" stop-color="#E9D7AA"/><stop offset="1" stop-color="#C2AB7E"/></linearGradient><linearGradient id="pollock-tone-1" x1=".18" y1="0" x2=".85" y2="1"><stop stop-color="#F4E5BE"/><stop offset=".55" stop-color="#F4E5BE"/><stop offset="1" stop-color="#DDC994"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+<path d="m42 68-9 15 14-4 13 4-8-15" fill="url(#pollock-tone-0)" stroke="#9F8E67"/>
+<path d="M36 31c-5-8-3-17 10-19 13 1 16 10 11 19 10 8 14 24 9 40-10 4-25 4-35 0-6-16-4-32 5-40Z" fill="url(#pollock-tone-1)" stroke="#A58F65"/>
+<path d="M47 31v40M47 38l-11 6m11 2-13 7m13 1-12 8m12-24 12 6m-12 2 14 7m-14 1 12 8" stroke="#C1AB7C"/>
+<path d="m32 40-9 9 6 6m36-15 9 9-7 6" fill="url(#pollock-tone-0)" stroke="#A58F65"/>
+<circle cx="40" cy="23" r="1.7" fill="#9A8B68"/><circle cx="53" cy="23" r="1.7" fill="#9A8B68"/>
+<path d="m43 28 7-1" stroke="#B7A273"/>
+</svg>

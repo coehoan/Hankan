@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="bok-choy-leaf" x1="48" y1="18" x2="48" y2="78" gradientUnits="userSpaceOnUse"><stop stop-color="#98BD83"/><stop offset=".5" stop-color="#73A16E"/><stop offset="1" stop-color="#F1EECF"/></linearGradient></defs>
+<ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+
+<path d="M43 77C30 68 16 52 15 38c-1-15 16-24 26-12 1-18 19-23 27-10 6 6 3 19 1 26 14-4 20 6 13 16-9 13-23 21-30 23Z" fill="url(#bok-choy-leaf)" stroke="#648264"/>
+<path d="M41 79c3-11-6-23-14-39 12 12 18 19 20 24 1-18 7-30 10-41-1 17-2 31-4 44 5-4 12-7 20-13-8 11-10 14-14 23-3 9-14 9-18 2Z" fill="#EDF0D8" stroke="#8B9D79"/>
+<path d="m25 31 5 12m32-22-4 16m17 13-7 7" stroke="#B9D39E" stroke-width="1.6"/>
+
+</svg>

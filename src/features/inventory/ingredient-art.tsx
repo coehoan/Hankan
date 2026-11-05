@@ -1,14 +1,8 @@
 import Image from 'next/image';
-const categories: [RegExp, string][] = [
-  [/두부/, 'tofu'],
-  [/버섯/, 'mushroom'],
-  [/시금치|상추|양배추|청경채/, 'spinach'],
-  [/계란|달걀|알/, 'egg'],
-  [/대파|쪽파|부추|파/, 'leek'],
-  [/밥|쌀|만두|떡/, 'rice'],
-];
+import { resolveIngredientArt } from './ingredient-art-catalog';
+
 export function IngredientArt({ name }: { name: string }) {
-  const asset = categories.find(([pattern]) => pattern.test(name))?.[1] ?? 'jar';
+  const asset = resolveIngredientArt(name);
   return (
     <Image
       className="ingredient-art"

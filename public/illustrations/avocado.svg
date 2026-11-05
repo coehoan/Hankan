@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs><linearGradient id="avocado-body" x1="25" y1="25" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#E3E6AE"/><stop offset="1" stop-color="#C7D498"/></linearGradient></defs>
+  <ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+  <g stroke="#827659"><path d="M35 18c10 0 14 13 20 24 7 13 8 32-6 38-14 7-31 0-32-14-1-12 4-21 7-29 3-9 4-19 11-19Z" fill="#9AAC7B" stroke="#718563"/><path d="M58 23c10-1 14 13 21 25 8 15 7 29-6 35-14 6-32-2-34-15-1-13 4-23 8-31 3-7 5-13 11-14Z" fill="#879E70" stroke="#657E5A"/><path d="M58 28c7-1 11 12 17 22 7 13 6 25-5 29-11 5-25-1-26-12-2-11 3-20 6-28 3-6 4-11 8-11Z" fill="url(#avocado-body)" stroke="#A7B781"/><ellipse cx="61" cy="62" rx="12" ry="14" transform="rotate(-15 61 62)" fill="#C5A381" stroke="#A78C6E"/><path d="M56 54c2-3 5-4 7-3" stroke="#E3C8A7" stroke-width="3"/><path d="m35 19 1-7" stroke="#7E875E"/></g>
+</svg>

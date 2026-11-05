@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs><linearGradient id="noodles-body" x1="25" y1="25" x2="70" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#EEE8CF"/><stop offset="1" stop-color="#D7DEC5"/></linearGradient></defs>
+  <ellipse cx="48" cy="85" rx="32" ry="4" fill="#759482" opacity=".13"/>
+  <g stroke="#827659"><path d="M15 49h66c-3 23-13 33-33 33S18 72 15 49Z" fill="url(#noodles-body)" stroke="#80947B"/><ellipse cx="48" cy="49" rx="33" ry="9" fill="#E7D5AD" stroke="#80947B"/><g stroke="#FCF0D0" stroke-width="3"><path d="M24 48c9-15 14 9 23-3s12 9 24 0M28 53c7-11 12 8 21-1s12 5 17-3M35 45c-5-7 0-16 4-17m7 19c-6-10 4-18 6-26m5 24c-5-6 1-15 7-20"/></g><path d="m35 20 38 11m-35-17 37 11" stroke="#A48B67" stroke-width="3"/><path d="M33 66c8 4 22 4 30 0" stroke="#B5C3A6"/></g>
+</svg>

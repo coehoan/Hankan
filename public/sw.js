@@ -43,10 +43,23 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.open(PUBLIC_CACHE).then(async (cache) => {
       const saved = await cache.match(request);
-      if (saved) return saved;
-      const response = await fetch(request);
-      if (response.ok && response.type === 'basic') await cache.put(request, response.clone());
-      return response;
+      const policy = saved?.headers.get('Cache-Control') || '';
+      // Development chunks reuse URLs; revalidate when their server policy requires it.
+      if (saved && !/(?:^|,)\s*(?:no-cache|no-store|must-revalidate)\b/i.test(policy)) return saved;
+      try {
+        const response = await fetch(request);
+        if (
+          response.ok &&
+          response.type === 'basic' &&
+          !/(?:^|,)\s*no-store\b/i.test(response.headers.get('Cache-Control') || '')
+        )
+          await cache.put(request, response.clone());
+        return response;
+      } catch (error) {
+        // Preserve public offline assets without retaining no-store responses.
+        if (saved && !/(?:^|,)\s*no-store\b/i.test(policy)) return saved;
+        throw error;
+      }
     }),
   );
 });

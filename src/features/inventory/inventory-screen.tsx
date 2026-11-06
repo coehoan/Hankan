@@ -308,7 +308,6 @@ export function InventoryScreen({
               ))}
             </div>
             <label className="inventory-search">
-              <span aria-hidden="true">⌕</span>
               <input
                 type="search"
                 aria-label="재료 이름 검색"
@@ -316,6 +315,7 @@ export function InventoryScreen({
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
+              <span aria-hidden="true">⌕</span>
             </label>
           </div>
           {inventory.error && !activeEditor && (

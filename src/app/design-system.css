@@ -1,0 +1,795 @@
+/* Hallmark · shape: app screen · genre: playful · theme: Hankan A1 white air · redesign: full · paper: pale mint · accent: restrained green · display/body: Pretendard · nav: kept · signature: original ingredient SVGs in roomy cards · states: full, loading, empty, error · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: consistency across legacy screens; shared tokens and surfaces apply A1 throughout. */
+:root {
+  --background: #f4f7f4;
+  --surface: #fcfefb;
+  --foreground: #263c2f;
+  --muted: #596e5c;
+  --accent: #346548;
+  --accent-ink: #f8fcf5;
+  --soft: #e6eee6;
+  --border: #d4dfd3;
+  --control-border: #71836f;
+  --story: #e6eee6;
+  --warning: #8c4b2d;
+  --warning-bg: #f7ebe0;
+  --error: #a03d32;
+  --error-bg: #fbece7;
+  --backdrop: #17271e80;
+  --overlay-shadow: #17271e26;
+  --radius-panel: 24px;
+  --radius-control: 12px;
+  --page-width: 1280px;
+  --page-gutter: 40px;
+  --font-body: 'Hankan Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+:root[data-theme='dark'] {
+  --background: #142019;
+  --surface: #1c2b22;
+  --foreground: #e5eee2;
+  --muted: #b3c3b0;
+  --accent: #a3c9a2;
+  --accent-ink: #193020;
+  --soft: #2a3d2d;
+  --border: #3e5441;
+  --control-border: #81987d;
+  --story: #243728;
+  --warning: #ecc19a;
+  --warning-bg: #3c3022;
+  --error: #f0b1a6;
+  --error-bg: #402b26;
+  --backdrop: #080f0bcc;
+  --overlay-shadow: #00000040;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --background: #142019;
+    --surface: #1c2b22;
+    --foreground: #e5eee2;
+    --muted: #b3c3b0;
+    --accent: #a3c9a2;
+    --accent-ink: #193020;
+    --soft: #2a3d2d;
+    --border: #3e5441;
+    --control-border: #81987d;
+    --story: #243728;
+    --warning: #ecc19a;
+    --warning-bg: #3c3022;
+    --error: #f0b1a6;
+    --error-bg: #402b26;
+    --backdrop: #080f0bcc;
+    --overlay-shadow: #00000040;
+  }
+}
+html,
+body {
+  overflow-x: clip;
+}
+html {
+  scrollbar-color: var(--control-border) var(--background);
+}
+body {
+  font-family: var(--font-body);
+  font-synthesis: none;
+}
+::selection {
+  background: var(--soft);
+  color: var(--foreground);
+}
+input,
+textarea {
+  caret-color: var(--accent);
+}
+h1,
+h2,
+h3,
+h4 {
+  min-width: 0;
+  overflow-wrap: break-word;
+  font-weight: 650;
+  text-wrap: balance;
+}
+button,
+.primary-button,
+.secondary-button,
+.add-button {
+  white-space: nowrap;
+}
+button:disabled,
+input:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+.primary-button:disabled,
+.secondary-button:disabled,
+.add-button:disabled {
+  background: var(--soft);
+  color: var(--muted);
+  border-color: var(--control-border);
+}
+button:enabled:active,
+a:active {
+  opacity: 0.8;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible,
+[role='button']:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.eyebrow,
+.inventory-intro .eyebrow,
+.recipe-results.compact .eyebrow,
+.art-caption,
+.invite-kicker {
+  font-size: 13px;
+  letter-spacing: 0;
+}
+.primary-button,
+.add-button {
+  min-height: 48px;
+  border-radius: var(--radius-control);
+  padding: 12px 20px;
+  font-size: 14px;
+}
+.secondary-button,
+.sign-out button,
+.theme-control select {
+  min-height: 44px;
+  border-color: var(--control-border);
+  border-radius: var(--radius-control);
+  font-size: 14px;
+}
+.secondary-button:hover,
+.settings-row:hover,
+.profile-dropdown > a:hover,
+.profile-dropdown .sign-out button:hover {
+  background: var(--soft);
+}
+.text-button {
+  min-height: 44px;
+  font-size: 13px;
+}
+.field {
+  gap: 8px;
+  font-size: 14px;
+  margin-top: 24px;
+}
+.field input,
+.field select,
+.ingredient-fields select,
+.receipt-item input:not([type='checkbox']),
+.receipt-item select,
+.notification-form input[type='time'],
+.created-link input,
+.fridge-picker > [role='combobox'] {
+  min-height: 48px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--foreground);
+  padding: 12px;
+  font-size: 16px;
+}
+.field input::placeholder {
+  font-size: 14px;
+  opacity: 1;
+}
+.field-hint,
+.editor-hint,
+.field-error {
+  font-size: 13px;
+}
+.pantry-header {
+  background: var(--background);
+}
+.pantry-header > div,
+.pantry-context,
+.inventory-page,
+.recipes-page,
+.receipt-page,
+.fridge-content {
+  max-width: var(--page-width);
+  padding-inline: var(--page-gutter);
+}
+.pantry-header > div {
+  min-height: 84px;
+}
+.brand {
+  gap: 8px;
+  font-size: 27px;
+}
+.profile-avatar {
+  border-radius: var(--radius-control);
+  border-color: var(--border);
+  background: var(--surface);
+}
+.profile-dropdown,
+.fridge-options {
+  padding: 8px;
+  border-color: var(--border);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px var(--overlay-shadow);
+}
+.pantry-context {
+  padding-top: 24px;
+}
+.pantry-context .fridge-switcher {
+  max-width: 360px;
+}
+.inventory-page,
+.recipes-page,
+.receipt-page,
+.fridge-content {
+  padding-top: 40px;
+  padding-bottom: 64px;
+}
+.inventory-intro {
+  margin-bottom: 32px;
+  align-items: flex-end;
+}
+.inventory-intro h1,
+.recipes-page-heading h1,
+.receipt-intro h1,
+.my-page-heading h1,
+.fridge-content h1 {
+  font-size: 32px;
+  line-height: 1.4;
+  letter-spacing: -1px;
+  margin: 0 0 8px;
+}
+.inventory-subtitle,
+.recipes-page-heading > p:last-child,
+.receipt-intro > p,
+.my-page-heading p {
+  font-size: 15px;
+  line-height: 1.8;
+}
+.inventory-intro > .add-button {
+  background: var(--surface);
+  color: var(--foreground);
+  border-color: var(--control-border);
+}
+.inventory-columns {
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 40px;
+}
+.inventory-tools {
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.storage-filters {
+  gap: 0;
+}
+.storage-filters button {
+  font-size: 14px;
+  padding-inline: 12px;
+  border-radius: 20px;
+}
+.storage-filters button[aria-pressed='true'] {
+  color: var(--foreground);
+}
+.inventory-search {
+  position: relative;
+  max-width: 216px;
+  flex: 1 1 180px;
+  border: 0;
+}
+.inventory-search input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  padding: 12px 44px 12px 12px;
+  font-size: 14px;
+}
+.inventory-search > span {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+}
+.ingredient-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+  margin-bottom: 32px;
+}
+.ingredient-group > header {
+  grid-column: 1 / -1;
+  padding: 0 0 4px;
+  background: transparent;
+}
+.ingredient-group.soon > header,
+.ingredient-group.expired > header {
+  background: transparent;
+  border: 0;
+}
+.ingredient-group > header h2 {
+  font-size: 17px;
+}
+.ingredient-group > header h2 span,
+.ingredient-group > header p {
+  font-size: 12px;
+}
+.ingredient-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 24px;
+  border: 0;
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+}
+.ingredient-main {
+  flex: initial;
+  width: 100%;
+  gap: 16px;
+  padding: 0;
+  min-height: 80px;
+  border-radius: var(--radius-control);
+}
+.ingredient-symbol,
+.ingredient-art {
+  width: 72px;
+  height: 72px;
+}
+.ingredient-symbol {
+  background: transparent;
+}
+.ingredient-name {
+  font-size: 17px;
+  line-height: 1.5;
+}
+.expiry-badge {
+  display: table;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.expiry-badge.soon,
+.expiry-badge.expired {
+  background: transparent;
+}
+.ingredient-meta {
+  margin-top: 8px;
+  gap: 4px 8px;
+  font-size: 12px;
+}
+.ingredient-meta > span[aria-hidden] {
+  display: none;
+}
+.ingredient-meta time {
+  white-space: nowrap;
+}
+.ingredient-quantity {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  column-gap: 12px;
+  width: 100%;
+  margin-top: 20px;
+  align-items: center;
+}
+.quantity-caption {
+  gap: 8px;
+  font-size: 12px;
+}
+.quantity-caption output {
+  font-size: 12px;
+}
+.quantity-save-slot,
+.delete-ingredient {
+  grid-column: 1 / -1;
+}
+.delete-ingredient {
+  justify-self: end;
+  margin-top: 4px;
+  border: 0;
+  min-height: 44px;
+  font-size: 12px;
+}
+.inventory-bottom {
+  font-size: 12px;
+}
+.fridge-summary {
+  background: var(--soft);
+  padding: 28px;
+  border: 0;
+  border-radius: var(--radius-panel);
+  margin-top: 80px;
+}
+.summary-heading {
+  gap: 12px;
+}
+.summary-heading p {
+  font-size: 13px;
+}
+.summary-heading strong {
+  font-size: 17px;
+}
+.fridge-summary dl {
+  margin-block: 24px;
+}
+.fridge-summary dt {
+  font-size: 13px;
+}
+.fridge-summary dd {
+  font-variant-numeric: tabular-nums;
+}
+.summary-recipes {
+  padding-top: 24px;
+}
+.recipe-results.compact .recipe-card {
+  padding: 16px 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+}
+.recipe-results.compact h2 {
+  font-size: 22px;
+}
+.recipe-results.compact .recipe-quantity-note,
+.recipe-results.compact .recipe-feedback {
+  font-size: 13px;
+}
+.recipe-cards {
+  gap: 20px;
+}
+.recipe-card {
+  padding: 28px;
+  border: 0;
+  border-radius: var(--radius-panel);
+}
+.recipe-card > .secondary-button {
+  white-space: nowrap;
+}
+.recipe-detail h3 {
+  margin-top: 32px;
+}
+.recipe-steps li {
+  padding-block: 8px;
+}
+.my-page {
+  max-width: 960px;
+  padding: 40px var(--page-gutter) 64px;
+}
+.my-page-heading,
+.recipes-page-heading,
+.receipt-intro {
+  margin-bottom: 32px;
+}
+.my-page-card,
+.receipt-original,
+.receipt-item,
+.invitation-card,
+.empty-fridge,
+.empty-inventory,
+.recipe-empty,
+.recipe-error,
+.recipe-loading {
+  border: 0;
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  padding: 28px;
+}
+.my-page-card {
+  margin-bottom: 20px;
+}
+.my-page-card h2 {
+  font-size: 20px;
+  margin-bottom: 24px;
+}
+.notification-time-settings,
+.notification-saved {
+  background: transparent;
+  padding: 20px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+}
+.theme-options {
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--soft);
+}
+.theme-options .theme-option {
+  border-radius: var(--radius-control);
+  min-height: 48px;
+}
+.theme-option[data-selected='true'] {
+  background: var(--surface);
+  color: var(--foreground);
+}
+.settings-row {
+  min-height: 56px;
+  padding: 16px 0;
+  font-size: 15px;
+}
+.registration-methods .settings-row {
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--soft);
+  border: 1px solid var(--control-border);
+}
+.receipt-columns {
+  gap: 40px;
+}
+.receipt-item {
+  padding-top: 20px;
+  margin-bottom: 20px;
+  min-width: 0;
+}
+.receipt-fields {
+  gap: 16px;
+}
+.receipt-photo-box {
+  border-radius: 16px;
+  background: var(--background);
+  padding: 24px;
+}
+.receipt-item .field {
+  margin-top: 16px;
+}
+.receipt-drafts li,
+.member-list > li,
+.invite-list li {
+  padding-block: 16px;
+}
+.dialog-backdrop {
+  background: var(--backdrop);
+  backdrop-filter: none;
+}
+.dialog-panel {
+  border-radius: var(--radius-panel);
+  border: 0;
+  box-shadow: 0 24px 72px var(--overlay-shadow);
+}
+.dialog-heading {
+  padding: 24px 28px;
+}
+.dialog-heading h2 {
+  font-size: 22px;
+}
+.dialog-content {
+  padding: 28px;
+}
+.dialog-footer {
+  padding: 20px 28px;
+}
+.dialog-content .ingredient-editor,
+.dialog-content .members-panel {
+  border-radius: 0;
+}
+.members-description,
+.member-list > li > div > span,
+.invite-list time,
+.invite-list span,
+.leave-fridge p {
+  font-size: 13px;
+}
+.invitation-page {
+  max-width: 640px;
+}
+.invitation-card {
+  padding: 40px;
+}
+.invite-personal {
+  background: transparent;
+  border-radius: 0;
+  border-block: 1px solid var(--border);
+}
+.auth-page {
+  max-width: 1440px;
+}
+.auth-story {
+  margin: 24px;
+  padding: 40px;
+  border-radius: var(--radius-panel);
+}
+.auth-content {
+  padding: 48px 40px;
+}
+.auth-card {
+  max-width: 400px;
+}
+.auth-card h2 {
+  font-size: 30px;
+}
+.form-description {
+  font-size: 15px;
+}
+.auth-footer,
+.story-footer,
+.art-caption {
+  font-size: 12px;
+}
+.switch-auth {
+  font-size: 14px;
+}
+.forgot-row a {
+  min-height: 32px;
+  font-size: 13px;
+}
+.empty-inventory,
+.empty-fridge {
+  padding: 48px 24px;
+}
+.empty-inventory p,
+.inventory-loading,
+.inventory-error,
+.connection-banner,
+.inventory-notice,
+.editor-error,
+.form-message {
+  font-size: 14px;
+}
+.inventory-error,
+.connection-banner,
+.editor-error,
+.recipe-error {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+.inventory-loading span,
+.recipe-loading {
+  background: var(--soft);
+  border-radius: var(--radius-panel);
+}
+.digest-page section {
+  padding: 28px;
+  border: 0;
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+}
+@media (max-width: 1080px) {
+  :root {
+    --page-gutter: 28px;
+  }
+  .inventory-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  .fridge-summary {
+    margin-top: 0;
+  }
+  .receipt-columns {
+    gap: 24px;
+  }
+}
+@media (max-width: 760px) {
+  :root {
+    --page-gutter: 20px;
+  }
+  .pantry-header > div {
+    min-height: 76px;
+    padding-block: 12px;
+  }
+  .brand {
+    font-size: 25px;
+  }
+  .inventory-page,
+  .recipes-page,
+  .receipt-page,
+  .my-page,
+  .fridge-content {
+    padding-top: 28px;
+    padding-bottom: 48px;
+  }
+  .inventory-intro {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .inventory-intro h1,
+  .recipes-page-heading h1,
+  .receipt-intro h1,
+  .my-page-heading h1,
+  .fridge-content h1 {
+    font-size: 28px;
+  }
+  .inventory-tools {
+    align-items: stretch;
+    gap: 16px;
+  }
+  .inventory-search {
+    max-width: none;
+  }
+  .ingredient-group {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ingredient-row {
+    padding: 20px;
+  }
+  .ingredient-main {
+    gap: 16px;
+  }
+  .ingredient-quantity {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+  .ingredient-group > header p {
+    white-space: normal;
+    text-align: right;
+  }
+  .fridge-summary,
+  .my-page-card,
+  .receipt-original,
+  .receipt-item,
+  .recipe-card,
+  .invitation-card {
+    padding: 24px;
+  }
+  .recipe-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .recipe-results-intro {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .recipe-results-intro > .add-button {
+    width: auto;
+  }
+  .receipt-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .receipt-fields,
+  .dialog-content .ingredient-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dialog-backdrop {
+    padding: 12px;
+  }
+  .dialog-panel {
+    max-height: calc(100dvh - 24px);
+  }
+  .dialog-heading,
+  .dialog-content,
+  .dialog-footer {
+    padding: 20px;
+  }
+  .dialog-heading {
+    gap: 8px;
+  }
+  .dialog-heading h2 {
+    font-size: 20px;
+  }
+  .auth-content {
+    padding: 28px 24px;
+  }
+  .auth-card {
+    padding-block: 40px;
+  }
+  .notification-time-settings {
+    padding-inline: 0;
+  }
+  .inventory-bottom {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 400px) {
+  .inventory-search {
+    flex-basis: 100%;
+  }
+  .ingredient-name {
+    font-size: 16px;
+  }
+  .ingredient-meta time {
+    white-space: normal;
+  }
+  .theme-options .theme-option {
+    gap: 4px;
+    font-size: 13px;
+    padding-inline: 8px;
+  }
+  .theme-option svg {
+    width: 18px;
+    height: 18px;
+  }
+}

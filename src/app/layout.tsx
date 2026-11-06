@@ -9,6 +9,7 @@ import { ThemeProvider } from '@/features/shell/theme-provider';
 import './mobile-settings.css';
 import './profile-navigation.css';
 import './fridge-invite-controls.css';
+import './design-system.css';
 import { isThemePreference } from '@/features/shell/theme';
 import { PwaProvider } from '@/features/notifications/pwa-provider';
 

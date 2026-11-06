@@ -185,7 +185,7 @@ it('failed_initial_load_does_not_claim_the_fridge_is_empty', async () => {
     ),
   );
   render(<Fixture />);
-  await screen.findByRole('alert');
+  await screen.findAllByRole('alert');
   expect(screen.queryByText('냉장고의 첫 재료를 담아 보세요')).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: '다시 불러오기' })).toBeEnabled();
 });

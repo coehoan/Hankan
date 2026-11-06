@@ -6,6 +6,7 @@ import { createWebPushTransport } from '@/features/notifications/web-push-transp
 import { cleanReceipts } from './cleanup';
 import { cleanupStagedUploads } from './staging-cleanup';
 import { removeReceiptFiles } from '@/features/receipts/file-cleanup';
+import { processRecipeJobs } from '@/features/recipes/job-worker';
 
 export async function cleanupReceiptFiles(
   now: string,
@@ -42,28 +43,39 @@ export async function cleanupReceiptFiles(
   });
 }
 let running = false;
+async function processDigests(): Promise<{ failed: number; deleted: number }> {
+  let failed = 0;
+  const transport = createWebPushTransport();
+  if (transport) {
+    for (const job of await claimDueDigests(new Date().toISOString(), 20))
+      try {
+        await dispatchDigest(job, transport, databaseOutbox);
+      } catch {
+        failed++;
+        console.error('Notification job deferred; lease will recover');
+      }
+  } else console.info('Push unconfigured; background work remains active');
+  return { failed, deleted: 0 };
+}
 export async function runCycle(): Promise<void> {
   if (running) return;
   running = true;
   try {
     let failed = false;
-    const transport = createWebPushTransport();
-    if (transport) {
-      for (const job of await claimDueDigests(new Date().toISOString(), 20))
-        try {
-          await dispatchDigest(job, transport, databaseOutbox);
-        } catch {
-          failed = true;
-          console.error('Notification job deferred; lease will recover');
-        }
-    } else console.info('Push unconfigured; cleanup remains active');
     const results = await Promise.allSettled([
       cleanupReceiptFiles(new Date().toISOString()),
       cleanupStagedUploads(new Date().toISOString()),
+      processRecipeJobs().then(() => ({ failed: 0, deleted: 0 })),
+      processDigests(),
     ]);
     for (let i = 0; i < results.length; i++) {
       const result = results[i],
-        label = i === 0 ? 'Receipt cleanup' : 'Staged receipt cleanup';
+        label = [
+          'Receipt cleanup',
+          'Staged receipt cleanup',
+          'Recipe jobs',
+          'Notification digests',
+        ][i];
       if (result.status === 'rejected') {
         failed = true;
         console.error(label + ' failed');

@@ -9,6 +9,7 @@ let activeClient: SupabaseClient<Database>, group: GroupFixture;
 let output: unknown;
 let providerAction: (() => Promise<void>) | null = null;
 let received: unknown;
+vi.mock('next/server', () => ({ after: vi.fn() }));
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: () => Promise.resolve(activeClient),
 }));
@@ -152,16 +153,14 @@ it('route_checks_origin_and_returns_private_results', async () => {
     new Request(origin + '/api/fridges/' + group.fridgeId + '/recipes', {
       method: 'POST',
       headers: { Origin: from, 'Content-Type': 'application/json' },
-      body: '{}',
+      body: JSON.stringify({ requestId: randomUUID() }),
     });
   expect((await POST(request('https://other.invalid'), { params })).status).toBe(403);
   const response = await POST(request(origin), { params });
-  expect(response.status).toBe(200);
+  expect(response.status).toBe(202);
   expect(response.headers.get('Cache-Control')).toBe('private, no-store');
   expect(await response.json()).toMatchObject({
-    data: expect.any(Array),
-    inventoryVersion: expect.any(String),
-    today: expect.any(String),
+    data: { status: 'queued', matches: [], ingredients: expect.any(Array) },
   });
 });
 it('provider_sees_only_usable_batches_from_the_selected_fridge', async () => {

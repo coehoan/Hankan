@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { RecipeList } from '@/features/recipes/recipe-list';
+import { RecipeHistory } from '@/features/recipes/recipe-history';
 import { Brand } from '@/features/auth/auth-frame';
 import { MyPage } from './my-page';
 import { InventoryScreen } from '@/features/inventory/inventory-screen';
@@ -12,7 +13,7 @@ import { UploadForm } from '@/features/receipts/upload-form';
 import { ProfileMenu } from './profile-menu';
 import { FridgeManagement } from './fridge-management';
 
-type View = 'inventory' | 'recipes' | 'mypage' | 'management';
+type View = 'inventory' | 'recipes' | 'recipe-history' | 'mypage' | 'management';
 export function AppShell({
   fridges,
   selectedId,
@@ -20,6 +21,7 @@ export function AppShell({
   timeZone,
   view = 'inventory',
   accountName = '사용자',
+  savedJobId,
 }: {
   view?: View;
   fridges: FridgeSummary[];
@@ -27,6 +29,7 @@ export function AppShell({
   initialToday: string;
   timeZone: string;
   accountName?: string;
+  savedJobId?: string;
 }) {
   const router = useRouter(),
     [switching, setSwitching] = useState(false),
@@ -119,7 +122,9 @@ export function AppShell({
           onCreated={(id) => router.push('/receipts/' + id)}
         />
       )}
-      {view === 'management' ? (
+      {view === 'recipe-history' ? (
+        <RecipeHistory timeZone={timeZone} onAccessLost={accessLost} />
+      ) : view === 'management' ? (
         <FridgeManagement
           key={'management:' + selectedId}
           fridges={fridges}
@@ -138,6 +143,7 @@ export function AppShell({
           initialToday={initialToday}
           timeZone={timeZone}
           onAccessLost={accessLost}
+          savedJobId={savedJobId}
         />
       ) : (
         <InventoryScreen

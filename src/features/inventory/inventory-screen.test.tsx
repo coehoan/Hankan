@@ -263,7 +263,11 @@ describe('inventory controls with real hook and HTTP boundary', () => {
       'fetch',
       vi.fn((_url: RequestInfo | URL, init?: RequestInit) =>
         Promise.resolve(
-          init?.method === 'PATCH' ? response(null, 500) : response([item('a', '두부')]),
+          String(_url).includes('/api/recipe-jobs')
+            ? response([])
+            : init?.method === 'PATCH'
+              ? response(null, 500)
+              : response([item('a', '두부')]),
         ),
       ),
     );

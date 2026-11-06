@@ -41,7 +41,7 @@ function response(data: unknown, status = 200) {
   return new Response(
     JSON.stringify(
       status === 200
-        ? { data, inventoryVersion: '[["egg",1]]', today: '2026-10-28' }
+        ? { data: Array.isArray(data) && data[0]?.recipe ? savedJob(data) : data }
         : {
             error: {
               code:
@@ -56,6 +56,19 @@ function response(data: unknown, status = 200) {
     ),
     { status },
   );
+}
+function savedJob(matches: unknown[], status = 'complete') {
+  return {
+    id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+    fridgeId: A,
+    status,
+    matches,
+    ingredients: [item],
+    inventoryVersion: '[["egg",1]]',
+    today: '2026-10-28',
+    createdAt: '2026-10-28T00:00:00Z',
+    completedAt: status === 'complete' ? '2026-10-28T00:01:00Z' : null,
+  };
 }
 let rows = [item],
   recipeStatus = 200,
@@ -73,9 +86,13 @@ beforeEach(() => {
     'fetch',
     vi.fn((url: RequestInfo | URL) =>
       Promise.resolve(
-        String(url).endsWith('/recipes')
-          ? (late ?? response([match], recipeStatus))
-          : response(rows),
+        String(url).includes('/api/recipe-jobs/')
+          ? response(savedJob([match]))
+          : String(url).includes('/api/recipe-jobs')
+            ? response([])
+            : String(url).endsWith('/recipes')
+              ? (late ?? response([match], recipeStatus))
+              : response(rows),
       ),
     ),
   );
@@ -121,7 +138,11 @@ it('shows_both_sources_in_one_list_without_source_or_invented_metadata', async (
     'fetch',
     vi.fn((url: RequestInfo | URL) =>
       Promise.resolve(
-        String(url).endsWith('/recipes') ? response([match, catalogMatch]) : response(rows),
+        String(url).includes('/api/recipe-jobs')
+          ? response([])
+          : String(url).endsWith('/recipes')
+            ? response([match, catalogMatch])
+            : response(rows),
       ),
     ),
   );
@@ -143,17 +164,19 @@ it('shows_both_groups_and_missing_ingredients', async () => {
     'fetch',
     vi.fn((url: RequestInfo | URL) =>
       Promise.resolve(
-        String(url).endsWith('/recipes')
-          ? response([
-              match,
-              {
-                ...match,
-                recipe: { ...match.recipe, id: 'salt-dish', name: '소금 계란찜' },
-                missing: ['소금'],
-                kind: 'needs-shopping',
-              },
-            ])
-          : response(rows),
+        String(url).includes('/api/recipe-jobs')
+          ? response([])
+          : String(url).endsWith('/recipes')
+            ? response([
+                match,
+                {
+                  ...match,
+                  recipe: { ...match.recipe, id: 'salt-dish', name: '소금 계란찜' },
+                  missing: ['소금'],
+                  kind: 'needs-shopping',
+                },
+              ])
+            : response(rows),
       ),
     ),
   );
@@ -184,15 +207,18 @@ it('discards_late_recommendation_after_fridge_switch', async () => {
   await act(async () => resolve(response([match])));
   expect(screen.queryByRole('button', { name: '계란찜 조리법 보기' })).not.toBeInTheDocument();
 });
-it('clears_cards_and_detail_when_inventory_changes', async () => {
+it('preserves_snapshot_cards_and_warns_when_inventory_changes', async () => {
   show();
   await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
   await user.click(screen.getByRole('button', { name: '요리 추천 받기' }));
   await user.click(await screen.findByRole('button', { name: '계란찜 조리법 보기' }));
   rows = [{ ...item, version: 2, remainingPercent: 50 }];
   await act(async () => window.dispatchEvent(new Event('focus')));
-  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-  expect(screen.queryByRole('button', { name: '계란찜 조리법 보기' })).not.toBeInTheDocument();
+  await waitFor(() =>
+    expect(screen.getByText(/추천을 요청한 뒤 재료나 날짜가 바뀌었어요/)).toBeVisible(),
+  );
+  expect(screen.getByRole('dialog')).toBeVisible();
+  expect(screen.getByRole('button', { name: '계란찜 조리법 보기' })).toBeVisible();
 });
 it('clears_recommendation_on_revocation', async () => {
   let revoked = false;
@@ -200,11 +226,15 @@ it('clears_recommendation_on_revocation', async () => {
     'fetch',
     vi.fn((url: RequestInfo | URL) =>
       Promise.resolve(
-        String(url).endsWith('/recipes')
-          ? response([match])
-          : revoked
+        String(url).includes('/api/recipe-jobs')
+          ? revoked
             ? response(null, 403)
-            : response(rows),
+            : response([])
+          : String(url).endsWith('/recipes')
+            ? response([match])
+            : revoked
+              ? response(null, 403)
+              : response(rows),
       ),
     ),
   );
@@ -222,6 +252,50 @@ it('clears_recommendation_on_revocation', async () => {
     expect(screen.queryByRole('button', { name: '계란찜 조리법 보기' })).not.toBeInTheDocument(),
   );
 });
+it('shows_accepted_and_partial_results_then_restores_completed_history_on_remount', async () => {
+  let job = savedJob([], 'queued');
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: RequestInfo | URL) =>
+      Promise.resolve(
+        Response.json({
+          data: String(url).endsWith('/recipes')
+            ? job
+            : String(url).includes('/api/recipe-jobs/')
+              ? job
+              : String(url).includes('/api/recipe-jobs')
+                ? []
+                : rows,
+        }),
+      ),
+    ),
+  );
+  const view = show();
+  await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
+  await user.click(screen.getByRole('button', { name: '요리 추천 받기' }));
+  expect(await screen.findByText(/화면을 나가도 추천은 계속돼요/)).toBeVisible();
+  expect(screen.getByRole('button', { name: '추천 중…' })).toBeDisabled();
+  job = savedJob([match], 'running');
+  await act(async () => window.dispatchEvent(new Event('focus')));
+  expect(await screen.findByRole('button', { name: '계란찜 조리법 보기' })).toBeVisible();
+  expect(screen.getByText(/먼저 준비된 요리부터/)).toBeVisible();
+  job = savedJob([match]);
+  view.unmount();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: RequestInfo | URL) =>
+      Promise.resolve(
+        Response.json({ data: String(url).includes('/api/recipe-jobs') ? [job] : rows }),
+      ),
+    ),
+  );
+  show();
+  expect(await screen.findByRole('button', { name: '계란찜 조리법 보기' })).toBeVisible();
+  expect(screen.getByRole('link', { name: '추천 내역' })).toHaveAttribute(
+    'href',
+    '/recipes/history',
+  );
+});
 it('offline_blocks_new_recommendations', async () => {
   show();
   await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
@@ -230,4 +304,46 @@ it('offline_blocks_new_recommendations', async () => {
     window.dispatchEvent(new Event('offline'));
   });
   expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeDisabled();
+});
+it('recovers_an_accepted_request_after_its_response_is_lost_while_an_old_result_is_displayed', async () => {
+  const old = savedJob([match]),
+    next = { ...savedJob([], 'queued'), id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd' };
+  const requestIds: string[] = [];
+  let lost = true;
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === 'POST') {
+        requestIds.push(JSON.parse(String(init.body)).requestId);
+        if (lost) {
+          lost = false;
+          throw new TypeError('connection lost after server accepted');
+        }
+        return Response.json({ data: next }, { status: 202 });
+      }
+      return Response.json({
+        data: String(url).includes('/api/recipe-jobs/')
+          ? String(url).endsWith(next.id)
+            ? next
+            : old
+          : String(url).includes('/api/recipe-jobs')
+            ? [old]
+            : rows,
+      });
+    }),
+  );
+  show();
+  await screen.findByRole('button', { name: '계란찜 조리법 보기' });
+  await user.click(screen.getByRole('button', { name: '다시 추천 받기' }));
+  await screen.findByRole('alert');
+  await act(async () => window.dispatchEvent(new Event('focus')));
+  expect(await screen.findByRole('button', { name: '추천 중…' })).toBeDisabled();
+  expect(requestIds).toHaveLength(2);
+  expect(requestIds[0]).toBe(requestIds[1]);
+  Object.assign(next, savedJob([match]), { id: next.id });
+  await act(async () => window.dispatchEvent(new Event('focus')));
+  await waitFor(() => expect(screen.getByRole('button', { name: '다시 추천 받기' })).toBeEnabled());
+  await user.click(screen.getByRole('button', { name: '다시 추천 받기' }));
+  expect(requestIds).toHaveLength(3);
+  expect(requestIds[2]).not.toBe(requestIds[1]);
 });

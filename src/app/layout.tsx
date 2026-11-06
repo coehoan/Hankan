@@ -10,6 +10,7 @@ import './mobile-settings.css';
 import './profile-navigation.css';
 import './fridge-invite-controls.css';
 import './design-system.css';
+import './async-recipes.css';
 import { isThemePreference } from '@/features/shell/theme';
 import { PwaProvider } from '@/features/notifications/pwa-provider';
 

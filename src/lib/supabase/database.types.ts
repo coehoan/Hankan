@@ -444,6 +444,117 @@ export type Database = {
           },
         ];
       };
+      recipe_job_requests: {
+        Row: {
+          job_id: string;
+          request_id: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          job_id: string;
+          request_id: string;
+          user_id: string;
+        };
+        Update: {
+          job_id?: string;
+          request_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'recipe_job_requests_job_id_fkey';
+            columns: ['job_id'];
+            isOneToOne: false;
+            referencedRelation: 'recipe_jobs';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      recipe_jobs: {
+        Row: {
+          ai_recipes: NonNullable<Json>;
+          ai_state: string;
+          attempts: number;
+          catalog_recipes: NonNullable<Json>;
+          catalog_state: string;
+          completed_at: string | null;
+          created_at: string;
+          delivered_subscription_ids: string[];
+          fridge_id: string;
+          id: string;
+          lease_token: string | null;
+          lease_until: string | null;
+          notified_at: string | null;
+          notify_attempts: number;
+          notify_token: string | null;
+          notify_until: string | null;
+          request_id: string;
+          snapshot: NonNullable<Json>;
+          status: string;
+          today: string;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          ai_recipes?: NonNullable<Json>;
+          ai_state?: string;
+          attempts?: number;
+          catalog_recipes?: NonNullable<Json>;
+          catalog_state?: string;
+          completed_at?: string | null;
+          created_at?: string;
+          delivered_subscription_ids?: string[];
+          fridge_id: string;
+          id?: string;
+          lease_token?: string | null;
+          lease_until?: string | null;
+          notified_at?: string | null;
+          notify_attempts?: number;
+          notify_token?: string | null;
+          notify_until?: string | null;
+          request_id: string;
+          snapshot: NonNullable<Json>;
+          status?: string;
+          today: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          ai_recipes?: NonNullable<Json>;
+          ai_state?: string;
+          attempts?: number;
+          catalog_recipes?: NonNullable<Json>;
+          catalog_state?: string;
+          completed_at?: string | null;
+          created_at?: string;
+          delivered_subscription_ids?: string[];
+          fridge_id?: string;
+          id?: string;
+          lease_token?: string | null;
+          lease_until?: string | null;
+          notified_at?: string | null;
+          notify_attempts?: number;
+          notify_token?: string | null;
+          notify_until?: string | null;
+          request_id?: string;
+          snapshot?: NonNullable<Json>;
+          status?: string;
+          today?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'recipe_jobs_fridge_id_fkey';
+            columns: ['fridge_id'];
+            isOneToOne: false;
+            referencedRelation: 'fridges';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -473,6 +584,72 @@ export type Database = {
         SetofOptions: {
           from: '*';
           to: 'notification_jobs';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      claim_recipe_jobs: {
+        Args: { target_job_id?: string };
+        Returns: {
+          ai_recipes: NonNullable<Json>;
+          ai_state: string;
+          attempts: number;
+          catalog_recipes: NonNullable<Json>;
+          catalog_state: string;
+          completed_at: string | null;
+          created_at: string;
+          delivered_subscription_ids: string[];
+          fridge_id: string;
+          id: string;
+          lease_token: string | null;
+          lease_until: string | null;
+          notified_at: string | null;
+          notify_attempts: number;
+          notify_token: string | null;
+          notify_until: string | null;
+          request_id: string;
+          snapshot: NonNullable<Json>;
+          status: string;
+          today: string;
+          updated_at: string;
+          user_id: string;
+        }[];
+        SetofOptions: {
+          from: '*';
+          to: 'recipe_jobs';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      claim_recipe_notifications: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          ai_recipes: NonNullable<Json>;
+          ai_state: string;
+          attempts: number;
+          catalog_recipes: NonNullable<Json>;
+          catalog_state: string;
+          completed_at: string | null;
+          created_at: string;
+          delivered_subscription_ids: string[];
+          fridge_id: string;
+          id: string;
+          lease_token: string | null;
+          lease_until: string | null;
+          notified_at: string | null;
+          notify_attempts: number;
+          notify_token: string | null;
+          notify_until: string | null;
+          request_id: string;
+          snapshot: NonNullable<Json>;
+          status: string;
+          today: string;
+          updated_at: string;
+          user_id: string;
+        }[];
+        SetofOptions: {
+          from: '*';
+          to: 'recipe_jobs';
           isOneToOne: false;
           isSetofReturn: true;
         };
@@ -574,6 +751,39 @@ export type Database = {
         Returns: undefined;
       };
       delete_push_subscription: { Args: { subscription_id: string }; Returns: undefined };
+      enqueue_recipe_job: {
+        Args: { request_id: string; target_fridge_id: string };
+        Returns: {
+          ai_recipes: NonNullable<Json>;
+          ai_state: string;
+          attempts: number;
+          catalog_recipes: NonNullable<Json>;
+          catalog_state: string;
+          completed_at: string | null;
+          created_at: string;
+          delivered_subscription_ids: string[];
+          fridge_id: string;
+          id: string;
+          lease_token: string | null;
+          lease_until: string | null;
+          notified_at: string | null;
+          notify_attempts: number;
+          notify_token: string | null;
+          notify_until: string | null;
+          request_id: string;
+          snapshot: NonNullable<Json>;
+          status: string;
+          today: string;
+          updated_at: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'recipe_jobs';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       expire_receipts: { Args: Record<PropertyKey, never>; Returns: undefined };
       finish_notification_job: {
         Args: { job_id: string; token: string; will_retry: boolean };
@@ -602,10 +812,25 @@ export type Database = {
         }[];
       };
       prepare_notification_dispatch: { Args: { job_id: string; token: string }; Returns: Json };
+      prepare_recipe_notification: { Args: { job_id: string; token: string }; Returns: Json };
+      publish_recipe_source: {
+        Args: {
+          job_id: string;
+          recipes: Json;
+          source_name: string;
+          succeeded: boolean;
+          token: string;
+        };
+        Returns: boolean;
+      };
       read_notification_digest: { Args: { digest_id: string }; Returns: Json };
       record_notification_delivery: {
         Args: { delivery_status: string; job_id: string; subscription_id: string; token: string };
         Returns: undefined;
+      };
+      record_recipe_notification: {
+        Args: { job_id: string; subscription_id: string; token: string };
+        Returns: boolean;
       };
       recover_receipt_analysis: { Args: { draft_id: string }; Returns: boolean };
       remove_fridge_member: {

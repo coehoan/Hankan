@@ -8,12 +8,14 @@ export function RecipeList({
   initialToday,
   timeZone = 'Asia/Seoul',
   onAccessLost,
+  savedJobId,
 }: {
   fridgeId: string;
   fridgeName: string;
   initialToday: string;
   timeZone?: string;
   onAccessLost?: () => void;
+  savedJobId?: string;
 }) {
   const inventory = useInventory(fridgeId),
     [today, setToday] = useState(initialToday);
@@ -54,6 +56,7 @@ export function RecipeList({
         pending={inventory.pendingId !== null}
         inventoryError={!!inventory.error}
         onAccessLost={onAccessLost}
+        savedJobId={savedJobId}
       />
     </main>
   );

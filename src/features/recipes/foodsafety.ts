@@ -1,6 +1,5 @@
 import 'server-only';
 import { createHash } from 'node:crypto';
-import { unstable_cache } from 'next/cache';
 import { z } from 'zod';
 import { AppError } from '@/lib/errors';
 import type { RecipeCandidate } from '@/features/ai/contracts';
@@ -196,13 +195,18 @@ export async function getFoodSafetyRecipes(): Promise<RecipeCandidate[]> {
   const key = process.env.FOODSAFETY_API_KEY?.trim() ?? '';
   if (!shared || shared.key !== key) {
     const digest = createHash('sha256').update(key).digest('hex');
+    const catalog = createFoodSafetyCatalog({ apiKey: key });
+    const cached =
+      process.env.HANKAN_WORKER_MAIN === '1'
+        ? null
+        : import('next/cache').then(({ unstable_cache }) =>
+            unstable_cache(catalog, ['foodsafety-COOKRCP01-v1', digest], {
+              revalidate: ttl / 1000,
+            }),
+          );
     shared = {
       key,
-      load: unstable_cache(
-        createFoodSafetyCatalog({ apiKey: key }),
-        ['foodsafety-COOKRCP01-v1', digest],
-        { revalidate: ttl / 1000 },
-      ),
+      load: cached ? async () => (await cached)() : catalog,
     };
   }
   return shared.load();

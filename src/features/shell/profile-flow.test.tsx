@@ -30,13 +30,13 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
-it('profile_initial_opens_three_actions_and_supports_keyboard_and_outside_close', () => {
+it('profile_initial_opens_four_actions_and_supports_keyboard_and_outside_close', () => {
   render(<AppShell {...props} />);
   const avatar = screen.getByRole('button', { name: 'fresh_user 계정 메뉴' });
   expect(avatar).toHaveTextContent('F');
   fireEvent.click(avatar);
   const menu = screen.getByRole('menu', { name: '계정 메뉴' });
-  expect(within(menu).getAllByRole('menuitem')).toHaveLength(3);
+  expect(within(menu).getAllByRole('menuitem')).toHaveLength(4);
   const mypage = within(menu).getByRole('menuitem', { name: '마이페이지' });
   expect(mypage).toHaveAttribute('href', '/mypage');
   expect(mypage).toHaveFocus();
@@ -46,7 +46,11 @@ it('profile_initial_opens_three_actions_and_supports_keyboard_and_outside_close'
   );
   expect(within(menu).getByRole('menuitem', { name: '로그아웃' })).toBeVisible();
   fireEvent.keyDown(menu, { key: 'ArrowDown' });
-  expect(within(menu).getByRole('menuitem', { name: '냉장고 관리' })).toHaveFocus();
+  expect(within(menu).getByRole('menuitem', { name: '추천 내역' })).toHaveFocus();
+  expect(within(menu).getByRole('menuitem', { name: '추천 내역' })).toHaveAttribute(
+    'href',
+    '/recipes/history',
+  );
   fireEvent.keyDown(menu, { key: 'Escape' });
   expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   expect(avatar).toHaveFocus();

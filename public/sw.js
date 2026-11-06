@@ -81,31 +81,40 @@ self.addEventListener('push', (event) => {
       if (
         !payload ||
         typeof payload.notificationId !== 'string' ||
-        !/^\/notifications\/[0-9a-f-]{36}$/.test(payload.url) ||
-        payload.url !== '/notifications/' + payload.digestId
+        !(
+          typeof payload.url === 'string' &&
+          ((/^\/notifications\/[0-9a-f-]{36}$/.test(payload.url) &&
+            payload.url === '/notifications/' + payload.digestId) ||
+            (/^\/recipes\/jobs\/[0-9a-f-]{36}$/.test(payload.url) &&
+              payload.url === '/recipes/jobs/' + payload.recipeJobId))
+        )
       )
         return;
       const user = await hankanPushDedup.currentUser();
       if (!user || !payload.notificationId.startsWith(user + ':')) return;
       if (!(await hankanPushDedup.claimNotificationDisplay(payload.notificationId))) return;
-      await self.registration.showNotification('한칸 · 임박 재료 알림', {
-        body:
-          typeof payload.body === 'string'
-            ? payload.body.slice(0, 120)
-            : '먼저 사용할 재료를 확인해 보세요.',
-        icon: '/icons/icon-192.png',
-        badge: '/icons/icon-192.png',
-        tag: payload.notificationId,
-        renotify: false,
-        data: { url: payload.url },
-      });
+      await self.registration.showNotification(
+        payload.recipeJobId ? '한칸 · 요리 추천 완료' : '한칸 · 임박 재료 알림',
+        {
+          body:
+            typeof payload.body === 'string'
+              ? payload.body.slice(0, 120)
+              : '먼저 사용할 재료를 확인해 보세요.',
+          icon: '/icons/icon-192.png',
+          badge: '/icons/icon-192.png',
+          tag: payload.notificationId,
+          renotify: false,
+          data: { url: payload.url },
+        },
+      );
     })(),
   );
 });
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const path = event.notification.data?.url;
-  if (typeof path !== 'string' || !/^\/notifications\/[0-9a-f-]{36}$/.test(path)) return;
+  if (typeof path !== 'string' || !/^\/(notifications|recipes\/jobs)\/[0-9a-f-]{36}$/.test(path))
+    return;
   event.waitUntil(
     (async () => {
       const url = new URL(path, self.location.origin).href;

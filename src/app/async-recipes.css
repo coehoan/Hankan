@@ -1,0 +1,95 @@
+.recipe-history-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-block: 16px;
+}
+.recipe-activity {
+  position: relative;
+  width: min(100% - 32px, 1200px);
+  margin: 16px auto 0;
+  padding: 16px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  background: var(--soft);
+  border-radius: 12px;
+  color: var(--foreground);
+}
+.recipe-activity p {
+  flex: 1 1 260px;
+  margin: 0;
+  line-height: 1.5;
+}
+.recipe-activity a {
+  color: var(--accent);
+  text-underline-offset: 4px;
+  padding-block: 8px;
+}
+.recipe-activity button {
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--foreground);
+  padding: 8px 12px;
+}
+.recipe-history-links a,
+.recipe-history-list a {
+  color: var(--accent);
+  text-underline-offset: 4px;
+}
+.recipe-job-status {
+  padding: 20px;
+  margin-block: 24px;
+  border-radius: 16px;
+  background: var(--soft);
+  color: var(--foreground);
+}
+.recipe-job-status p {
+  margin-block: 8px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.recipe-job-status progress {
+  width: 100%;
+  height: 8px;
+  margin-top: 12px;
+  accent-color: var(--accent);
+}
+.recipe-history-list {
+  list-style: none;
+  padding: 0;
+  margin-block: 32px;
+}
+.recipe-history-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.recipe-history-list h2 {
+  font-size: 20px;
+  margin-block: 8px;
+  overflow-wrap: anywhere;
+}
+.recipe-history-list p,
+.recipe-history-list time {
+  color: var(--muted);
+  font-size: 14px;
+}
+.recipe-history-list a {
+  flex-shrink: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+@media (max-width: 600px) {
+  .recipe-history-list li {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}

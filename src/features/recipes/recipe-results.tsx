@@ -1,10 +1,13 @@
 'use client';
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useId, useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { Ingredient } from '@/features/inventory/contracts';
-import { inventoryVersion, usableIngredients, type RecipeMatch } from './domain';
+import { inventoryVersion, usableIngredients } from './domain';
 import { RecipeDetail } from './recipe-detail';
 import { recipeMetadata } from './recipe-metadata';
+import { recipeJobPending } from './job-contracts';
+import { useRecipeJob } from './use-recipe-job';
 type Props = {
   fridgeId: string;
   ingredients: Ingredient[];
@@ -16,30 +19,7 @@ type Props = {
   inventoryError?: boolean;
   compact?: boolean;
   onAccessLost?: () => void;
-};
-type Context = {
-  fridgeId: string;
-  version: string;
-  today: string;
-  online: boolean;
-  loading: boolean;
-  revoked: boolean;
-  pending: boolean;
-  inventoryError: boolean;
-};
-type ResultState = {
-  context: Context;
-  phase: 'idle' | 'loading' | 'ready' | 'error';
-  matches: RecipeMatch[];
-  error: string;
-  selectedId: string | null;
-};
-type Scope = {
-  context: Context;
-  active: boolean;
-  sequence: number;
-  controller: AbortController | null;
-  busy: boolean;
+  savedJobId?: string;
 };
 export function RecipeResults({
   fridgeId,
@@ -52,98 +32,28 @@ export function RecipeResults({
   inventoryError = false,
   compact = false,
   onAccessLost,
+  savedJobId,
 }: Props) {
-  const version = inventoryVersion(ingredients),
+  const state = useRecipeJob(fridgeId, revoked, onAccessLost, savedJobId),
     headingId = useId();
-  const context = useMemo(
-    () => ({ fridgeId, version, today, online, loading, revoked, pending, inventoryError }),
-    [fridgeId, version, today, online, loading, revoked, pending, inventoryError],
-  );
-  const [state, setState] = useState<ResultState>(() => ({
-    context,
-    phase: 'idle',
-    matches: [],
-    error: '',
-    selectedId: null,
-  }));
-  const scopeRef = useRef<Scope | null>(null);
-  useEffect(() => {
-    const scope: Scope = { context, active: true, sequence: 0, controller: null, busy: false };
-    scopeRef.current = scope;
-    return () => {
-      scope.active = false;
-      scope.sequence++;
-      scope.controller?.abort();
-    };
-  }, [context]);
-  const current = state.context === context;
-  const phase = current ? state.phase : 'idle',
-    matches = current ? state.matches : [],
-    selected = matches.find((item) => item.recipe.id === state.selectedId);
-  const stale = !current && state.context.fridgeId === fridgeId && state.phase !== 'idle';
-  const usable = usableIngredients(ingredients, today),
-    disabled =
-      loading ||
-      revoked ||
-      pending ||
-      inventoryError ||
-      !online ||
-      phase === 'loading' ||
-      !usable.length;
-  async function recommend() {
-    const scope = scopeRef.current;
-    if (
-      disabled ||
-      !scope ||
-      !scope.active ||
-      scope.context !== context ||
-      scope.busy ||
-      navigator.onLine === false
-    )
-      return;
-    scope.busy = true;
-    scope.controller?.abort();
-    const controller = new AbortController();
-    scope.controller = controller;
-    const sequence = ++scope.sequence;
-    setState({ context, phase: 'loading', matches: [], error: '', selectedId: null });
-    try {
-      const response = await fetch('/api/fridges/' + encodeURIComponent(fridgeId) + '/recipes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: '{}',
-        cache: 'no-store',
-        signal: controller.signal,
-      });
-      const json = await response.json();
-      if (!scope.active || scope.sequence !== sequence) return;
-      if (!response.ok) {
-        if ([401, 403].includes(response.status)) onAccessLost?.();
-        throw new Error(
-          json.error?.message ?? '요리 추천을 불러오지 못했어요. 다시 시도해 주세요.',
-        );
-      }
-      if (
-        !Array.isArray(json.data) ||
-        json.inventoryVersion !== context.version ||
-        json.today !== context.today
-      )
-        throw new Error('재료나 날짜가 바뀌었어요. 최신 목록으로 다시 추천해 주세요.');
-      setState({ context, phase: 'ready', matches: json.data, error: '', selectedId: null });
-    } catch (caught) {
-      if (scope.active && scope.sequence === sequence && !controller.signal.aborted)
-        setState({
-          context,
-          phase: 'error',
-          matches: [],
-          error: caught instanceof Error ? caught.message : '연결을 확인하고 다시 시도해 주세요.',
-          selectedId: null,
-        });
-    } finally {
-      scope.busy = false;
-      if (scope.controller === controller) scope.controller = null;
-    }
-  }
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const job = state.job,
+    matches = job?.matches ?? [],
+    working = !!job && recipeJobPending(job),
+    selected = matches.find((item) => item.recipe.id === selectedId);
+  const stale =
+    !!job && (job.inventoryVersion !== inventoryVersion(ingredients) || job.today !== today);
+  const usable = usableIngredients(ingredients, today);
+  const disabled =
+    loading ||
+    revoked ||
+    pending ||
+    inventoryError ||
+    !online ||
+    state.checking ||
+    state.submitting ||
+    working ||
+    !usable.length;
   if (revoked)
     return (
       <p className="recipe-feedback" role="alert">
@@ -157,22 +67,30 @@ export function RecipeResults({
     >
       <header className="recipe-results-intro">
         <div>
-          <h2>남은 재료로, 오늘 한 끼</h2>
+          <h2>{savedJobId ? '저장된 요리 추천' : '남은 재료로, 오늘 한 끼'}</h2>
         </div>
-        <Button disabled={disabled} onClick={() => void recommend()}>
-          {phase === 'loading'
-            ? '추천 찾는 중…'
-            : phase === 'idle'
-              ? '요리 추천 받기'
-              : '다시 추천 받기'}
-        </Button>
+        {!savedJobId && (
+          <Button disabled={disabled} onClick={() => void state.start()}>
+            {state.submitting
+              ? '요청 접수 중…'
+              : working
+                ? '추천 중…'
+                : job || state.error
+                  ? '다시 추천 받기'
+                  : '요리 추천 받기'}
+          </Button>
+        )}
       </header>
       <p className="recipe-quantity-note">
         보유한 재료 종류를 기준으로 찾아요. 필요한 양은 따로 확인해 주세요.
       </p>
+      <div className="recipe-history-links">
+        <Link href="/recipes/history">추천 내역</Link>
+        {savedJobId && <Link href={'/fridges/' + fridgeId}>냉장고로 돌아가기</Link>}
+      </div>
       {!online && (
         <p className="connection-banner" role="status">
-          온라인으로 연결하면 요리를 추천받을 수 있어요.
+          온라인으로 연결하면 추천 상태를 다시 확인해요. 접수한 작업은 계속 진행돼요.
         </p>
       )}
       {loading ? (
@@ -184,7 +102,8 @@ export function RecipeResults({
           재료 목록을 다시 불러온 뒤 추천받아 주세요.
         </p>
       ) : (
-        !usable.length && (
+        !usable.length &&
+        !savedJobId && (
           <div className="recipe-empty">
             <h3>추천에 쓸 재료가 아직 없어요</h3>
             <p>
@@ -195,27 +114,55 @@ export function RecipeResults({
       )}
       {stale && (
         <p className="recipe-feedback" role="status">
-          재료나 연결 상태가 바뀌어 이전 추천을 지웠어요. 다시 추천받아 주세요.
+          추천을 요청한 뒤 재료나 날짜가 바뀌었어요. 아래 요리는 요청 당시 재료를 기준으로 해요.
         </p>
       )}
-      {phase === 'loading' && (
-        <div className="recipe-loading" role="status">
-          현재 재료로 만들 요리를 찾고 있어요…
+      {state.submitting && (
+        <p className="recipe-feedback" role="status">
+          추천 요청을 저장하고 있어요…
+        </p>
+      )}
+      {working && (
+        <div className="recipe-job-status" role="status">
+          <strong>
+            {matches.length
+              ? '먼저 준비된 요리부터 확인해 보세요'
+              : '현재 재료로 만들 요리를 찾고 있어요'}
+          </strong>
+          <p>화면을 나가도 추천은 계속돼요. 완료한 요리는 추천 내역에 저장해요.</p>
+          <p>알림 받기가 켜져 있고 이 기기에 연결돼 있으면 완료 알림도 보내요.</p>
+          <progress aria-label="요리 추천 진행 중" />
         </div>
       )}
-      {phase === 'error' && (
+      {state.error && (
         <div className="recipe-error">
           <p role="alert">{state.error}</p>
           <p>보관 중인 재료와 남은 양은 바뀌지 않았어요.</p>
+          <Button variant="secondary" onClick={() => void state.refresh()}>
+            상태 다시 확인
+          </Button>
         </div>
       )}
-      {phase === 'ready' && matches.length === 0 && (
+      {job?.status === 'failed' && (
+        <div className="recipe-error" role="alert">
+          요리 추천을 완료하지 못했어요. 잠시 후 다시 추천받아 주세요.
+        </div>
+      )}
+      {job?.status === 'cancelled' && (
+        <p role="alert">냉장고 권한이 변경되어 이 추천을 중단했어요.</p>
+      )}
+      {job?.status === 'complete' && matches.length === 0 && (
         <div className="recipe-empty">
           <h3>겹치는 재료의 요리를 찾지 못했어요</h3>
           <p>재료를 더 등록하거나 잠시 후 다시 추천받아 보세요.</p>
         </div>
       )}
-      {phase === 'ready' &&
+      {job?.status === 'complete' && matches.length > 0 && (
+        <p className="recipe-feedback" role="status">
+          추천이 완료되어 내역에 저장했어요.
+        </p>
+      )}
+      {matches.length > 0 &&
         (['available', 'needs-shopping'] as const).map((kind) => {
           const group = matches.filter((item) => item.kind === kind);
           return (
@@ -244,9 +191,7 @@ export function RecipeResults({
                       )}
                       <Button
                         variant="secondary"
-                        onClick={() =>
-                          setState((previous) => ({ ...previous, selectedId: item.recipe.id }))
-                        }
+                        onClick={() => setSelectedId(item.recipe.id)}
                         aria-label={item.recipe.name + ' 조리법 보기'}
                       >
                         재료·조리법 보기 <span aria-hidden="true">↗</span>
@@ -258,11 +203,11 @@ export function RecipeResults({
             </section>
           );
         })}
-      {current && selected && (
+      {selected && job && (
         <RecipeDetail
           match={selected}
-          ingredients={ingredients}
-          onClose={() => setState((previous) => ({ ...previous, selectedId: null }))}
+          ingredients={job.ingredients}
+          onClose={() => setSelectedId(null)}
         />
       )}
     </section>

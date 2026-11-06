@@ -19,7 +19,8 @@ export type PushSubscriptionRecord = {
 };
 export type PushPayload = {
   notificationId: string;
-  digestId: string;
+  digestId?: string;
+  recipeJobId?: string;
   title: string;
   body: string;
   url: string;

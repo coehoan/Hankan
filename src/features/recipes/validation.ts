@@ -47,6 +47,12 @@ const invalid = () =>
     'provider_failed',
     '요리 추천의 재료·조리법을 확인하지 못했어요. 다시 추천해 주세요.',
   );
+// Saved rows were verified before publication. Reads validate shape without contacting a provider.
+export function parseSavedRecipeCandidates(input: unknown): RecipeCandidate[] {
+  const parsed = candidates.safeParse(input);
+  if (!parsed.success) throw invalid();
+  return parsed.data;
+}
 export async function validateRecipeCandidates(input: unknown): Promise<RecipeCandidate[]> {
   const parsed = candidates.safeParse(input);
   if (!parsed.success) throw invalid();

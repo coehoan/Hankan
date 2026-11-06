@@ -31,8 +31,8 @@ export async function getMixedRecipeCandidates(
   input: RecommendationInput,
 ): Promise<RecipeCandidate[]> {
   const results = await Promise.allSettled([
-    validatedSource(() => getRecipeCandidates(structuredClone(input)), 'catalog'),
-    validatedSource(() => getAiProvider().recommendRecipes(structuredClone(input)), 'generated'),
+    loadRecipeSource('catalog', input),
+    loadRecipeSource('ai', input),
   ]);
   if (results.every((result) => result.status === 'rejected')) {
     const unconfigured = results.every(
@@ -46,15 +46,28 @@ export async function getMixedRecipeCandidates(
       '요리 추천을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',
     );
   }
+  return deduplicateRecipes(
+    results.flatMap((result) => (result.status === 'fulfilled' ? result.value : [])),
+  );
+}
+
+export function loadRecipeSource(
+  source: 'catalog' | 'ai',
+  input: RecommendationInput,
+): Promise<RecipeCandidate[]> {
+  return source === 'catalog'
+    ? validatedSource(() => getRecipeCandidates(structuredClone(input)), 'catalog')
+    : validatedSource(() => getAiProvider().recommendRecipes(structuredClone(input)), 'generated');
+}
+
+export function deduplicateRecipes(recipes: RecipeCandidate[]): RecipeCandidate[] {
   const names = new Set<string>(),
     ids = new Set<string>();
-  return results
-    .flatMap((result) => (result.status === 'fulfilled' ? result.value : []))
-    .filter((recipe) => {
-      const name = recipe.name.normalize('NFKC').replace(/\s+/gu, '').toLocaleLowerCase('ko-KR');
-      if (names.has(name) || ids.has(recipe.id)) return false;
-      names.add(name);
-      ids.add(recipe.id);
-      return true;
-    });
+  return recipes.filter((recipe) => {
+    const name = recipe.name.normalize('NFKC').replace(/\s+/gu, '').toLocaleLowerCase('ko-KR');
+    if (names.has(name) || ids.has(recipe.id)) return false;
+    names.add(name);
+    ids.add(recipe.id);
+    return true;
+  });
 }

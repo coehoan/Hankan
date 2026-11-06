@@ -1,6 +1,6 @@
 # dev push 통합 배포 설정
 
-dev push는 아래 워크플로를 실행한다. 로컬 수정은 커밋과 push 전까지 운영에 반영되지 않는다. 설정을 확인하기 위해 운영 마이그레이션이나 배포를 실행하지 않는다.
+이 파이프라인은 운영에 적용되어 있다. dev push는 문서만 바뀐 경우에도 아래 워크플로를 실행한다. 로컬 수정은 커밋과 push 전까지 운영에 반영되지 않는다. 설정을 확인하기 위해 운영 마이그레이션이나 배포를 실행하지 않는다.
 
 ## 최초 등록: GitHub Secrets
 
@@ -50,7 +50,7 @@ dev push는 아래 워크플로를 실행한다. 로컬 수정은 커밋과 push
 - 자격 증명/변수 누락: 기존 Vercel 직접 배포로 우회하지 말고 등록을 완료한 뒤 현재 dev 커밋의 작업을 다시 실행한다. 오래된 커밋의 실행을 재시도하면 과거 앱을 배포할 수 있으므로 먼저 실행 커밋을 확인한다.
 - `vercel pull`에서 `User not found (404)`: 이전 `--scope` 옵션과 팀 범위 토큰의 개인 사용자 조회 충돌을 확인한다. 해당 옵션을 제거한 최신 커밋으로 실행해야 한다. 여전히 실패하면 Vercel 토큰의 만료·회수 여부와 Hankan 팀 접근 범위를 확인하고 GitHub `VERCEL_TOKEN`을 갱신한다. 실제 토큰 값을 로그나 채팅으로 보내지 않는다.
 - prebuilt 배포에서 `.env.example` 등의 `ENOENT` 또는 `.vercelignore` 충돌: Vercel 65.7.0의 Next.js 빌더는 추적 결과와 별개로 루트 `.env`·`.env.*` 파일을 모든 함수의 필수 파일에 직접 추가한다. 이 때문에 Next.js의 추적 제외나 Webpack 전환만으로는 업로드 제외 충돌을 막을 수 없다. `scripts/build-environment.mjs`가 빌드 동안 루트 환경파일을 안전하게 보관·복원해 이 자동 포함을 막는다. 기본 `next build`와 `.vercelignore`의 환경파일 제외 규칙은 유지하고, `'*': ['**/.env*']`는 Next.js 추적에 대한 추가 방어로 둔다. 최종 함수 산출물에 환경파일 참조가 남으면 DB 작업 전에 중단한다. 수정 후 새로 빌드한 결과물을 배포하며, 앞서 적용된 DB 마이그레이션은 다음 실행에서 다시 적용하지 않는다.
-- 결과는 GitHub **Actions → Deploy Hankan production**에서 확인한다. 실제 운영 로그·사이트·DB 상태 점검은 첫 승인 배포 후 별도로 수행한다.
+- 결과는 GitHub **Actions → Deploy Hankan production**에서 확인한다. 매 배포의 실행 커밋·READY·적용 이력과 필요한 운영 점검을 별도로 확인한다. 확인한 기능 릴리스는 [인수인계](handoff.md)에 기록한다.
 
 DB reset, seed, 자동 migration repair, 강제 rollback, 운영 데이터 복사는 수행하지 않는다. 배포용 토큰과 DB 비밀번호는 테스트·앱 빌드 명령에 전달하지 않고 필요한 자식 프로세스에만 전달한다. 비밀 파일과 prebuilt 산출물을 GitHub artifact로 업로드하지 않는다.
 

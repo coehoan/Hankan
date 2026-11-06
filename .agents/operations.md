@@ -13,7 +13,7 @@
 - 키 값은 문서·로그·커밋에 넣지 않는다. OpenAI 키와 Supabase 서버 키는 서버에서만 사용하고 `NEXT_PUBLIC_`에 넣지 않는다. `SUPABASE_SERVER_URL`은 서버용 내부 주소이며 공개 주소·쿠키 식별과 구분한다.
 - 영수증 저장·취소 직후 파일 삭제를 시도하고 실패 시 worker가 재시도한다. 생성 전 중단 업로드는 125분, 방치한 초안은 24시간 기준으로 정리한다. staging 재업로드 경합·중복 전송 방지를 보존한다.
 - 로컬 worker: `npm run dev:worker`. 독립 실행: `npm run build:worker` → `npm run start:worker`. 운영 Vercel은 Supabase 예약 작업이 인증된 worker API를 호출한다.
-- **명시적 배포 요청 전 push·Vercel 배포·클라우드 마이그레이션 금지.** 승인된 `dev` push 통합 배포는 [배포 안내](../docs/deployment-pipeline.md)를 따른다. 검증·운영 빌드 → DB 마이그레이션 → Vercel 배포 순서이며 Git 직접 배포와 중복 실행하지 않는다. 이번 설정이 최초 push되기 전에는 기존 Vercel 자동 배포가 유지된다. 대상·환경변수와 미적용 마이그레이션을 먼저 확인한다.
+- **명시적 배포 요청 전 push·Vercel 배포·클라우드 마이그레이션 금지.** 승인된 `dev` push 통합 배포는 [배포 안내](../docs/deployment-pipeline.md)를 따른다. 검증·운영 빌드 → DB 마이그레이션 → Vercel 배포 순서이며 Git 직접 배포와 중복 실행하지 않는다. GitHub Actions 전환은 이미 운영에 적용되어 있다. 문서만 변경해도 dev push는 같은 검증·배포를 실행한다. 대상·환경변수와 미적용 마이그레이션을 먼저 확인한다.
 - **Realtime:** `20261029073618_inventory_realtime.sql`의 비공개 수신 정책·DB 트리거가 프런트 배포 전에 필요하다. 로컬에서는 Realtime 컨테이너도 실행되어 있어야 한다. 연결 실패는 화면에 표시하고 3초 폴링으로 돌아가지 않는다. 상세 운영·검증은 [Realtime 안내](../docs/inventory-realtime.md)를 참고한다.
 
 - **비동기 추천:** `20261106022629_async_recipe_jobs.sql`을 앱보다 먼저 적용한다. Next `after`가 즉시 실행하고 기존 매분 worker가 만료 lease를 회수한다. 요청자·현재 멤버만 결과를 조회하며, 완료 푸시는 기존 알림 설정을 따른다. 추가 스케줄·키는 필요 없다. 상세는 [비동기 추천 안내](../docs/async-recipes.md).

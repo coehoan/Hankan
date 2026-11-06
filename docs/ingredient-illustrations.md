@@ -21,4 +21,4 @@
 
 `src/features/inventory/ingredient-art-catalog.ts`가 파일명·대표 이름·별칭을 관리한다. 공백과 유니코드 표기를 정규화한 뒤 정확한 별칭을 먼저 찾고, 이후 가장 긴 부분 일치를 선택한다. 한 글자 이름은 일반적인 수식어·수량을 제거한 이름이 정확히 일치할 때만 사용한다. `감자전분`이 감자, `김치만두`가 김치, `멸치액젓`이 멸치로 분류되지 않게 한다. 등록하지 않은 이름은 `jar.svg`로 표시한다.
 
-새 그림은 `public/illustrations/<asset>.svg`에 넣고 카탈로그에 추가한다. `viewBox="0 0 96 96"`, 투명 배경, 둥근 2px 외곽선, 부드러운 색 변화를 유지한다. 그라디언트 ID에는 파일명 접두사를 붙이고 외부 이미지·스크립트·폰트를 참조하지 않는다. 실제 목록의 54px 크기와 밝고 어두운 배경에서 확인한다. 별칭 겹침은 `ingredient-art-catalog.test.ts`, 컴포넌트 연결은 `ingredient-art.test.tsx`로 검사한다.
+새 그림은 `public/illustrations/<asset>.svg`에 넣고 카탈로그에 추가한다. `viewBox="0 0 96 96"`, 투명 배경, 둥근 2px 외곽선, 부드러운 색 변화를 유지한다. 그라디언트 ID에는 파일명 접두사를 붙이고 외부 이미지·스크립트·폰트를 참조하지 않는다. 현재 A1 목록의 72px 크기와 밝고 어두운 배경에서 확인한다. 별칭 겹침은 `ingredient-art-catalog.test.ts`, 컴포넌트 연결은 `ingredient-art.test.tsx`로 검사한다.

@@ -22,6 +22,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ### 필요할 때 읽기
 
+- 다른 PC·새 에이전트에서 이어받을 때: [현재 상태·인수인계](docs/handoff.md) → [문서 지도](docs/README.md). 날짜별 설계·계획은 과거 기록이며 완료한 작업을 다시 실행하지 않는다.
 - 처음 실행하거나 검증할 때: [개발·테스트](.agents/development.md)
 - 기능을 수정하거나 코드를 찾을 때: [구조·핵심 동작](.agents/architecture.md)
 - DB·권한·사진·worker·배포를 다룰 때: [DB·운영](.agents/operations.md)

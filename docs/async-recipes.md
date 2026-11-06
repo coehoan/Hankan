@@ -2,6 +2,14 @@
 
 추천 요청은 재료 목록과 사용자 시간대를 기준으로 한 날짜를 DB에 저장하고 즉시 접수한다. 식약처와 AI는 병렬로 실행하며, 먼저 준비된 결과부터 확인할 수 있다. 화면을 닫아도 서버 작업과 저장된 결과는 유지된다. 프로필의 **추천 내역**에서 최근 30건을 열 수 있다.
 
+## API와 저장된 화면
+
+- 접수: POST `/api/fridges/:fridgeId/recipes`, UUID `{requestId}`, HTTP 202 `{data: RecipeJob}`. 이전 빈 `{}` 동기 API 계약은 사용하지 않는다.
+- 내역: GET `/api/recipe-jobs`, 선택적으로 `fridgeId`, `latest=1`. 기본 최근 30건, latest는 1건이다.
+- 전역 상태: GET `/api/recipe-jobs?activity=1`, 최근 30건의 id/status만 반환한다.
+- 저장 결과: GET `/api/recipe-jobs/:jobId`, 화면 `/recipes/jobs/:jobId`. 내역 화면은 `/recipes/history`다.
+- 모두 로그인과 현재 RLS 권한을 검사하고 private/no-store로 반환한다. `RecipeJob` 계약은 `src/features/recipes/job-contracts.ts`가 기준이다.
+
 ## 실행과 복구
 
 - POST `/api/fridges/[fridgeId]/recipes`는 `{requestId}`를 받아 HTTP 202와 작업을 반환한다. 동일 요청 번호와 이미 진행 중인 작업은 재사용하며, 합쳐진 요청 번호도 별도로 저장한다. 접수 응답이 끊기면 클라이언트는 같은 번호로 복구한다.
@@ -16,8 +24,8 @@
 
 기존 알림 설정이 켜져 있고 유효한 푸시 구독이 있을 때 완료 알림을 보낸다. 전송마다 현재 설정과 멤버십을 다시 확인하고, 성공한 구독은 기록해 재시도에서 제외한다. 서비스 워커는 현재 로그인 사용자와 저장된 추천의 고정 경로만 허용한다. 실제 기기에서의 푸시 수신은 자동 테스트와 별도다.
 
-## 배포 전 필요 사항
+## 운영 적용과 새 환경
 
 `20261106022629_async_recipe_jobs.sql`이 앱보다 먼저 적용되어야 한다. 새 테이블과 서버 전용 RPC가 포함된다. 추가 키나 스케줄은 필요 없으며 기존 worker 인증·매분 스케줄과 VAPID 설정을 사용한다. `FOODSAFETY_API_KEY`와 `OPENAI_API_KEY`는 기존 서버 설정을 유지한다.
 
-이번 변경은 로컬에서만 적용·검증했다. push, 운영 마이그레이션, 배포는 별도 요청 후 진행한다.
+2026-11-06 사용자 승인 릴리스 `bc2a597`에서 운영 DB 적용·앱 배포를 완료했다. 기존 환경에서는 이 SQL을 다시 적용하지 않는다. 이후 배포는 새 사용자 요청과 통합 파이프라인을 따른다. 최신 릴리스 기록과 검증 한계는 [인수인계](handoff.md), 실제 기기 절차는 [인수 체크리스트](acceptance.md)에 있다.

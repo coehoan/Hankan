@@ -2,7 +2,7 @@
 
 ## Vercel 무료 배포 구성
 
-dev push의 DB·앱 통합 배포와 GitHub Secrets/Variables 최초 등록은 [배포 파이프라인 안내](deployment-pipeline.md)를 따른다. 전환 설정을 처음 push하면 Vercel Git 직접 배포 대신 GitHub Actions가 검증 → 운영 빌드 → DB 적용 → Vercel 배포를 맡는다. 사용자의 배포 승인 전에는 이 설정을 push하거나 운영 명령을 실행하지 않는다.
+dev push의 DB·앱 통합 배포와 GitHub Secrets/Variables 최초 등록은 [배포 파이프라인 안내](deployment-pipeline.md)를 따른다. 현재 GitHub Actions가 검증 → 운영 빌드 → DB 적용 → Vercel 배포를 맡고 dev의 Git 직접 배포는 꺼져 있다. 문서만 바뀐 push도 같은 절차를 실행한다. 새 사용자 승인 없이 push·운영 명령을 실행하지 않는다.
 
 Vercel Hankan 팀(`hankan1`), 프로젝트 `hankan`, GitHub `coehoan/Hankan`의 `dev`가 Production 브랜치다. Node24, Seoul(`icn1`), 웹 빌드 `npm run build`, 설치 `npm ci`를 사용한다. 기본 주소는 `https://hankan-murex.vercel.app`이다. 아래 Compose 설명은 별도 호스트에서 운영할 때의 선택지다.
 
@@ -20,7 +20,7 @@ Vercel 함수의4.5MB 요청 한도를 피하기 위해 브라우저는10MB 이�
 
 ## 릴리스 상태
 
-2026-10-29 사용자 승인으로 Vercel 웹 공개 배포를 완료했다. [인수 문서](acceptance.md)에 자동429건·실제 Production28건과 미검증 항목을 기록한다. 로컬 CUA 차단과 별도로 새 HTTPS 로그인 화면은 브라우저에서 확인했다. 실제 Android/데스크톱 푸시와 iOS 홈 화면 설치 수신 등 전체 기기 인수는 별도 확인이 남아 있다. 사용자 도메인·DNS·외부 메일은 변경하지 않았다.
+2026-10-29 첫 공개 배포 후, 2026-11-06 `bc2a597`까지 A1·비동기 추천을 운영에 반영했다. 최신 배포·마이그레이션·검증 근거는 [인수인계](handoff.md), 날짜별 자동/실제 서버 검사와 미검증 항목은 [인수 문서](acceptance.md)에 기록한다. 실제 Android/데스크톱 푸시와 iOS 홈 화면 설치 수신 등 전체 기기 인수는 별도 확인이 남아 있다. 사용자 도메인·DNS·외부 메일은 변경하지 않았다.
 
 ## 설정 목록과 아이디 인증
 
@@ -31,7 +31,9 @@ Vercel 함수의4.5MB 요청 한도를 피하기 위해 브라우저는10MB 이�
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | 웹/브라우저 인증 | 프로젝트의 공개 키. service role과 교체하지 않음 |
 | `SUPABASE_SERVICE_ROLE_KEY` | 서버 사진 처리·worker·로컬 테스트 | 브라우저 노출 금지. 운영 비밀 저장소에서 주입 |
 | `SUPABASE_SERVER_URL` | 서버/컨테이너 연결만 | 컨테이너에서 공개 URL로 연결할 수 없을 때 사용. 원격 배포는 원격 API를 명시 |
-| `OPENAI_API_KEY` | 웹 서버 영수증·요리 API | 서버 전용. 실제 사용자 파일·전체 요청/응답을 로그로 남기지 않음 |
+| `FOODSAFETY_API_KEY` | 서버·worker COOKRCP01 카탈로그 | 서버 전용. Next Data Cache 또는 독립 worker 메모리 캐시 24시간 |
+| `WORKER_SECRET` | Vercel worker HTTP / Supabase Vault | 32자 이상. 양쪽 같은 값, 인증 헤더·값 출력 금지 |
+| `OPENAI_API_KEY` | 웹 서버 영수증·추천 worker | 서버 전용. 실제 사용자 파일·전체 요청/응답을 로그로 남기지 않음 |
 | 모델/추론 설정 | `src/features/ai/registry.ts`, `selected-provider.ts` | 평가한 `gpt-6-luna`/`high`로 서버 코드에 고정. 현재 `OPENAI_MODEL` 환경변수는 지원하지 않음 |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | 브라우저 구독·worker | 배포별 공개 키. 빌드할 때도 설정 |
 | `VAPID_PRIVATE_KEY` | worker 전송 | 위 공개 키와 쌍인 서버 전용 개인 키 |
@@ -39,7 +41,7 @@ Vercel 함수의4.5MB 요청 한도를 피하기 위해 브라우저는10MB 이�
 
 Supabase Auth의 Confirm email을 끈다. 사용자가 2026-10-28 클라우드 설정을 해제했으며 로컬 `auth.email.enable_confirmations=false`도 적용했다. 일반 아이디는 서버에서 `<소문자 아이디>@accounts.hankan.invalid`로 매핑한다. 실제 이메일을 수집하거나 메일을 보내지 않으며 SMTP와 이메일 callback은 사용하지 않는다. 아이디는 영문·숫자·밑줄 4~24자로 제한한다. 가입 직후 세션과 내부 초대 경로 복귀를 확인한다.
 
-로그인한 사용자는 상단 **비밀번호 변경**에서 새 비밀번호와 확인을 입력한다. 기존 비밀번호 입력은 받지 않는다. 분실한 사용자는 관리자에게 초기화를 요청한다. 관리자는 서버의 프로젝트 폴더에서 다음을 실행한다.
+로그인한 사용자는 프로필 메뉴 → 마이페이지 → **비밀번호 변경**에서 새 비밀번호와 확인을 입력한다. 기존 비밀번호 입력은 받지 않는다. 분실한 사용자는 관리자에게 초기화를 요청한다. 관리자는 서버의 프로젝트 폴더에서 다음을 실행한다.
 
 ```powershell
 npm.cmd run auth:reset-password -- 대상아이디
@@ -51,7 +53,7 @@ npm.cmd run auth:reset-password -- 대상아이디
 
 ## 마이그레이션과 검증
 
-기존 DB에는 `node scripts/supabase.mjs migration up --local`로 추가 migration만 적용한다. 001~009를 순서대로 유지하고 적용 이력을 먼저 확인한다. 새 migration을 먼저 적용한 뒤 호환되는 웹·worker를 배포한다. 기존 사용자 DB reset·볼륨 삭제는 하지 않는다. 새 DB 검증은 별도 project_id, 사용하지 않는 API/DB/메일 포트의 폐기용 Supabase를 만들어 수행한다. 11단계는 `hankan-stage11-20261028`과 5532x 포트를 사용해 원래 프로젝트와 분리했다.
+기존 DB에는 `node scripts/supabase.mjs migration up --local`로 추가 migration만 적용한다. 저장소의 모든 SQL을 파일 버전 순서로 유지하고 적용 이력을 먼저 확인한다. 현재 16개이며 마지막은 `20261106022629_async_recipe_jobs.sql`이다. 새 migration을 먼저 적용한 뒤 호환되는 웹·worker를 배포한다. 기존 사용자 DB reset·볼륨 삭제는 하지 않는다. 새 DB 검증은 별도 project_id, 사용하지 않는 API/DB/메일 포트의 폐기용 Supabase를 만들어 수행한다. 11단계는 `hankan-stage11-20261028`과 5532x 포트를 사용해 원래 프로젝트와 분리했다.
 
 `npm run check:stage11`은 pgTAP→단위/UI→실제 로컬 DB 통합→타입→lint→웹 빌드→worker 빌드를 실행한다. worker는 검사 중 테스트 작업을 가져가지 않게 멈추고 종료 후 다시 시작한다. 통합 검사는 자체 생성한 계정만 지운다. 유료 AI 호출은 기본 검사에서 실행하지 않으며 별도 `HANKAN_AI_LIVE=1 npm run test:ai-live` 결과를 기록한다. Windows 명령은 [AI 평가 문서](ai-evaluation.md)를 따른다.
 
@@ -61,7 +63,7 @@ DB 변경 시 타입 파일을 재생성하고 전체 검사를 반복한다. �
 
 로컬/별도 서버 방식은 Node24.15 이상(25 미만)을 사용한다. `npm run dev`와 `npm run dev:worker`를 각각 실행한다. worker는60초 간격이며 한 주기가 끝나기 전 다음 주기를 실행하지 않는다. `npm run build:worker` 후 `node dist/worker.cjs --once`로 한 주기만 실행할 수 있다. 별도 서버 배포 웹은 `npm run build` 후 `npm start`, worker는 `npm run start:worker`다. Vercel 배포는 위의 인증된 HTTP 예약 방식을 사용한다.
 
-`.env.local`에 기존 Supabase 설정과 `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`를 설정한다. 로컬용 키는 생성되어 있다. 배포마다 별도 키를 생성하고 subject에는 실제 연락 가능한 `mailto:` 주소 또는 HTTPS 주소를 사용한다. 키를 바꾸면 기존 브라우저 구독을 다시 연결해야 한다. 개인 키·service role 키는 공개 저장소, 로그, 클라이언트 번들에 넣지 않는다. VAPID가 없으면 푸시는 처리하지 않고 사진 정리만 실행한다.
+`.env.local`에 기존 Supabase 설정과 `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`를 설정한다. A PC의 로컬 키가 B PC로 자동 이전되지는 않는다. 새 로컬 환경은 별도로 준비한다. 배포마다 별도 키를 생성하고 subject에는 실제 연락 가능한 `mailto:` 주소 또는 HTTPS 주소를 사용한다. 키를 바꾸면 기존 브라우저 구독을 다시 연결해야 한다. 개인 키·service role 키는 공개 저장소, 로그, 클라이언트 번들에 넣지 않는다. VAPID가 없으면 푸시는 처리하지 않지만 사진 정리와 비동기 추천은 실행한다.
 
 ## PWA와 브라우저 알림
 
@@ -71,7 +73,9 @@ DB 변경 시 타입 파일을 재생성하고 전체 검사를 반복한다. �
 
 구독 endpoint는 Google FCM, Mozilla Push, Apple Web Push, Windows notify/wns 도메인의 HTTPS 주소만 허용한다. 임의 URL을 worker가 호출하지 않도록 DB와 전송 계층에서 검사한다. 새 push 공급자가 필요하면 검증 후 두 allowlist를 함께 갱신한다.
 
-## 재시작과 중복 방지
+## 일일 임박 알림의 재시작과 중복 방지
+
+이 절의 5분 lease·하루 한 건 규칙은 일일 알림용이다. 추천은 120초 lease·최대 세 번 claim과 별도 완료 알림 기록을 사용한다. [비동기 추천](async-recipes.md)을 따른다.
 
 사용자+현지 날짜의 작업이 유일하다. DB 잠금과 5분 임대, 갱신되는 임대 토큰으로 여러 worker를 보호한다. 전송 직전마다 현재 일정, 멤버십, 재료와 구독을 확인한다. 죽은 worker의 임대는 다음 worker가 회수한다. HTTP 성공 후 기록 전 장애가 나면 재전송될 수 있으나 서비스 워커의 안정적인 notification ID/tag 및 IndexedDB 유일 키로 중복 표시를 막는다. 브라우저 저장소를 사용자가 지우면 이전 표시 기록도 지워진다.
 
@@ -107,7 +111,7 @@ Compose/지속 프로세스 방식을 선택하면 웹과 Node worker를 모두 
 
 2026-10-28 클라우드 프로젝트에 기존001~009 SQL을 순서대로 적용했다. MCP가 발급한 시각 기반 이력은 적용 결과 확인 후 저장소의001~009와 정합화해 다음 CLI 실행의 중복 적용을 방지했다. 새로 시작한 클라우드로 사용자 데이터를 복사하지 않았으며 로컬 DB는 유지했다.
 
-현재 .env.local은 클라우드 접속을 사용한다. 변경 전 설정은 Git에서 제외된 work/env-backups/.env.local.before-cloud에 보관한다. 전체 DB 통합 검사는 .env.test.local의 기존 로컬 연결을 쓰도록 분리했다. .env.cloud.local은 준비 파일이며 Next가 자동으로 읽지 않는다. 키 값이나 백업 파일을 커밋하지 않는다.
+A PC의 .env.local은 클라우드 접속을 사용했고, 이전 설정은 Git 제외 work/env-backups/에 보관했다. B에는 이 파일·Docker 데이터가 자동 이전되지 않는다. 현재 파일의 실제 대상을 먼저 확인하고 [인수인계](handoff.md)에 따라 준비한다. DB 통합 검사는 .env.test.local의 loopback 연결만 사용한다. .env.cloud.local은 Next가 자동으로 읽지 않는다. 키 값이나 백업 파일을 커밋하지 않는다.
 
 클라우드 SDK 검사32건과 실제 Next 서버 로그인·알림 설정·구독 등록·로그아웃 API 흐름, worker 한 주기를 확인했다. 아이디 인증 변경 후 실제 클라우드18건도 통과했다. 2026-10-29 Vercel에서 실제 Production28건과 예약 worker HTTP200까지 확인했다. 검증용 사용자/사진은 제거했다. 실제 기기 푸시 수신은 별도 검증 대상이다. 추가 버킷/예약 extension 마이그레이션2건을 적용한 뒤 클라우드 이력도 저장소 파일 버전과 정합화했다.
 

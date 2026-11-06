@@ -90,14 +90,17 @@ export function AppShell({
           <Link className="brand-link" href={'/fridges/' + selectedId}>
             <Brand />
           </Link>
-          <ProfileMenu
-            key={accountName + ':' + selectedId}
-            accountName={accountName}
-            fridgeId={selectedId}
-          />
+          <div className="pantry-account">
+            <span className="pantry-account-note">함께 채우는 냉장고</span>
+            <ProfileMenu
+              key={accountName + ':' + selectedId}
+              accountName={accountName}
+              fridgeId={selectedId}
+            />
+          </div>
         </div>
       </header>
-      {(view === 'inventory' || view === 'recipes') && (
+      {view === 'recipes' && (
         <div className="pantry-context">
           <FridgeSwitcher
             fridges={fridges}
@@ -107,6 +110,11 @@ export function AppShell({
           />
           {switching && <p role="status">냉장고를 열고 있어요…</p>}
         </div>
+      )}
+      {view === 'inventory' && switching && (
+        <p className="shell-status" role="status">
+          냉장고를 열고 있어요…
+        </p>
       )}
       {error && (
         <p className="shell-error" role="alert">
@@ -154,6 +162,15 @@ export function AppShell({
           timeZone={timeZone}
           onAccessLost={accessLost}
           onReceiptUpload={() => setReceiptFor(selectedId)}
+          fridgeControl={
+            <FridgeSwitcher
+              compact
+              fridges={fridges}
+              selectedId={selectedId}
+              onSelect={(id) => void select(id)}
+              disabled={switching || !online}
+            />
+          }
         />
       )}
       <footer className="pantry-footer">

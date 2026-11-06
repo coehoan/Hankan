@@ -197,6 +197,30 @@ describe('inventory request isolation and synchronization', () => {
 describe('inventory controls with real hook and HTTP boundary', () => {
   const show = () =>
     render(<InventoryScreen fridgeId={A} fridgeName="우리집 냉장고" initialToday="2026-10-26" />);
+  it('opens_manual_registration_directly_and_preserves_the_receipt_entry', async () => {
+    const upload = vi.fn();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.resolve(response([]))),
+    );
+    render(
+      <InventoryScreen
+        fridgeId={A}
+        fridgeName="우리집 냉장고"
+        initialToday="2026-10-26"
+        onReceiptUpload={upload}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '직접 등록' }));
+    expect(screen.getByRole('form', { name: '재료 등록' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: '취소' }));
+    fireEvent.click(screen.getByRole('button', { name: '영수증 등록' }));
+    expect(upload).toHaveBeenCalledOnce();
+    online = false;
+    act(() => window.dispatchEvent(new Event('offline')));
+    expect(screen.getByRole('button', { name: '직접 등록' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '영수증 등록' })).toBeDisabled();
+  });
   it('remaining_save_uses_progress_and_success_notice_can_be_dismissed', async () => {
     const pending = deferred();
     let rows = [item('a', '두부')];
@@ -318,8 +342,7 @@ describe('inventory controls with real hook and HTTP boundary', () => {
       ),
     );
     show();
-    fireEvent.click(screen.getByRole('button', { name: '재료 등록' }));
-    fireEvent.click(screen.getByRole('button', { name: '직접 입력' }));
+    fireEvent.click(screen.getByRole('button', { name: '직접 등록' }));
     const form = screen.getByRole('form', { name: '재료 등록' });
     fireEvent.change(within(form).getByLabelText('재료 이름'), { target: { value: '방울토마토' } });
     fireEvent.change(within(form).getByLabelText('유통기한'), { target: { value: '2026-11-02' } });

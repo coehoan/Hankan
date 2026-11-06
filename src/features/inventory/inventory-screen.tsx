@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { Ingredient, StoragePlace } from './contracts';
 import { sortIngredients, urgencyOf } from './domain';
 import { useInventory } from './use-inventory';
@@ -83,25 +84,24 @@ function IngredientRow({
           <IngredientArt name={item.name} />
         </span>
         <span className="ingredient-copy">
-          <span className="ingredient-name">
-            {item.name}
-            <span className={'expiry-badge ' + urgency}>
+          <span className="ingredient-name">{item.name}</span>
+          <span className="ingredient-meta">{storageNames[item.storage]}</span>
+          <span className="ingredient-date">
+            <strong className={'expiry-badge ' + urgency}>
               {left < 0 ? `${-left}일 지남` : left === 0 ? '오늘까지' : `${left}일 남음`}
-            </span>
-          </span>
-          <span className="ingredient-meta">
-            {storageNames[item.storage]}
-            <span aria-hidden="true">·</span>
-            <time dateTime={item.expiresOn}>{item.expiresOn.replaceAll('-', '.')}까지</time>
+            </strong>
+            <time dateTime={item.expiresOn} title={item.expiresOn}>
+              {item.expiresOn.slice(0, 4) === today.slice(0, 4)
+                ? `${Number(item.expiresOn.slice(5, 7))}월 ${Number(item.expiresOn.slice(8, 10))}일`
+                : item.expiresOn.replaceAll('-', '.')}
+            </time>
           </span>
         </span>
       </button>
       <div className="ingredient-quantity" aria-busy={saving}>
-        <div className="quantity-caption">
-          <span>남은 양</span>
-          <output>{value}%</output>
-        </div>
+        <label htmlFor={'quantity-' + item.id}>남은 양</label>
         <input
+          id={'quantity-' + item.id}
           aria-label={item.name + ' 남은 양'}
           type="range"
           min={0}
@@ -130,24 +130,35 @@ function IngredientRow({
               void commit();
           }}
         />
-        <div className="quantity-save-slot">
-          {saving && (
-            <div
-              className="quantity-save-progress"
-              role="progressbar"
-              aria-label={item.name + ' 남은 양 저장 중'}
-            >
-              <span />
-            </div>
-          )}
-        </div>
+        <output>{value}%</output>
+      </div>
+      <div className="quantity-save-slot">
+        {saving && (
+          <div
+            className="quantity-save-progress"
+            role="progressbar"
+            aria-label={item.name + ' 남은 양 저장 중'}
+          >
+            <span />
+          </div>
+        )}
+      </div>
+      <div className="ingredient-tools">
+        <button
+          className="edit-ingredient"
+          aria-label={item.name + ' 기한 수정'}
+          onClick={onEdit}
+          disabled={disabled}
+        >
+          기한 수정
+        </button>
         <button
           className="delete-ingredient"
           aria-label={item.name + ' 삭제'}
           onClick={onDelete}
           disabled={disabled}
         >
-          다 먹었어요 · 삭제
+          삭제
         </button>
       </div>
     </article>
@@ -162,6 +173,7 @@ export function InventoryScreen({
   timeZone = 'Asia/Seoul',
   onAccessLost,
   onReceiptUpload,
+  fridgeControl,
 }: {
   fridgeId: string;
   fridgeName: string;
@@ -169,6 +181,7 @@ export function InventoryScreen({
   timeZone?: string;
   onAccessLost?: () => void;
   onReceiptUpload?: () => void;
+  fridgeControl?: ReactNode;
 }) {
   const inventory = useInventory(fridgeId);
   const [query, setQuery] = useState(''),
@@ -218,23 +231,55 @@ export function InventoryScreen({
     <main className="inventory-page">
       <div className="inventory-intro">
         <div>
-          <h1>
-            {fridgeName}
-            <span>{inventory.items.length}개</span>
-          </h1>
-          <p className="inventory-subtitle">잊고 있던 재료도, 맛있는 한 끼가 될 수 있어요.</p>
+          <div className="inventory-heading">
+            <h1>{fridgeName}</h1>
+            {fridgeControl}
+          </div>
+          <p className="inventory-subtitle">오늘은 어떤 재료부터 꺼내볼까요?</p>
         </div>
-        <button
-          className="add-button"
-          aria-label="재료 등록"
-          onClick={() => {
-            setAddingFor(fridgeId);
-            showNotice('');
-          }}
-          disabled={disabled}
-        >
-          <span aria-hidden="true">＋</span> <span>재료 등록</span>
-        </button>
+        <div className="inventory-add-actions">
+          <button
+            className="secondary-button"
+            onClick={() => {
+              setEditor({ fridgeId });
+              showNotice('');
+            }}
+            disabled={disabled}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            직접 등록
+          </button>
+          <button
+            className="secondary-button"
+            onClick={() => {
+              showNotice('');
+              onReceiptUpload?.();
+            }}
+            disabled={disabled || !onReceiptUpload}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z M9 8h6M9 12h6" />
+            </svg>
+            영수증 등록
+          </button>
+        </div>
       </div>
       {addingFor === fridgeId && (
         <Dialog
@@ -311,11 +356,21 @@ export function InventoryScreen({
               <input
                 type="search"
                 aria-label="재료 이름 검색"
-                placeholder="재료 이름 검색"
+                placeholder="재료 검색"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
-              <span aria-hidden="true">⌕</span>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m16 16 4 4" />
+              </svg>
             </label>
           </div>
           {inventory.error && !activeEditor && (
@@ -391,7 +446,7 @@ export function InventoryScreen({
                     <header>
                       <h2 id={'group-' + group.key}>
                         {group.label}
-                        <span>· {rows.length}개</span>
+                        <span>{rows.length}</span>
                       </h2>
                       <p>{group.sub}</p>
                     </header>
@@ -440,45 +495,18 @@ export function InventoryScreen({
           </div>
         </div>
         <aside className="fridge-summary" aria-label="냉장고 요약">
-          <div className="summary-heading">
-            <span aria-hidden="true">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9 5l3 3 3-3M9 19l3-3 3 3" />
-              </svg>
-            </span>
-            <p>
-              조금 더 신선한
-              <br />
-              <strong>오늘의 냉장고</strong>
-            </p>
-          </div>
           <dl>
             <div>
-              <dt>보관 중인 재료</dt>
-              <dd>
-                {inventory.items.length}
-                <small>개</small>
-              </dd>
+              <dt>전체 재료</dt>
+              <dd>{inventory.items.length}</dd>
             </div>
             <div>
-              <dt>기한이 3일 이내</dt>
-              <dd>
-                {soon.length}
-                <small>개</small>
-              </dd>
+              <dt>3일 이내</dt>
+              <dd>{soon.length}</dd>
             </div>
             <div>
-              <dt>기한이 지난 재료</dt>
-              <dd>
-                {expired}
-                <small>개</small>
-              </dd>
+              <dt>기한 지남</dt>
+              <dd>{expired}</dd>
             </div>
           </dl>
           <div className="summary-recipes">
@@ -496,6 +524,7 @@ export function InventoryScreen({
             />
             <Link className="text-button" href={'/fridges/' + fridgeId + '/recipes'}>
               요리 추천 전체 보기
+              <span aria-hidden="true">›</span>
             </Link>
           </div>
           <p className="summary-date">{today.replaceAll('-', '.')} 기준</p>

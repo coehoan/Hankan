@@ -9,8 +9,7 @@ export function ProfileMenu({ accountName, fridgeId }: { accountName: string; fr
     trigger = useRef<HTMLButtonElement>(null),
     menu = useRef<HTMLDivElement>(null),
     id = useId();
-  const name = accountName.trim() || '사용자',
-    initial = [...name][0].toLocaleUpperCase('ko-KR');
+  const name = accountName.trim() || '사용자';
   useEffect(() => {
     if (!open) return;
     menu.current?.querySelector<HTMLElement>('[role=menuitem]')?.focus();
@@ -63,7 +62,18 @@ export function ProfileMenu({ accountName, fridgeId }: { accountName: string; fr
         aria-controls={open ? id : undefined}
         onClick={() => setOpen((value) => !value)}
       >
-        {initial}
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="8" r="3.5" />
+          <path d="M5 21v-2a7 7 0 0 1 14 0v2" />
+        </svg>
       </button>
       {open && (
         <div className="profile-dropdown" ref={menu} id={id} role="menu" aria-label="계정 메뉴">

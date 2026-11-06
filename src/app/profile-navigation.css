@@ -237,16 +237,6 @@
   min-width: 0;
 }
 @media (max-width: 540px) {
-  .pantry-header .brand-link {
-    order: 1;
-  }
-  .pantry-header .profile-menu {
-    order: 2;
-    margin-left: auto;
-  }
-  .pantry-header nav {
-    order: 3;
-  }
   .pantry-context .fridge-switcher {
     flex: 1 1 170px;
   }

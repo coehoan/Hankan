@@ -30,10 +30,10 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
-it('profile_initial_opens_four_actions_and_supports_keyboard_and_outside_close', () => {
+it('profile_menu_keeps_four_actions_and_supports_keyboard_and_outside_close', () => {
   render(<AppShell {...props} />);
   const avatar = screen.getByRole('button', { name: 'fresh_user 계정 메뉴' });
-  expect(avatar).toHaveTextContent('F');
+  expect(avatar).toHaveAccessibleName('fresh_user 계정 메뉴');
   fireEvent.click(avatar);
   const menu = screen.getByRole('menu', { name: '계정 메뉴' });
   expect(within(menu).getAllByRole('menuitem')).toHaveLength(4);
@@ -69,23 +69,20 @@ it('profile_menu_stays_open_when_touch_tap_blurs_without_focusing_the_item', () 
   });
   expect(screen.getByRole('menu', { name: '계정 메뉴' })).toContainElement(manage);
 });
-it('inventory_registration_chooses_manual_or_receipt_without_old_toolbar_actions', async () => {
+it('inventory_registration_opens_manual_or_receipt_from_the_two_a1_actions', async () => {
   const { container } = render(<AppShell {...props} />);
   expect(container.querySelector('.fridge-role')).toBeNull();
   fireEvent.click(screen.getByRole('combobox', { name: '냉장고 선택' }));
   expect(screen.getByRole('option', { name: '우리집 · 내 소유' })).toBeInTheDocument();
   expect(screen.getByRole('option', { name: '함께 냉장고 · 함께 관리' })).toBeInTheDocument();
   fireEvent.keyDown(screen.getByRole('combobox', { name: '냉장고 선택' }), { key: 'Escape' });
-  expect(screen.queryByRole('button', { name: '영수증 등록' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '영수증 등록' })).toBeVisible();
   expect(screen.queryByRole('button', { name: '멤버 관리' })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: '냉장고 이름 변경' })).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: '재료 등록' }));
-  expect(screen.getByRole('dialog', { name: '재료 등록 방법' })).toBeVisible();
   expect(screen.queryByRole('form', { name: '재료 등록' })).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: '직접 입력' }));
+  fireEvent.click(screen.getByRole('button', { name: '직접 등록' }));
   expect(screen.getByRole('form', { name: '재료 등록' })).toBeVisible();
   fireEvent.click(screen.getByRole('button', { name: '재료 등록 닫기' }));
-  fireEvent.click(screen.getByRole('button', { name: '재료 등록' }));
   fireEvent.click(screen.getByRole('button', { name: '영수증 등록' }));
   expect(await screen.findByRole('dialog', { name: '영수증으로 등록' })).toBeVisible();
   expect(screen.getByRole('button', { name: '사진 업로드' })).toBeVisible();

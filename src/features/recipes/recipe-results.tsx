@@ -67,7 +67,19 @@ export function RecipeResults({
     >
       <header className="recipe-results-intro">
         <div>
-          <h2>{savedJobId ? '저장된 요리 추천' : '남은 재료로, 오늘 한 끼'}</h2>
+          <h2>
+            {savedJobId ? (
+              '저장된 요리 추천'
+            ) : compact ? (
+              <>
+                남은 재료로,
+                <br />
+                오늘 한 끼
+              </>
+            ) : (
+              '남은 재료로, 오늘 한 끼'
+            )}
+          </h2>
         </div>
         {!savedJobId && (
           <Button disabled={disabled} onClick={() => void state.start()}>
@@ -78,6 +90,7 @@ export function RecipeResults({
                 : job || state.error
                   ? '다시 추천 받기'
                   : '요리 추천 받기'}
+            {compact && <span aria-hidden="true">→</span>}
           </Button>
         )}
       </header>

@@ -62,8 +62,7 @@ function Fixture() {
 // Catches a provider that remounts descendants when only its theme changes.
 it('system_theme_change_keeps_unsaved_form', async () => {
   render(<Fixture />);
-  fireEvent.click(screen.getByRole('button', { name: '재료 등록' }));
-  fireEvent.click(screen.getByRole('button', { name: '직접 입력' }));
+  fireEvent.click(screen.getByRole('button', { name: '직접 등록' }));
   const dialog = screen.getByRole('dialog', { name: '재료 등록' });
   fireEvent.change(within(dialog).getByLabelText('재료 이름'), {
     target: { value: '손질해 둔 시금치' },
@@ -146,8 +145,7 @@ it('dialog_restores_focus', async () => {
 // Catches a modal remount/discard when connectivity changes.
 it('offline_disables_mutations_without_losing_input', async () => {
   render(<Fixture />);
-  fireEvent.click(screen.getByRole('button', { name: '재료 등록' }));
-  fireEvent.click(screen.getByRole('button', { name: '직접 입력' }));
+  fireEvent.click(screen.getByRole('button', { name: '직접 등록' }));
   const dialog = screen.getByRole('dialog');
   fireEvent.change(within(dialog).getByLabelText('재료 이름'), { target: { value: '표고버섯' } });
   act(() => {

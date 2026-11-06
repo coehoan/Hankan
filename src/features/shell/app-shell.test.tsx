@@ -12,6 +12,35 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
+it('keeps_keyboard_fridge_switching_beside_the_inventory_heading', async () => {
+  const fetcher = vi.fn(async () => Response.json({ data: [] }));
+  vi.stubGlobal('fetch', fetcher);
+  render(
+    <AppShell
+      fridges={[
+        { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', name: '우리집', role: 'owner' },
+        { id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', name: '함께 쓰는 냉장고', role: 'member' },
+      ]}
+      selectedId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+      initialToday="2026-10-28"
+      timeZone="Asia/Seoul"
+    />,
+  );
+  const picker = screen.getByRole('combobox', { name: '냉장고 선택' });
+  expect(screen.getByRole('main')).toContainElement(picker);
+  fireEvent.keyDown(picker, { key: 'ArrowDown' });
+  fireEvent.keyDown(picker, { key: 'End' });
+  fireEvent.keyDown(picker, { key: 'Enter' });
+  await waitFor(() =>
+    expect(fetcher).toHaveBeenCalledWith(
+      '/api/fridges',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ fridgeId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' }),
+      }),
+    ),
+  );
+});
 it('management_dialogs_close_without_leaving_duplicates', async () => {
   vi.stubGlobal(
     'fetch',

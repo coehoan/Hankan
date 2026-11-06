@@ -7,11 +7,13 @@ export function FridgeSwitcher({
   selectedId,
   onSelect,
   disabled = false,
+  compact = false,
 }: {
   fridges: FridgeSummary[];
   selectedId: string;
   onSelect: (id: string) => void;
   disabled?: boolean;
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false),
     [highlight, setHighlight] = useState(selectedId),
@@ -53,7 +55,7 @@ export function FridgeSwitcher({
   }
   return (
     <div
-      className="fridge-switcher"
+      className={'fridge-switcher' + (compact ? ' fridge-switcher-compact' : '')}
       ref={root}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);

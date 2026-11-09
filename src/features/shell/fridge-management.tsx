@@ -25,6 +25,7 @@ export function FridgeManagement({
   return (
     <main className="my-page fridge-management">
       <header className="my-page-heading">
+        <p className="workspace-kicker">함께 쓰는 공간</p>
         <h1>냉장고 관리</h1>
         <p>냉장고 이름과 함께 쓰는 사람들을 관리해요.</p>
       </header>
@@ -38,6 +39,7 @@ export function FridgeManagement({
       </section>
       <section className="my-page-card">
         <h2>{selected.name}</h2>
+        <p className="muted">선택한 냉장고에 적용돼요.</p>
         <div className="management-actions">
           <button className="settings-row" onClick={() => setDialog('name')} disabled={disabled}>
             <span>냉장고 이름 변경</span>

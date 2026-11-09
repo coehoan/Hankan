@@ -162,6 +162,7 @@ export function ReviewScreen({
   return (
     <main className="receipt-page">
       <header className="receipt-intro">
+        <p className="workspace-kicker">영수증 등록</p>
         <h1>영수증 품목 확인</h1>
         <p>
           저장할 냉장고: <strong>{draft.fridgeName}</strong>
@@ -220,7 +221,7 @@ export function ReviewScreen({
         </aside>
         <section className="receipt-review" aria-label="확인할 품목">
           <div className="receipt-analysis">
-            <p>
+            <p role="status">
               {status === 'analyzing' || busy === 'analyze'
                 ? 'AI가 품목을 읽고 있어요. 잠시 후 상태를 다시 확인합니다.'
                 : ['uploaded', 'failed'].includes(status)

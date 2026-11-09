@@ -1,3 +1,5 @@
+import { PantryIcon } from './pantry-icon';
+
 export function ViewState({
   title,
   description,
@@ -12,7 +14,7 @@ export function ViewState({
   return (
     <main className="message-page view-state" aria-busy={busy}>
       <span className="empty-leaf" aria-hidden="true">
-        ✳
+        <PantryIcon name="fridge" />
       </span>
       <h1>{title}</h1>
       <p role={busy ? 'status' : undefined}>{description}</p>

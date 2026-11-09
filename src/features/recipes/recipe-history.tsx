@@ -6,9 +6,11 @@ import { recipeJobPending, type RecipeJob } from './job-contracts';
 export function RecipeHistory({
   timeZone,
   onAccessLost,
+  fridgeId,
 }: {
   timeZone: string;
   onAccessLost?: () => void;
+  fridgeId?: string;
 }) {
   const [state, setState] = useState<{ jobs: RecipeJob[]; loading: boolean; error: string }>({
     jobs: [],
@@ -79,6 +81,7 @@ export function RecipeHistory({
   return (
     <main className="recipes-page recipe-history">
       <header className="recipes-page-heading">
+        <p className="workspace-kicker">저장한 한 끼</p>
         <h1>추천 내역</h1>
         <p>요청할 때의 재료와 요리법을 최근 30건까지 다시 볼 수 있어요.</p>
       </header>
@@ -95,6 +98,11 @@ export function RecipeHistory({
         <div className="recipe-empty">
           <h2>아직 저장된 추천이 없어요</h2>
           <p>냉장고에서 요리를 추천받으면 여기에 모아둘게요.</p>
+          {fridgeId && (
+            <Link className="secondary-button" href={'/fridges/' + fridgeId + '/recipes'}>
+              요리 추천으로 가기
+            </Link>
+          )}
         </div>
       )}
       <ol className="recipe-history-list">

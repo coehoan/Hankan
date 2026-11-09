@@ -26,18 +26,15 @@ export function AuthFrame({ children }: { children: React.ReactNode }) {
           <Brand />
         </Link>
         <div className="story-copy">
-          <h1>
-            재료는 신선하게,
+          <p className="auth-story-title">
+            냉장고에 있는 것부터,
             <br />
-            냉장고는 가볍게.
-          </h1>
+            오늘 한 끼.
+          </p>
           <p className="story-description">
-            무엇이 남았는지, 무엇을 먼저 먹을지.
-            <br />
-            한칸에서 차근차근 정리해 보세요.
+            유통기한이 가까운 재료를 챙기고, 남은 재료로 만들 요리를 찾아보세요.
           </p>
           <div className="produce-art" aria-hidden="true">
-            <span className="art-ring" />
             <svg viewBox="0 0 300 210" fill="none">
               <ellipse cx="150" cy="185" rx="101" ry="12" fill="currentColor" opacity=".07" />
               <path d="m105 169 11-54 31 4-12 55Z" fill="#f2ead3" />
@@ -61,10 +58,8 @@ export function AuthFrame({ children }: { children: React.ReactNode }) {
               <path d="M200 46c8-13 22-15 26-3 4 11-12 16-26 3Z" fill="#85ad77" />
               <path d="m199 48 18-5" stroke="#527e4b" strokeWidth="1.5" />
             </svg>
-            <span className="art-caption">조금 덜 버리고, 조금 더 맛있게.</span>
           </div>
         </div>
-        <p className="story-footer">내 냉장고의 작은 습관, 한칸</p>
       </section>
       <section className="auth-content">
         <div className="mobile-brand">

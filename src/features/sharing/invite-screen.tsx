@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { InviteInfo } from './contracts';
+import { PantryIcon } from '@/components/ui/pantry-icon';
 const unavailable = {
   expired: '만료된 초대예요.',
   revoked: '취소된 초대예요.',
@@ -78,7 +79,7 @@ export function InviteScreen({ token }: { token: string }) {
   return (
     <section className="invitation-card">
       <span className="invite-mark" aria-hidden="true">
-        ✳
+        <PantryIcon name="fridge" />
       </span>
       <p className="invite-kicker">함께 쓰는 냉장고로 초대받았어요</p>
       {info ? (

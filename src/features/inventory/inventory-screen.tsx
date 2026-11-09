@@ -11,6 +11,7 @@ import { InventoryNotice } from './inventory-notice';
 import Link from 'next/link';
 import { RecipeResults } from '@/features/recipes/recipe-results';
 import { Dialog } from '@/components/ui/dialog';
+import { PantryIcon } from '@/components/ui/pantry-icon';
 
 const storageNames: Record<StoragePlace, string> = {
   fridge: '냉장',
@@ -239,15 +240,16 @@ export function InventoryScreen({
     <main className="inventory-page">
       <div className="inventory-intro">
         <div>
+          <p className="workspace-kicker">식재료 관리</p>
           <div className="inventory-heading">
             <h1>{fridgeName}</h1>
             {fridgeControl}
           </div>
-          <p className="inventory-subtitle">오늘은 어떤 재료부터 꺼내볼까요?</p>
+          <p className="inventory-subtitle">보관 중인 재료와 먼저 써야 할 재료를 확인해요.</p>
         </div>
         <div className="inventory-add-actions">
           <button
-            className="secondary-button"
+            className="add-button"
             onClick={() => {
               setEditor({ fridgeId });
               showNotice('');
@@ -289,6 +291,31 @@ export function InventoryScreen({
           </button>
         </div>
       </div>
+      <section className="inventory-overview" aria-label="냉장고 요약">
+        <dl>
+          <div>
+            <dt>
+              <PantryIcon name="fridge" /> 전체 재료
+            </dt>
+            <dd>{inventory.loading ? '–' : inventory.items.length}</dd>
+          </div>
+          <div>
+            <dt>
+              <PantryIcon name="alert" /> 3일 이내
+            </dt>
+            <dd>{inventory.loading ? '–' : soon.length}</dd>
+          </div>
+          <div>
+            <dt>
+              <PantryIcon name="alert" /> 기한 지남
+            </dt>
+            <dd>{inventory.loading ? '–' : expired}</dd>
+          </div>
+        </dl>
+        <p>
+          <time dateTime={today}>{today.replaceAll('-', '.')}</time> 기준
+        </p>
+      </section>
       {addingFor === fridgeId && (
         <Dialog
           open
@@ -349,6 +376,7 @@ export function InventoryScreen({
       )}
       <div className="inventory-columns">
         <div className="inventory-list-column">
+          <h2 className="inventory-list-title">재료 목록</h2>
           <div className="inventory-tools">
             <div className="storage-filters" role="group" aria-label="보관 장소 필터">
               {(['all', 'fridge', 'freezer', 'pantry'] as const).map((place) => (
@@ -412,8 +440,8 @@ export function InventoryScreen({
             </section>
           ) : visible.length === 0 ? (
             <section className="empty-inventory">
-              <span className="empty-leaf" aria-hidden="true">
-                ✳
+              <span className="empty-leaf">
+                <PantryIcon name="fridge" />
               </span>
               <h2>
                 {inventory.items.length ? '찾는 재료가 없어요' : '냉장고의 첫 재료를 담아 보세요'}
@@ -497,22 +525,11 @@ export function InventoryScreen({
             </button>
           </div>
         </div>
-        <aside className="fridge-summary" aria-label="냉장고 요약">
-          <dl>
-            <div>
-              <dt>전체 재료</dt>
-              <dd>{inventory.items.length}</dd>
-            </div>
-            <div>
-              <dt>3일 이내</dt>
-              <dd>{soon.length}</dd>
-            </div>
-            <div>
-              <dt>기한 지남</dt>
-              <dd>{expired}</dd>
-            </div>
-          </dl>
+        <aside className="fridge-summary" aria-label="요리 추천 빠른 실행">
           <div className="summary-recipes">
+            <span className="recipe-side-icon">
+              <PantryIcon name="bowl" />
+            </span>
             <RecipeResults
               compact
               fridgeId={fridgeId}
@@ -530,7 +547,6 @@ export function InventoryScreen({
               <span aria-hidden="true">›</span>
             </Link>
           </div>
-          <p className="summary-date">{today.replaceAll('-', '.')} 기준</p>
         </aside>
       </div>
     </main>

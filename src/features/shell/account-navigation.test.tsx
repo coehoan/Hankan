@@ -45,7 +45,16 @@ it('header_brand_opens_selected_inventory_and_account_controls_live_in_mypage', 
   expect(within(header).queryByRole('link', { name: '마이페이지' })).not.toBeInTheDocument();
   expect(within(header).queryByRole('link', { name: '비밀번호 변경' })).not.toBeInTheDocument();
   expect(within(header).queryByRole('button', { name: '로그아웃' })).not.toBeInTheDocument();
-  expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+  const nav = within(header).getByRole('navigation', { name: '주 메뉴' });
+  expect(within(nav).getByRole('link', { name: '식재료' })).toHaveAttribute('aria-current', 'page');
+  expect(within(nav).getByRole('link', { name: '요리 추천' })).toHaveAttribute(
+    'href',
+    `/fridges/${id}/recipes`,
+  );
+  expect(within(nav).getByRole('link', { name: '추천 내역' })).toHaveAttribute(
+    'href',
+    '/recipes/history',
+  );
 });
 it('mypage_has_keyboard_account_row_inline_notifications_and_no_logout', async () => {
   render(
@@ -65,7 +74,7 @@ it('mypage_has_keyboard_account_row_inline_notifications_and_no_logout', async (
   expect(passwordRow.tagName).toBe('DIV');
   expect(await screen.findByRole('switch', { name: '알림 받기' })).toBeVisible();
   expect(screen.queryByRole('region', { name: '브라우저 알림 연결' })).not.toBeInTheDocument();
-  expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+  expect(screen.getByRole('navigation', { name: '주 메뉴' })).toBeVisible();
   expect(screen.queryByRole('button', { name: '로그아웃' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('switch', { name: '알림 받기' }));
   expect(screen.getByLabelText('매일 받을 시각')).toBeVisible();

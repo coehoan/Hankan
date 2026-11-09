@@ -8,12 +8,12 @@ import { safeNextPath } from './redirects';
 type FormAction = Exclude<AuthAction, 'sign-out'>;
 const copy: Record<FormAction, { title: string; description: string; submit: string }> = {
   'sign-in': {
-    title: '다시 만나 반가워요',
+    title: '로그인',
     description: '아이디로 로그인하고 내 냉장고를 확인해 보세요.',
     submit: '로그인',
   },
   'sign-up': {
-    title: '싱싱한 일상을 시작해요',
+    title: '회원가입',
     description: '아이디와 비밀번호로 가입하고 바로 시작해요.',
     submit: '회원가입',
   },
@@ -42,7 +42,8 @@ export function AuthForm({
   const router = useRouter(),
     [pending, setPending] = useState(false),
     [error, setError] = useState(''),
-    text = copy[mode];
+    text = copy[mode],
+    Heading = externalSubmit ? 'h3' : 'h1';
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
@@ -76,7 +77,7 @@ export function AuthForm({
   }
   return (
     <div className="auth-card">
-      <h2>{text.title}</h2>
+      <Heading className="auth-form-title">{text.title}</Heading>
       <p className="form-description">{text.description}</p>
       <form id={formId} onSubmit={submit} aria-label={text.submit}>
         {mode !== 'update-password' && (

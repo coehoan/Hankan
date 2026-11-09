@@ -8,6 +8,7 @@ import { RecipeDetail } from './recipe-detail';
 import { recipeMetadata } from './recipe-metadata';
 import { recipeJobPending } from './job-contracts';
 import { useRecipeJob } from './use-recipe-job';
+import { PantryIcon } from '@/components/ui/pantry-icon';
 type Props = {
   fridgeId: string;
   ingredients: Ingredient[];
@@ -68,17 +69,7 @@ export function RecipeResults({
       <header className="recipe-results-intro">
         <div>
           <h2>
-            {savedJobId ? (
-              '저장된 요리 추천'
-            ) : compact ? (
-              <>
-                남은 재료로,
-                <br />
-                오늘 한 끼
-              </>
-            ) : (
-              '남은 재료로, 오늘 한 끼'
-            )}
+            {savedJobId ? '추천 결과' : compact ? '남은 재료로 한 끼' : '내 재료로 요리 찾기'}
           </h2>
         </div>
         {!savedJobId && (
@@ -122,6 +113,11 @@ export function RecipeResults({
             <p>
               남은 양이 있는 재료를 등록해 주세요. 0%이거나 기한이 지난 묶음은 추천에서 제외해요.
             </p>
+            {!compact && (
+              <Link className="secondary-button" href={'/fridges/' + fridgeId}>
+                재료 확인하기
+              </Link>
+            )}
           </div>
         )
       )}
@@ -182,6 +178,7 @@ export function RecipeResults({
             <section className="recipe-group" key={kind} aria-labelledby={headingId + kind}>
               <header>
                 <h3 id={headingId + kind}>
+                  <PantryIcon name={kind === 'available' ? 'check' : 'bowl'} />
                   {kind === 'available' ? '보유 재료로 만들어요' : '조금만 더 사면 만들어요'}
                   <span>{group.length}개</span>
                 </h3>
@@ -192,16 +189,18 @@ export function RecipeResults({
                 <div className="recipe-cards">
                   {(compact ? group.slice(0, 2) : group).map((item) => (
                     <article className="recipe-card" key={item.recipe.id}>
-                      {item.urgentIngredientIds.length > 0 && (
-                        <p className="recipe-urgency">
-                          임박 재료 {item.urgentIngredientIds.length}종 활용
-                        </p>
-                      )}
-                      <h4>{item.recipe.name}</h4>
-                      <p className="recipe-card-meta">{recipeMetadata(item.recipe)}</p>
-                      {item.missing.length > 0 && (
-                        <p className="recipe-missing">추가할 재료: {item.missing.join(', ')}</p>
-                      )}
+                      <div className="recipe-card-copy">
+                        <h4>{item.recipe.name}</h4>
+                        <p className="recipe-card-meta">{recipeMetadata(item.recipe)}</p>
+                        {item.urgentIngredientIds.length > 0 && (
+                          <p className="recipe-urgency">
+                            임박 재료 {item.urgentIngredientIds.length}종 활용
+                          </p>
+                        )}
+                        {item.missing.length > 0 && (
+                          <p className="recipe-missing">추가할 재료: {item.missing.join(', ')}</p>
+                        )}
+                      </div>
                       <Button
                         variant="secondary"
                         onClick={() => setSelectedId(item.recipe.id)}

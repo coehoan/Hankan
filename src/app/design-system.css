@@ -1,27 +1,30 @@
-/* A1 white air: original proposal proportions, Korean system font and ingredient cards. */
-/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: consistency across legacy screens; shared tokens and surfaces apply A1 throughout. */
+/* Shared tokens and controls for the pantry workspace. */
 :root {
-  --background: #f4f7f4;
-  --surface: #fcfefb;
-  --foreground: #263c2f;
-  --muted: #596e5c;
-  --accent: #346548;
-  --accent-ink: #f8fcf5;
-  --soft: #e6eee6;
-  --border: #d4dfd3;
-  --control-border: #71836f;
-  --story: #e6eee6;
-  --warning: #98472f;
-  --warning-bg: #f7ebe0;
-  --error: #a33832;
-  --error-bg: #fbece7;
+  --background: #f6f5ee;
+  --surface: #fffef8;
+  --foreground: #203328;
+  --muted: #536358;
+  --accent: #235a41;
+  --accent-ink: #fffef8;
+  --soft: #e9eee3;
+  --border: #d9ded1;
+  --control-border: #758377;
+  --warning: #82441b;
+  --warning-bg: #f7ebdb;
+  --error: #983b33;
+  --error-bg: #faece5;
   --backdrop: #17271e80;
   --overlay-shadow: #17271e26;
-  --radius-panel: 24px;
-  --radius-control: 12px;
-  --page-width: 1160px;
+  --radius-panel: 14px;
+  --radius-control: 8px;
+  --page-width: 1256px;
   --page-gutter: 32px;
-  --font-body: 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --font-body: 'Hankan Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --shelf: #214633;
+  --shelf-ink: #fffef6;
+  --shelf-muted: #d7e4d1;
+  --shelf-line: #64816e;
+  --story: var(--shelf);
 }
 :root[data-theme='dark'] {
   --background: #142019;
@@ -33,7 +36,7 @@
   --soft: #2a3d2d;
   --border: #3e5441;
   --control-border: #81987d;
-  --story: #243728;
+  --story: var(--shelf);
   --warning: #ecc19a;
   --warning-bg: #3c3022;
   --error: #f0b1a6;
@@ -52,7 +55,7 @@
     --soft: #2a3d2d;
     --border: #3e5441;
     --control-border: #81987d;
-    --story: #243728;
+    --story: var(--shelf);
     --warning: #ecc19a;
     --warning-bg: #3c3022;
     --error: #f0b1a6;

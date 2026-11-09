@@ -9,6 +9,7 @@ export function RecipeList({
   timeZone = 'Asia/Seoul',
   onAccessLost,
   savedJobId,
+  fridgeControl,
 }: {
   fridgeId: string;
   fridgeName: string;
@@ -16,6 +17,7 @@ export function RecipeList({
   timeZone?: string;
   onAccessLost?: () => void;
   savedJobId?: string;
+  fridgeControl?: React.ReactNode;
 }) {
   const inventory = useInventory(fridgeId),
     [today, setToday] = useState(initialToday);
@@ -40,11 +42,17 @@ export function RecipeList({
   }, [inventory.revoked, onAccessLost]);
   return (
     <main className="recipes-page">
-      <header className="recipes-page-heading">
-        <h1>오늘은 뭘 먹을까요?</h1>
-        <p>
-          <strong>{fridgeName}</strong>의 재료로 찾아요. 기한이 가까운 재료를 먼저 활용해 보세요.
-        </p>
+      <header className="recipes-page-heading recipe-workspace-heading">
+        <div>
+          <p className="workspace-kicker">{savedJobId ? '추천 내역' : '오늘의 한 끼'}</p>
+          <h1>{savedJobId ? '저장된 요리 추천' : '요리 추천'}</h1>
+          <p>
+            {savedJobId
+              ? `${fridgeName}에서 요청한 요리와 당시 재료를 확인해요.`
+              : '지금 있는 재료로 만들 수 있는 요리와 더 살 재료를 확인해요.'}
+          </p>
+        </div>
+        {fridgeControl}
       </header>
       <RecipeResults
         fridgeId={fridgeId}

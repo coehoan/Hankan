@@ -36,83 +36,115 @@ afterEach(() => {
 });
 const show = () => render(<NotificationSettingsForm />);
 const ready = () => screen.findByRole('switch', { name: '알림 받기' });
-it('sends a test push to this device after obtaining permission and registering it', async () => {
-  saved = { ...saved, enabled: true };
-  const push = vi.fn().mockImplementation(async (url: string) => {
-    if (url === '/api/settings/notifications') return Response.json({ data: saved });
-    if (url === '/api/push/subscriptions')
-      return Response.json({ data: { userId: 'user', publicKey: 'QQ', connected: false } });
-    return Response.json({ data: { sent: true } });
-  });
-  const requestPermission = vi.fn().mockResolvedValue('granted');
+it('requests device permission only on enabling, without delaying the account save', async () => {
+  let answer!: (value: NotificationPermission) => void;
+  const requestPermission = vi.fn(
+    () => new Promise<NotificationPermission>((resolve) => (answer = resolve)),
+  );
+  vi.stubGlobal('isSecureContext', true);
+  vi.stubGlobal('Notification', { permission: 'default', requestPermission });
+  vi.stubGlobal('PushManager', function () {});
+  vi.stubGlobal('navigator', Object.create(navigator, { serviceWorker: { value: {} } }));
+
+  show();
+  const toggle = await ready();
+  expect(requestPermission).not.toHaveBeenCalled();
+  fireEvent.click(toggle);
+  expect(requestPermission).toHaveBeenCalledOnce();
+  await screen.findByText('알림 설정을 저장했어요.');
+  expect(saved.enabled).toBe(true);
+
+  await act(async () => answer('denied'));
+  expect(screen.getByText(/기기 설정에서 한칸의 알림 권한을 확인해 주세요/)).toBeVisible();
+  fireEvent.change(screen.getByLabelText('매일 받을 시각'), { target: { value: '20:30' } });
+  await screen.findByText('알림 설정을 저장했어요.');
+  fireEvent.click(toggle);
+  await screen.findByText('알림을 껐어요.');
+  expect(requestPermission).toHaveBeenCalledOnce();
+  expect(screen.queryByText(/기기 설정에서 한칸의 알림 권한을 확인해 주세요/)).toBeNull();
+});
+it.each([true, false])('connects the device only while still enabled (%s)', async (stayEnabled) => {
+  let answer!: (value: NotificationPermission) => void;
+  const requestPermission = vi.fn(
+    () => new Promise<NotificationPermission>((resolve) => (answer = resolve)),
+  );
   const subscribe = vi.fn().mockResolvedValue({ toJSON: () => ({ endpoint: 'device' }) });
-  const worker = {
-    state: 'activated',
-    postMessage: (_message: unknown, ports?: MessagePort[]) => ports?.[0].postMessage(true),
-  };
   const registration = {
-    active: worker,
+    active: {
+      state: 'activated',
+      postMessage: (_message: unknown, ports?: MessagePort[]) => ports?.[0].postMessage(true),
+    },
     update: vi.fn().mockResolvedValue(undefined),
     pushManager: { getSubscription: async () => null, subscribe },
   };
-  vi.stubGlobal('fetch', push);
   vi.stubGlobal('isSecureContext', true);
-  vi.stubGlobal('Notification', { requestPermission });
+  vi.stubGlobal('Notification', { permission: 'default', requestPermission });
   vi.stubGlobal('PushManager', function () {});
-  const serviceWorker = Object.getOwnPropertyDescriptor(navigator, 'serviceWorker');
-  Object.defineProperty(navigator, 'serviceWorker', {
-    configurable: true,
-    value: {
-      register: async () => registration,
-      ready: Promise.resolve(registration),
-    },
+  vi.stubGlobal(
+    'navigator',
+    Object.create(navigator, {
+      serviceWorker: {
+        value: { register: async () => registration, ready: Promise.resolve(registration) },
+      },
+    }),
+  );
+  const preferences = fetch;
+  const api = vi.fn(async (url: string, init?: RequestInit) => {
+    if (url === '/api/settings/notifications') return preferences(url, init);
+    if (url === '/api/push/subscriptions' && !init?.method)
+      return Response.json({ data: { userId: 'user', publicKey: 'QQ', connected: false } });
+    if (url === '/api/push/subscriptions' && init?.method === 'POST')
+      return new Response(null, { status: saved.enabled ? 200 : 400 });
+    throw new Error(`Unexpected request: ${url}`);
   });
-  try {
-    show();
-    const button = await screen.findByRole('button', { name: '테스트 알림 보내기' });
-    expect(requestPermission).not.toHaveBeenCalled();
-    fireEvent.click(button);
-    await screen.findByText(/기기의 알림을 확인해 주세요/);
-    expect(subscribe).toHaveBeenCalledOnce();
-    const posts = push.mock.calls.filter(([, options]) => options?.method === 'POST');
-    expect(posts.map(([url]) => url)).toEqual(['/api/push/subscriptions', '/api/push/test']);
-    expect(posts[0][1].body).toBe('{"endpoint":"device"}');
-  } finally {
-    if (serviceWorker) Object.defineProperty(navigator, 'serviceWorker', serviceWorker);
-    else Reflect.deleteProperty(navigator, 'serviceWorker');
+  vi.stubGlobal('fetch', api);
+
+  show();
+  const toggle = await ready();
+  fireEvent.click(toggle);
+  expect(requestPermission).toHaveBeenCalledOnce();
+  await screen.findByText('알림 설정을 저장했어요.');
+  if (!stayEnabled) {
+    fireEvent.click(toggle);
+    await screen.findByText('알림을 껐어요.');
   }
+  await act(async () => answer('granted'));
+  if (stayEnabled) await screen.findByText('이 기기에서 알림을 받을 수 있어요.');
+  expect(screen.queryByRole('button', { name: '테스트 알림 보내기' })).not.toBeInTheDocument();
+  expect(subscribe).toHaveBeenCalledTimes(stayEnabled ? 1 : 0);
+  expect(api.mock.calls.filter(([, init]) => init?.method === 'POST').map(([url]) => url)).toEqual(
+    stayEnabled ? ['/api/push/subscriptions'] : [],
+  );
 });
-it('off_hides_save_and_time_and_ignores_direct_form_submission', async () => {
+it('hides the time when notifications are off', async () => {
   show();
   const toggle = await ready();
   expect(toggle).not.toBeChecked();
   expect(screen.queryByRole('button', { name: '저장' })).not.toBeInTheDocument();
   expect(screen.queryByLabelText('매일 받을 시각')).not.toBeInTheDocument();
-  fireEvent.submit(toggle.closest('form')!);
   expect(patches).toBe(0);
 });
-it('on_is_draft_only_until_explicit_save', async () => {
+it('saves the toggle and time as soon as they change', async () => {
   show();
   fireEvent.click(await ready());
+  await screen.findByText('알림 설정을 저장했어요.');
+  expect(saved).toMatchObject({ enabled: true, localTime: '09:00' });
   expect(screen.getByLabelText('매일 받을 시각')).toHaveValue('09:00');
-  expect(patches).toBe(0);
+  expect(screen.queryByRole('button', { name: '저장' })).not.toBeInTheDocument();
   fireEvent.change(screen.getByLabelText('매일 받을 시각'), { target: { value: '20:30' } });
-  fireEvent.click(screen.getByRole('button', { name: '저장' }));
   await screen.findByText('알림 설정을 저장했어요.');
   expect(saved).toMatchObject({ enabled: true, localTime: '20:30' });
-  expect(patches).toBe(1);
+  expect(patches).toBe(2);
 });
-it('failed_on_save_keeps_draft_for_retry', async () => {
+it('rolls back when turning on fails and allows retrying the toggle', async () => {
   fail = true;
   show();
   fireEvent.click(await ready());
-  fireEvent.change(screen.getByLabelText('매일 받을 시각'), { target: { value: '20:30' } });
-  fireEvent.click(screen.getByRole('button', { name: '저장' }));
   await screen.findByRole('alert');
-  expect(screen.getByLabelText('매일 받을 시각')).toHaveValue('20:30');
+  expect(screen.getByRole('switch')).not.toBeChecked();
   expect(saved.enabled).toBe(false);
   fail = false;
-  fireEvent.click(screen.getByRole('button', { name: '저장' }));
+  fireEvent.click(screen.getByRole('switch'));
   await screen.findByText('알림 설정을 저장했어요.');
   expect(saved.enabled).toBe(true);
 });
@@ -127,7 +159,7 @@ it('off_saves_immediately_even_with_a_cleared_time', async () => {
   expect(patches).toBe(1);
   expect(screen.queryByRole('button', { name: '저장' })).not.toBeInTheDocument();
 });
-it('reopening_restores_off_and_on_reveals_last_saved_time_without_enabling_server', async () => {
+it('restores the last saved time when re-enabled', async () => {
   saved = { ...saved, enabled: true, localTime: '20:30' };
   let view = show();
   fireEvent.click(await ready());
@@ -137,49 +169,51 @@ it('reopening_restores_off_and_on_reveals_last_saved_time_without_enabling_serve
   expect(await ready()).not.toBeChecked();
   fireEvent.click(screen.getByRole('switch'));
   expect(screen.getByLabelText('매일 받을 시각')).toHaveValue('20:30');
-  expect(saved.enabled).toBe(false);
-  expect(patches).toBe(1);
+  await screen.findByText('알림 설정을 저장했어요.');
+  expect(saved.enabled).toBe(true);
+  expect(patches).toBe(2);
 });
-it('failed_off_restores_previous_draft_instead_of_claiming_off', async () => {
-  saved = { ...saved, enabled: true };
+it('restores the last saved time when saving a new time fails', async () => {
+  saved = { ...saved, enabled: true, localTime: '20:30' };
   fail = true;
   show();
   await ready();
   fireEvent.change(screen.getByLabelText('매일 받을 시각'), { target: { value: '22:30' } });
-  fireEvent.click(screen.getByRole('switch'));
   await screen.findByRole('alert');
   expect(screen.getByRole('switch')).toBeChecked();
-  expect(screen.getByLabelText('매일 받을 시각')).toHaveValue('22:30');
-  expect(saved.enabled).toBe(true);
+  expect(screen.getByLabelText('매일 받을 시각')).toHaveValue('20:30');
+  expect(saved.localTime).toBe('20:30');
   fail = false;
   fireEvent.click(screen.getByRole('switch'));
   await screen.findByText('알림을 껐어요.');
   expect(saved.enabled).toBe(false);
 });
-it('pending_off_blocks_duplicate_toggles_until_response', async () => {
+it('queues the latest time and toggle while an earlier change is being saved', async () => {
   saved = { ...saved, enabled: true };
-  let finish!: (value: Response) => void;
-  vi.stubGlobal('fetch', async (_url: unknown, init?: RequestInit) =>
-    init?.method === 'PATCH'
-      ? (patches++,
-        new Promise<Response>((resolve) => {
-          finish = resolve;
-        }))
-      : Response.json({ data: saved }),
-  );
+  let finish!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  vi.stubGlobal('fetch', async (_url: unknown, init?: RequestInit) => {
+    if (init?.method === 'PATCH') {
+      if (++patches === 1) await gate;
+      saved = { ...saved, ...JSON.parse(String(init.body)) };
+    }
+    return Response.json({ data: saved });
+  });
   show();
-  fireEvent.click(await ready());
-  expect(screen.getByRole('switch')).toBeDisabled();
+  await ready();
+  const time = screen.getByLabelText('매일 받을 시각');
+  fireEvent.change(time, { target: { value: '19:00' } });
+  fireEvent.change(time, { target: { value: '20:00' } });
   fireEvent.click(screen.getByRole('switch'));
   expect(patches).toBe(1);
-  expect(screen.queryByRole('button', { name: '저장' })).not.toBeInTheDocument();
-  await act(async () =>
-    finish(Response.json({ data: { ...saved, enabled: false, nextRunAt: null } })),
-  );
+  await act(async () => finish());
+  expect(saved).toMatchObject({ enabled: false, localTime: '20:00' });
   expect(screen.getByRole('switch')).not.toBeChecked();
-  expect(screen.getByRole('switch')).toBeEnabled();
+  expect(patches).toBe(2);
 });
-it('offline_blocks_toggle_and_save_without_losing_draft', async () => {
+it('blocks changes while offline', async () => {
   saved = { ...saved, enabled: true };
   show();
   await ready();
@@ -188,7 +222,7 @@ it('offline_blocks_toggle_and_save_without_losing_draft', async () => {
     window.dispatchEvent(new Event('offline'));
   });
   expect(screen.getByRole('switch')).toBeDisabled();
-  expect(screen.getByRole('button', { name: '저장' })).toBeDisabled();
+  expect(screen.getByLabelText('매일 받을 시각')).toBeDisabled();
   expect(screen.getByLabelText('매일 받을 시각')).toHaveValue('09:00');
   expect(patches).toBe(0);
 });

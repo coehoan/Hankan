@@ -1,9 +1,15 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { requestPushPermission, supportsPush } from './browser-push';
 import { preferenceInput, preferenceResponse, type NotificationPreferences } from './contracts';
-import { TestPushButton } from './push-controls';
+import { registerBrowserPush } from './push-controls';
 type Draft = Pick<NotificationPreferences, 'enabled' | 'localTime'>;
+type DeviceConnection = {
+  controller: AbortController;
+  permission: Promise<boolean>;
+  started: boolean;
+};
 export function NotificationSettingsForm({ onAccessLost }: { onAccessLost?: () => void }) {
   const [saved, setSaved] = useState<NotificationPreferences | null>(null),
     [draft, setDraft] = useState<Draft>({ enabled: false, localTime: '09:00' }),
@@ -12,14 +18,19 @@ export function NotificationSettingsForm({ onAccessLost }: { onAccessLost?: () =
     [online, setOnline] = useState(true),
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
+    [deviceMessage, setDeviceMessage] = useState(''),
     [revision, setRevision] = useState(0);
-  const active = useRef(false),
-    pending = useRef(false),
+  const queued = useRef<Draft | null>(null),
     request = useRef<AbortController | null>(null),
+    deviceConnection = useRef<DeviceConnection | null>(null),
     accessLost = useRef(onAccessLost);
   useEffect(() => {
     accessLost.current = onAccessLost;
   }, [onAccessLost]);
+  const cancelConnection = useCallback(() => {
+    deviceConnection.current?.controller.abort();
+    deviceConnection.current = null;
+  }, []);
   const read = useCallback(async (response: Response) => {
     const json = await response.json();
     if (!response.ok) {
@@ -31,14 +42,17 @@ export function NotificationSettingsForm({ onAccessLost }: { onAccessLost?: () =
     return parsed.data;
   }, []);
   useEffect(() => {
-    active.current = true;
     let live = true;
     const controller = new AbortController();
-    request.current = controller;
     const sync = () => setOnline(navigator.onLine !== false);
+    const clearIdentity = () => {
+      cancelConnection();
+      setDeviceMessage('');
+    };
     sync();
     window.addEventListener('online', sync);
     window.addEventListener('offline', sync);
+    window.addEventListener('hankan:identity-cleared', clearIdentity);
     async function load() {
       setLoading(true);
       setError('');
@@ -65,126 +79,165 @@ export function NotificationSettingsForm({ onAccessLost }: { onAccessLost?: () =
     void load();
     return () => {
       live = false;
-      active.current = false;
       controller.abort();
       request.current?.abort();
+      cancelConnection();
+      queued.current = null;
       window.removeEventListener('online', sync);
       window.removeEventListener('offline', sync);
+      window.removeEventListener('hankan:identity-cleared', clearIdentity);
     };
-  }, [read, revision]);
-  async function persist(input: Draft, rollback: Draft) {
-    if (!saved || pending.current || navigator.onLine === false) return;
-    const parsed = preferenceInput.safeParse(input);
-    if (!parsed.success) {
-      setError('시각을 00:00부터 23:59 사이로 입력해 주세요.');
-      return;
+  }, [cancelConnection, read, revision]);
+  function changeEnabled(enabled: boolean) {
+    if (navigator.onLine === false) return;
+    cancelConnection();
+    setDeviceMessage('');
+    if (enabled) {
+      if (supportsPush()) {
+        const controller = new AbortController();
+        // Start the permission request during the switch gesture, before any save awaits.
+        const permission = requestPushPermission().then(
+          () => true,
+          (caught: unknown) => {
+            if (!controller.signal.aborted)
+              setDeviceMessage(
+                caught instanceof Error ? caught.message : '알림 권한을 확인하지 못했어요.',
+              );
+            return false;
+          },
+        );
+        deviceConnection.current = { controller, permission, started: false };
+      } else {
+        setDeviceMessage(
+          '이 환경은 푸시 알림을 지원하지 않아요. 홈 화면에 설치한 한칸에서 열어 주세요.',
+        );
+      }
     }
-    pending.current = true;
+    void persist({ ...draft, enabled });
+  }
+  async function connectDevice() {
+    const connection = deviceConnection.current;
+    if (!connection || connection.started) return;
+    connection.started = true;
+    const { signal } = connection.controller;
+    try {
+      if (!(await connection.permission) || signal.aborted) return;
+      await registerBrowserPush(signal, true);
+      if (!signal.aborted) setDeviceMessage('이 기기에서 알림을 받을 수 있어요.');
+    } catch (caught) {
+      if (!signal.aborted)
+        setDeviceMessage(caught instanceof Error ? caught.message : '기기를 연결하지 못했어요.');
+    } finally {
+      if (!signal.aborted) deviceConnection.current = null;
+    }
+  }
+  async function persist(input: Draft) {
+    if (
+      !saved ||
+      navigator.onLine === false ||
+      (input.enabled === draft.enabled && input.localTime === draft.localTime)
+    )
+      return;
+    const parsed = preferenceInput.safeParse(input);
+    if (!parsed.success) return;
+    setDraft(parsed.data);
+    queued.current = parsed.data;
+    if (request.current) return;
+
     setSaving(true);
     setError('');
     setNotice('');
     const controller = new AbortController();
     request.current = controller;
+    let confirmed = saved;
     try {
-      const value = await read(
-        await fetch('/api/settings/notifications', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(parsed.data),
-          signal: controller.signal,
-        }),
-      );
-      if (active.current) {
-        setSaved(value);
-        setDraft({ enabled: value.enabled, localTime: value.localTime });
-        setNotice(value.enabled ? '알림 설정을 저장했어요.' : '알림을 껐어요.');
+      while (queued.current && !controller.signal.aborted) {
+        const next = queued.current;
+        queued.current = null;
+        if (next.enabled === confirmed.enabled && next.localTime === confirmed.localTime) continue;
+        confirmed = await read(
+          await fetch('/api/settings/notifications', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(next),
+            signal: controller.signal,
+          }),
+        );
+        if (!controller.signal.aborted) setSaved(confirmed);
+      }
+      if (!controller.signal.aborted) {
+        setDraft({ enabled: confirmed.enabled, localTime: confirmed.localTime });
+        setNotice(confirmed.enabled ? '알림 설정을 저장했어요.' : '알림을 껐어요.');
       }
     } catch (caught) {
-      if (active.current) {
-        setDraft(rollback);
+      if (!controller.signal.aborted) {
+        queued.current = null;
+        setDraft({ enabled: confirmed.enabled, localTime: confirmed.localTime });
         setError(caught instanceof Error ? caught.message : '연결을 확인하고 다시 시도해 주세요.');
       }
     } finally {
-      pending.current = false;
-      if (active.current) setSaving(false);
+      request.current = null;
+      if (!controller.signal.aborted) {
+        setSaving(false);
+        if (confirmed.enabled) void connectDevice();
+        else cancelConnection();
+      }
     }
-  }
-  function changeEnabled(enabled: boolean) {
-    if (!saved || pending.current || navigator.onLine === false) return;
-    setError('');
-    setNotice('');
-    if (enabled) {
-      setDraft((value) => ({ ...value, enabled: true }));
-      return;
-    }
-    const previous = draft;
-    setDraft((value) => ({ ...value, enabled: false }));
-    void persist({ enabled: false, localTime: saved.localTime }, previous);
-  }
-  function save(event: React.FormEvent) {
-    event.preventDefault();
-    if (draft.enabled) void persist(draft, draft);
   }
   return (
     <div className="notification-settings">
       <p>내가 참여한 냉장고의 임박 재료를 매일 한 번 모아 알려드려요.</p>
       {!online && (
         <p className="connection-banner" role="status">
-          오프라인이에요. 연결한 뒤 저장해 주세요.
+          오프라인이에요. 연결한 뒤 알림 설정을 바꿀 수 있어요.
         </p>
       )}
       {loading ? (
         <p role="status">내 알림 설정을 불러오고 있어요…</p>
       ) : saved ? (
-        <form onSubmit={save} className="notification-form">
+        <div className="notification-form">
           <label className="notification-toggle ios-switch">
             <input
               type="checkbox"
               role="switch"
               checked={draft.enabled}
               onChange={(event) => changeEnabled(event.target.checked)}
-              disabled={saving || !online}
+              disabled={!online}
             />
             <span className="ios-switch-track" aria-hidden="true" />
             <span>알림 받기</span>
           </label>
           {draft.enabled && (
-            <>
-              <div className="notification-time-settings">
-                <label>
-                  매일 받을 시각
-                  <input
-                    type="time"
-                    step="60"
-                    required
-                    value={draft.localTime}
-                    onChange={(event) => {
-                      setDraft((value) => ({ ...value, localTime: event.target.value }));
-                      setNotice('');
-                    }}
-                    disabled={saving}
-                  />
-                </label>
-                <p className="notification-hint">
-                  오늘 아직 보내지 않았고 새 시각이 남아 있으면 오늘부터, 이미 지났거나 오늘
-                  보냈으면 내일부터 적용해요. 이 설정은 내 계정에만 적용돼요.
-                </p>
-              </div>
-              <div className="notification-form-actions">
-                <Button type="submit" disabled={!online || saving}>
-                  {saving ? '저장 중…' : '저장'}
-                </Button>
-              </div>
-            </>
+            <div className="notification-time-settings">
+              <label>
+                매일 받을 시각
+                <input
+                  type="time"
+                  step="60"
+                  required
+                  value={draft.localTime}
+                  onChange={(event) => void persist({ ...draft, localTime: event.target.value })}
+                  disabled={!online}
+                />
+              </label>
+              <p className="notification-hint">
+                오늘 아직 보내지 않았고 새 시각이 남아 있으면 오늘부터, 이미 지났거나 오늘 보냈으면
+                내일부터 적용해요. 이 설정은 내 계정에만 적용돼요.
+              </p>
+            </div>
           )}
-          {saving && !draft.enabled && <p role="status">알림을 끄고 있어요…</p>}
-        </form>
+          {saving && <p role="status">알림 설정을 저장하고 있어요…</p>}
+          {draft.enabled && deviceMessage && (
+            <p className="notification-hint" role="status">
+              {deviceMessage}
+            </p>
+          )}
+        </div>
       ) : (
         <Button onClick={() => setRevision((value) => value + 1)} disabled={!online}>
           설정 다시 불러오기
         </Button>
       )}
-      {saved && <TestPushButton enabled={saved.enabled} disabled={saving || !online} />}
       {error && (
         <p role="alert" className="form-error">
           {error}

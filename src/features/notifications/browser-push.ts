@@ -11,6 +11,15 @@ export function supportsPush() {
 export async function registerWorker() {
   return navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' });
 }
+export async function requestPushPermission() {
+  const current = Notification.permission;
+  const permission =
+    current === 'granted' || current === 'denied'
+      ? current
+      : await Notification.requestPermission();
+  if (permission !== 'granted')
+    throw new Error('알림이 허용되지 않았어요. 기기 설정에서 한칸의 알림 권한을 확인해 주세요.');
+}
 export async function clearBrowserPush() {
   if (!('serviceWorker' in navigator)) return;
   const registration = await navigator.serviceWorker.getRegistration('/');

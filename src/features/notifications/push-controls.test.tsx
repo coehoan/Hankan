@@ -8,12 +8,15 @@ const browser = vi.hoisted(() => ({
   bindPushIdentity: vi.fn(),
   clearBrowserPush: vi.fn(),
 }));
-vi.mock('./browser-push', () => browser);
+vi.mock('./browser-push', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./browser-push')>()),
+  ...browser,
+}));
 const permission = vi.fn();
 beforeEach(() => {
   browser.supportsPush.mockReturnValue(true);
   browser.clearBrowserPush.mockResolvedValue(undefined);
-  vi.stubGlobal('Notification', { requestPermission: permission });
+  vi.stubGlobal('Notification', { permission: 'default', requestPermission: permission });
   vi.stubGlobal(
     'fetch',
     vi.fn().mockImplementation(async () =>

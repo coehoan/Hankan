@@ -122,14 +122,6 @@
     width: 100%;
   }
 }
-.notification-form-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-.notification-form-actions button {
-  min-width: 90px;
-  min-height: 44px;
-}
 .fridge-picker-value {
   flex: 1;
 }

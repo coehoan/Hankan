@@ -1,19 +1,18 @@
 # 현재 상태와 다른 PC 인수인계
 
-기준일: 2026-11-06. A PC에서 B PC로 개발을 옮긴 뒤 A1 원본 정렬 작업까지 반영한 기록이다. 루트 AGENTS.md와 함께 읽고, 시작할 때 실제 Git·환경·배포 상태를 다시 확인한다.
+기준일: 2026-11-09. A PC에서 B PC로 옮긴 뒤 작업한 재료 목록과 화면 개편까지 반영한 기록이다. 루트 AGENTS.md와 함께 읽고, 시작할 때 실제 Git·환경·배포 상태를 다시 확인한다.
 
 ## 저장소와 완료한 릴리스
 
 - 원격: `https://github.com/coehoan/Hankan.git`, 작업·Production 브랜치: `dev`.
-- 앱: https://hankan-murex.vercel.app. 최근 기능 릴리스는 `bc2a597c9d27217e156bd58ac074559b569a3faf`이며 A1 화면 `c8fb8ee`도 포함한다.
-- [Actions 42162222430](https://github.com/coehoan/Hankan/actions/runs/42162222430) 성공과 Vercel `dpl_HSu4hoPdDyDE3iiVUaWuaF7cZX23` READY를 확인했다. 이 문서 정리 이후 릴리스는 Actions의 최신 실행 커밋을 확인한다.
+- 앱: https://hankan-murex.vercel.app. A1 원본 정렬과 정적 파일 캐시 수정은 `649997a`의 [Actions 실행](https://github.com/coehoan/Hankan/actions/runs/42193430376) 성공과 Vercel READY를 확인했다.
 - Supabase 프로젝트 `wtwvmerpucfdodieawul`에 `20261106022629_async_recipe_jobs.sql`까지 적용했다. 매분 `hankan-worker-every-minute` 예약이 활성인 것을 확인했다. 이미 적용한 SQL을 재실행하거나 이력을 임의로 repair하지 않는다.
-- B PC의 A1 원본 정렬은 `a8b4b68`, 공개 정적 파일 캐시 재검증 수정은 `1dcbdea`다. 이 문서 커밋과 함께 사용자가 커밋·배포를 요청했다. 이 기록 작성 시점에는 push 전이므로 실제 배포 완료 여부는 `dev` 최신 HEAD의 Actions 결과와 Vercel READY를 확인한다.
+- 이번 릴리스에는 목록 아코디언과 더 보기 `977c9dd`, 화면 개편 `a2b9e91`, 프로필 메뉴 정리 `38a3173`이 포함된다. 운영 반영 여부는 이 문서 커밋의 [Actions 결과](https://github.com/coehoan/Hankan/actions/workflows/production.yml)와 Vercel READY를 확인한다. 이번 변경에 신규 마이그레이션은 없다.
 - B PC에서는 개발 중 생성된 `next-env.d.ts` 변경을 커밋에서 제외했다. 환경파일·로컬 데이터·`work/` 자료를 보존했으며 미완료 기능 구현은 없다. 다음 기능은 새 사용자 요청에 따라 진행한다.
 
-현재 구현은 일반 아이디 인증, 공동 냉장고·24시간 초대, 구매 묶음별 재료·기한·남은 양, private Realtime 목록 갱신, 영수증 확인 후 AI 분석·명시적 저장, A1 라이트/다크 화면과 자체 SVG 108종, 식약처·AI 비동기 추천, 본인 추천 내역·완료 알림이다. 출처·AI 표시는 사용자 목록·상세에서 숨긴다.
+현재 구현은 일반 아이디 인증, 공동 냉장고·24시간 초대, 구매 묶음별 재료·기한·남은 양, private Realtime 목록 갱신, 영수증 확인 후 AI 분석·명시적 저장, 라이트/다크/시스템 화면과 자체 SVG 108종, 식약처·AI 비동기 추천, 본인 추천 내역·완료 알림이다. 출처·AI 표시는 사용자 목록·상세에서 숨긴다.
 
-A1 원본 HTML을 기준으로 글꼴·폭·여백·재료 카드·요약 통계·추천 영역을 맞췄다. 재료 등록은 직접 입력·영수증 버튼으로 바로 진입하며 냉장고 선택은 목록 제목 옆에 있다. 모바일 헤더는 왼쪽 로고·오른쪽 계정 버튼이다. 기존 인증·재료·냉장고·추천 동작을 유지한다. 개발 CSS가 서비스 워커에 남는 문제는 서버의 캐시 재검증 지시를 따르도록 수정했으며 운영 immutable 파일과 공개 파일의 오프라인 사용을 유지한다.
+상단 주 메뉴에서 식재료·요리 추천·추천 내역을 연다. 계정 메뉴는 마이페이지·냉장고 관리·로그아웃을 제공한다. 식재료 화면 상단에 냉장고 요약과 직접 등록·영수증 등록 버튼이 있다. 목록의 기한 지남과 임박 구역은 기본으로 펼치고, 더 보기로 구역마다 5개씩 추가한다. 서비스 워커는 개발 CSS의 캐시 재검증 지시를 따르고 운영 immutable 파일과 공개 파일의 오프라인 사용을 유지한다.
 
 ## B PC에서 시작하기
 

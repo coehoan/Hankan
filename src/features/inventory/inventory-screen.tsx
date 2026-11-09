@@ -1,11 +1,12 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ReactNode, RefCallback } from 'react';
 import type { Ingredient, StoragePlace } from './contracts';
 import { sortIngredients, urgencyOf } from './domain';
 import { useInventory } from './use-inventory';
 import { IngredientForm } from './ingredient-form';
 import { IngredientArt } from './ingredient-art';
+import { IngredientGroup, ingredientGroups } from './ingredient-group';
 import { InventoryNotice } from './inventory-notice';
 import Link from 'next/link';
 import { RecipeResults } from '@/features/recipes/recipe-results';
@@ -38,6 +39,7 @@ function IngredientRow({
   today,
   disabled,
   saving,
+  rowRef,
   onEdit,
   onUpdate,
   onDelete,
@@ -46,6 +48,7 @@ function IngredientRow({
   today: string;
   disabled: boolean;
   saving: boolean;
+  rowRef: RefCallback<HTMLElement>;
   onEdit: () => void;
   onUpdate: (value: number) => Promise<void>;
   onDelete: () => void;
@@ -73,7 +76,7 @@ function IngredientRow({
     }
   }
   return (
-    <article className="ingredient-row">
+    <article ref={rowRef} className="ingredient-row" tabIndex={-1}>
       <button
         className="ingredient-main"
         aria-label={item.name + ' 수정'}
@@ -165,7 +168,7 @@ function IngredientRow({
   );
 }
 
-type Editor = { fridgeId: string; item?: Ingredient };
+type Editor = { fridgeId: string; item?: Ingredient; fallbackFocus?: () => HTMLElement | null };
 export function InventoryScreen({
   fridgeId,
   fridgeName,
@@ -189,6 +192,8 @@ export function InventoryScreen({
     [editor, setEditor] = useState<Editor | null>(null),
     [notice, setNotice] = useState({ id: 0, message: '' }),
     [today, setToday] = useState(initialToday);
+  const searchInput = useRef<HTMLInputElement>(null);
+  const getSearchInput = useCallback(() => searchInput.current, []);
   const [addingFor, setAddingFor] = useState<string | null>(null);
   const dismissNotice = useCallback(
     () => setNotice((current) => ({ ...current, message: '' })),
@@ -206,16 +211,19 @@ export function InventoryScreen({
   }, [inventory.revoked, onAccessLost]);
   const activeEditor = editor?.fridgeId === fridgeId ? editor : null;
   const sorted = sortIngredients(inventory.items, today);
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const searchKey = normalizedQuery ? filter + ':' + normalizedQuery : null;
   const visible = sorted.filter(
     (item) =>
       (filter === 'all' || item.storage === filter) &&
-      item.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
+      item.name.toLocaleLowerCase().includes(normalizedQuery),
   );
-  const groups = [
-    { key: 'expired' as const, label: '기한 지남', sub: '상태를 확인해 주세요' },
-    { key: 'soon' as const, label: '먼저 먹어요', sub: '기한이 가까운 순' },
-    { key: 'normal' as const, label: '조금 더 여유 있어요', sub: '신선함을 오래오래' },
-  ];
+  const grouped: Record<(typeof ingredientGroups)[number]['key'], Ingredient[]> = {
+    expired: [],
+    soon: [],
+    normal: [],
+  };
+  for (const item of visible) grouped[urgencyOf(item.expiresOn, today)].push(item);
   const busy = inventory.pendingId !== null,
     disabled = busy || !inventory.online;
   const expired = sorted.filter((item) => urgencyOf(item.expiresOn, today) === 'expired').length;
@@ -327,6 +335,7 @@ export function InventoryScreen({
           online={inventory.online}
           create={inventory.create}
           update={inventory.update}
+          fallbackFocus={activeEditor.fallbackFocus}
           onCancel={() => setEditor(null)}
           onComplete={() => {
             setEditor((current) => (current?.fridgeId === fridgeId ? null : current));
@@ -334,7 +343,7 @@ export function InventoryScreen({
           }}
           onReload={() => {
             const latest = inventory.items.find((item) => item.id === activeEditor.item?.id);
-            if (latest) setEditor({ fridgeId, item: latest });
+            if (latest) setEditor({ ...activeEditor, item: latest });
           }}
         />
       )}
@@ -354,6 +363,7 @@ export function InventoryScreen({
             </div>
             <label className="inventory-search">
               <input
+                ref={searchInput}
                 type="search"
                 aria-label="재료 이름 검색"
                 placeholder="재료 검색"
@@ -433,54 +443,47 @@ export function InventoryScreen({
                 </button>
               )}
             </section>
-          ) : (
-            groups.map((group) => {
-              const rows = visible.filter((item) => urgencyOf(item.expiresOn, today) === group.key);
-              return (
-                rows.length > 0 && (
-                  <section
-                    key={group.key}
-                    className={'ingredient-group ' + group.key}
-                    aria-labelledby={'group-' + group.key}
-                  >
-                    <header>
-                      <h2 id={'group-' + group.key}>
-                        {group.label}
-                        <span>{rows.length}</span>
-                      </h2>
-                      <p>{group.sub}</p>
-                    </header>
-                    {rows.map((item) => (
-                      <IngredientRow
-                        key={item.id}
-                        item={item}
-                        today={today}
-                        disabled={disabled}
-                        saving={inventory.pendingId === item.id}
-                        onEdit={() => {
-                          setEditor({ fridgeId, item });
-                          showNotice('');
-                        }}
-                        onUpdate={async (value) => {
-                          await inventory.update(item.id, item.version, {
-                            remainingPercent: value,
-                          });
-                          showNotice('남은 양을 저장했어요.');
-                        }}
-                        onDelete={() => {
-                          showNotice('');
-                          void inventory
-                            .remove(item.id, item.version)
-                            .then(() => showNotice('재료를 삭제했어요.'))
-                            .catch(() => {});
-                        }}
-                      />
-                    ))}
-                  </section>
-                )
-              );
-            })
-          )}
+          ) : null}
+          {ingredientGroups.map((group) => (
+            <IngredientGroup
+              key={group.key}
+              group={group}
+              rows={grouped[group.key]}
+              searchKey={searchKey}
+              getListFocusFallback={getSearchInput}
+              renderRow={(item, toggleId, rowRef) => (
+                <IngredientRow
+                  key={item.id}
+                  item={item}
+                  today={today}
+                  disabled={disabled}
+                  saving={inventory.pendingId === item.id}
+                  rowRef={rowRef}
+                  onEdit={() => {
+                    setEditor({
+                      fridgeId,
+                      item,
+                      fallbackFocus: () => document.getElementById(toggleId) ?? getSearchInput(),
+                    });
+                    showNotice('');
+                  }}
+                  onUpdate={async (value) => {
+                    await inventory.update(item.id, item.version, {
+                      remainingPercent: value,
+                    });
+                    showNotice('남은 양을 저장했어요.');
+                  }}
+                  onDelete={() => {
+                    showNotice('');
+                    void inventory
+                      .remove(item.id, item.version)
+                      .then(() => showNotice('재료를 삭제했어요.'))
+                      .catch(() => {});
+                  }}
+                />
+              )}
+            />
+          ))}
           <div className="inventory-bottom">
             <span>
               {busy ? '변경 내용을 저장하고 있어요.' : '함께 관리하는 목록도 최신 상태로 확인해요.'}

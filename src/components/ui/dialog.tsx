@@ -16,22 +16,26 @@ export function Dialog({
   onOpenChange,
   children,
   closeDisabled = false,
+  fallbackFocus,
 }: {
   open: boolean;
   title: string;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
   closeDisabled?: boolean;
+  fallbackFocus?: () => HTMLElement | null;
 }) {
   const [host] = useState(createHost);
   const panel = useRef<HTMLDivElement>(null),
     callback = useRef(onOpenChange),
     blocked = useRef(closeDisabled),
+    fallback = useRef(fallbackFocus),
     titleId = useId();
   useEffect(() => {
     callback.current = onOpenChange;
     blocked.current = closeDisabled;
-  }, [onOpenChange, closeDisabled]);
+    fallback.current = fallbackFocus;
+  }, [onOpenChange, closeDisabled, fallbackFocus]);
   useEffect(() => {
     if (!open || !host) return;
     const opener = document.activeElement as HTMLElement | null;
@@ -93,6 +97,7 @@ export function Dialog({
       document.body.style.overflow = overflow;
       host.remove();
       if (opener?.isConnected) opener.focus();
+      else fallback.current?.()?.focus();
     };
   }, [open, host]);
   if (!open || !host) return null;

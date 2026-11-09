@@ -15,6 +15,7 @@ type Props = {
   onComplete: () => void;
   onCancel: () => void;
   onReload: () => void;
+  fallbackFocus?: () => HTMLElement | null;
 };
 export function IngredientForm({
   item,
@@ -25,6 +26,7 @@ export function IngredientForm({
   onComplete,
   onCancel,
   onReload,
+  fallbackFocus,
 }: Props) {
   const [name, setName] = useState(item?.name ?? ''),
     [storage, setStorage] = useState<StoragePlace>(item?.storage ?? 'fridge'),
@@ -74,6 +76,7 @@ export function IngredientForm({
         if (!open && !saving.current) onCancel();
       }}
       closeDisabled={pending}
+      fallbackFocus={fallbackFocus}
     >
       <section className="ingredient-editor">
         <div className="editor-heading">

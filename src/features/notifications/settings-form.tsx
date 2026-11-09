@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { preferenceInput, preferenceResponse, type NotificationPreferences } from './contracts';
+import { TestPushButton } from './push-controls';
 type Draft = Pick<NotificationPreferences, 'enabled' | 'localTime'>;
 export function NotificationSettingsForm({ onAccessLost }: { onAccessLost?: () => void }) {
   const [saved, setSaved] = useState<NotificationPreferences | null>(null),
@@ -183,6 +184,7 @@ export function NotificationSettingsForm({ onAccessLost }: { onAccessLost?: () =
           설정 다시 불러오기
         </Button>
       )}
+      {saved && <TestPushButton enabled={saved.enabled} disabled={saving || !online} />}
       {error && (
         <p role="alert" className="form-error">
           {error}

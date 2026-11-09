@@ -2,9 +2,10 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { requireUser } from '@/lib/auth';
+import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { AppError } from '@/lib/errors';
-import { allowedPushEndpoint } from './web-push-transport';
+import { allowedPushEndpoint, createWebPushTransport } from './web-push-transport';
 import { siteOrigin } from '@/lib/env';
 export const PUSH_COOKIE = 'hankan-push-id';
 const inputSchema = z
@@ -60,4 +61,36 @@ export async function deleteBrowserSubscription() {
     if (error) throw new AppError('internal', '알림 연결을 해제하지 못했어요. 다시 시도해 주세요.');
   }
   jar.delete(PUSH_COOKIE);
+}
+export async function sendTestPush() {
+  const { userId } = await requireUser();
+  const id = z.uuid().safeParse((await cookies()).get(PUSH_COOKIE)?.value);
+  if (!id.success) throw new AppError('not_found', '이 기기의 알림 연결을 확인하지 못했어요.');
+  const transport = createWebPushTransport();
+  if (!transport)
+    throw new AppError('provider_unconfigured', '테스트 알림을 보낼 준비가 되지 않았어요.');
+  const { data, error } = await createAdminSupabaseClient()
+    .from('push_subscriptions')
+    .select('id,endpoint,p256dh,auth')
+    .eq('id', id.data)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw new AppError('internal', '이 기기의 알림 연결을 확인하지 못했어요.');
+  if (!data) throw new AppError('not_found', '이 기기의 알림 연결을 확인하지 못했어요.');
+  const result = await transport.send(
+    { ...data, userId },
+    {
+      notificationId: userId + ':test:' + crypto.randomUUID(),
+      title: '한칸 · 테스트 알림',
+      body: '이 기기에서 한칸 알림을 받을 수 있어요.',
+      url: '/mypage#notifications',
+    },
+  );
+  if (result === 'gone')
+    throw new AppError('conflict', '알림 연결이 만료됐어요. 버튼을 다시 눌러 연결해 주세요.');
+  if (result !== 'sent')
+    throw new AppError(
+      'provider_failed',
+      '테스트 알림을 보내지 못했어요. 잠시 뒤 다시 시도해 주세요.',
+    );
 }

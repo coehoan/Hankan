@@ -36,6 +36,52 @@ afterEach(() => {
 });
 const show = () => render(<NotificationSettingsForm />);
 const ready = () => screen.findByRole('switch', { name: '알림 받기' });
+it('sends a test push to this device after obtaining permission and registering it', async () => {
+  saved = { ...saved, enabled: true };
+  const push = vi.fn().mockImplementation(async (url: string) => {
+    if (url === '/api/settings/notifications') return Response.json({ data: saved });
+    if (url === '/api/push/subscriptions')
+      return Response.json({ data: { userId: 'user', publicKey: 'QQ', connected: false } });
+    return Response.json({ data: { sent: true } });
+  });
+  const requestPermission = vi.fn().mockResolvedValue('granted');
+  const subscribe = vi.fn().mockResolvedValue({ toJSON: () => ({ endpoint: 'device' }) });
+  const worker = {
+    state: 'activated',
+    postMessage: (_message: unknown, ports?: MessagePort[]) => ports?.[0].postMessage(true),
+  };
+  const registration = {
+    active: worker,
+    update: vi.fn().mockResolvedValue(undefined),
+    pushManager: { getSubscription: async () => null, subscribe },
+  };
+  vi.stubGlobal('fetch', push);
+  vi.stubGlobal('isSecureContext', true);
+  vi.stubGlobal('Notification', { requestPermission });
+  vi.stubGlobal('PushManager', function () {});
+  const serviceWorker = Object.getOwnPropertyDescriptor(navigator, 'serviceWorker');
+  Object.defineProperty(navigator, 'serviceWorker', {
+    configurable: true,
+    value: {
+      register: async () => registration,
+      ready: Promise.resolve(registration),
+    },
+  });
+  try {
+    show();
+    const button = await screen.findByRole('button', { name: '테스트 알림 보내기' });
+    expect(requestPermission).not.toHaveBeenCalled();
+    fireEvent.click(button);
+    await screen.findByText(/기기의 알림을 확인해 주세요/);
+    expect(subscribe).toHaveBeenCalledOnce();
+    const posts = push.mock.calls.filter(([, options]) => options?.method === 'POST');
+    expect(posts.map(([url]) => url)).toEqual(['/api/push/subscriptions', '/api/push/test']);
+    expect(posts[0][1].body).toBe('{"endpoint":"device"}');
+  } finally {
+    if (serviceWorker) Object.defineProperty(navigator, 'serviceWorker', serviceWorker);
+    else Reflect.deleteProperty(navigator, 'serviceWorker');
+  }
+});
 it('off_hides_save_and_time_and_ignores_direct_form_submission', async () => {
   show();
   const toggle = await ready();

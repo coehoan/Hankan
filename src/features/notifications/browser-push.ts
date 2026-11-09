@@ -23,9 +23,15 @@ export async function bindPushIdentity(
   registration: ServiceWorkerRegistration,
   userId: string,
   signal?: AbortSignal,
+  confirm = false,
 ) {
-  const worker = registration.active ?? registration.waiting ?? registration.installing;
-  if (!worker) return;
+  const worker = confirm
+    ? (registration.installing ?? registration.waiting ?? registration.active)
+    : (registration.active ?? registration.waiting ?? registration.installing);
+  if (!worker) {
+    if (confirm) throw new Error('한칸을 다시 열고 테스트해 주세요.');
+    return;
+  }
   if (worker.state !== 'activated')
     await new Promise<void>((resolve, reject) => {
       const done = () => {
@@ -48,7 +54,33 @@ export async function bindPushIdentity(
       worker.addEventListener('statechange', change);
       signal?.addEventListener('abort', abort, { once: true });
       if (signal?.aborted) abort();
+      else change();
     });
   signal?.throwIfAborted();
-  worker.postMessage({ type: 'BIND_USER', userId });
+  const message = { type: 'BIND_USER', userId };
+  if (!confirm) {
+    worker.postMessage(message);
+    return;
+  }
+  await new Promise<void>((resolve, reject) => {
+    const { port1, port2 } = new MessageChannel();
+    const finish = (error?: unknown) => {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', abort);
+      port1.close();
+      port2.close();
+      if (error) reject(error);
+      else resolve();
+    };
+    const abort = () => finish(signal?.reason);
+    const unavailable = () => finish(new Error('한칸을 다시 열고 테스트해 주세요.'));
+    const timer = setTimeout(unavailable, 5000);
+    signal?.addEventListener('abort', abort, { once: true });
+    port1.onmessage = (event) => (event.data === true ? finish() : unavailable());
+    try {
+      worker.postMessage(message, [port2]);
+    } catch (error) {
+      finish(error);
+    }
+  });
 }

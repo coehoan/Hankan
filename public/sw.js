@@ -65,7 +65,12 @@ self.addEventListener('fetch', (event) => {
 });
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'BIND_USER')
-    event.waitUntil(hankanPushDedup.bindUser(event.data.userId || null));
+    event.waitUntil(
+      hankanPushDedup.bindUser(event.data.userId || null).then(
+        () => event.ports?.[0]?.postMessage(true),
+        () => event.ports?.[0]?.postMessage(false),
+      ),
+    );
   if (event.data?.type === 'CLEAR_PRIVATE')
     event.waitUntil(
       Promise.all([
@@ -82,6 +87,7 @@ self.addEventListener('message', (event) => {
       ]),
     );
 });
+const TEST_PUSH_PATH = '/mypage#notifications';
 self.addEventListener('push', (event) => {
   event.waitUntil(
     (async () => {
@@ -91,13 +97,15 @@ self.addEventListener('push', (event) => {
       } catch {
         return;
       }
+      const isTest = payload?.url === TEST_PUSH_PATH;
       if (
         !payload ||
         typeof payload.notificationId !== 'string' ||
         !(
           typeof payload.url === 'string' &&
-          ((/^\/notifications\/[0-9a-f-]{36}$/.test(payload.url) &&
-            payload.url === '/notifications/' + payload.digestId) ||
+          (isTest ||
+            (/^\/notifications\/[0-9a-f-]{36}$/.test(payload.url) &&
+              payload.url === '/notifications/' + payload.digestId) ||
             (/^\/recipes\/jobs\/[0-9a-f-]{36}$/.test(payload.url) &&
               payload.url === '/recipes/jobs/' + payload.recipeJobId))
         )
@@ -105,9 +113,15 @@ self.addEventListener('push', (event) => {
         return;
       const user = await hankanPushDedup.currentUser();
       if (!user || !payload.notificationId.startsWith(user + ':')) return;
+      if (isTest && !/^test:[0-9a-f-]{36}$/.test(payload.notificationId.slice(user.length + 1)))
+        return;
       if (!(await hankanPushDedup.claimNotificationDisplay(payload.notificationId))) return;
       await self.registration.showNotification(
-        payload.recipeJobId ? '한칸 · 요리 추천 완료' : '한칸 · 임박 재료 알림',
+        isTest
+          ? '한칸 · 테스트 알림'
+          : payload.recipeJobId
+            ? '한칸 · 요리 추천 완료'
+            : '한칸 · 임박 재료 알림',
         {
           body:
             typeof payload.body === 'string'
@@ -126,7 +140,10 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const path = event.notification.data?.url;
-  if (typeof path !== 'string' || !/^\/(notifications|recipes\/jobs)\/[0-9a-f-]{36}$/.test(path))
+  if (
+    path !== TEST_PUSH_PATH &&
+    (typeof path !== 'string' || !/^\/(notifications|recipes\/jobs)\/[0-9a-f-]{36}$/.test(path))
+  )
     return;
   event.waitUntil(
     (async () => {

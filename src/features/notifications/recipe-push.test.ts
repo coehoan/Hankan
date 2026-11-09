@@ -39,6 +39,29 @@ async function push(sw: ReturnType<typeof setup>, payload: unknown) {
   });
   await task;
 }
+it('displays a test push once for its owner and opens the notification settings', async () => {
+  const sw = setup(),
+    url = '/mypage#notifications';
+  await push(sw, { notificationId: 'other:test:' + id, url });
+  await push(sw, { notificationId: 'user:test:' + id, url: url + '-wrong' });
+  expect(sw.showNotification).not.toHaveBeenCalled();
+  const payload = { notificationId: 'user:test:' + id, url, body: '테스트 메시지' };
+  await push(sw, payload);
+  await push(sw, payload);
+  expect(sw.showNotification).toHaveBeenCalledExactlyOnceWith(
+    '한칸 · 테스트 알림',
+    expect.objectContaining({ body: '테스트 메시지', data: { url } }),
+  );
+  let task: Promise<unknown> | undefined;
+  sw.handlers.notificationclick({
+    notification: { close: vi.fn(), data: { url } },
+    waitUntil: (p: Promise<unknown>) => {
+      task = p;
+    },
+  });
+  await task;
+  expect(sw.openWindow).toHaveBeenCalledWith('https://hankan.test' + url);
+});
 it('displays_a_recipe_completion_once_and_opens_its_saved_result', async () => {
   const sw = setup(),
     payload = {

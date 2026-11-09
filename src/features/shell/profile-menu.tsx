@@ -80,9 +80,6 @@ export function ProfileMenu({ accountName, fridgeId }: { accountName: string; fr
           <Link role="menuitem" href="/mypage" onClick={() => setOpen(false)}>
             마이페이지
           </Link>
-          <Link role="menuitem" href="/recipes/history" onClick={() => setOpen(false)}>
-            추천 내역
-          </Link>
           <Link
             role="menuitem"
             href={'/fridges/manage?fridgeId=' + encodeURIComponent(fridgeId)}

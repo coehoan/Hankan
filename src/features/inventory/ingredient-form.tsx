@@ -149,7 +149,7 @@ export function IngredientForm({
                   ? '현재 저장된 버전을 확인한 뒤 수정해요.'
                   : '남은 양은 100%로 시작해요.'}
             </p>
-            <Button variant="secondary" onClick={onCancel} disabled={pending}>
+            <Button variant="ghost" onClick={onCancel} disabled={pending}>
               취소
             </Button>
             <Button type="submit" disabled={pending || !online}>

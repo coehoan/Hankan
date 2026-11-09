@@ -27,13 +27,6 @@
   text-underline-offset: 4px;
   padding-block: 8px;
 }
-.recipe-activity button {
-  border: 1px solid var(--control-border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--foreground);
-  padding: 8px 12px;
-}
 .recipe-history-links a,
 .recipe-history-list a {
   color: var(--accent);

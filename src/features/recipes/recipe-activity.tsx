@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 type Activity = { id: string; status: string };
 export function RecipeActivity() {
   const [notice, setNotice] = useState<Activity | null>(null);
@@ -100,14 +101,14 @@ export function RecipeActivity() {
       </p>
       <Link href={'/recipes/jobs/' + notice.id}>{pending ? '진행 상태 보기' : '결과 보기'}</Link>
       {!pending && (
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={() =>
             window.dispatchEvent(new CustomEvent('hankan:recipe-dismiss', { detail: notice.id }))
           }
         >
           닫기
-        </button>
+        </Button>
       )}
     </aside>
   );

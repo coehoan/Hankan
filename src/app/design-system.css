@@ -158,6 +158,38 @@ a:focus-visible,
   min-height: 44px;
   font-size: 13px;
 }
+.ghost-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 600;
+}
+@media (hover: hover) {
+  .ghost-button:enabled:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+}
+.ghost-button:enabled:active {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  opacity: 1;
+}
+.ghost-button:disabled {
+  opacity: 0.5;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ghost-button {
+    transition: background-color 120ms ease-out;
+  }
+}
 .field {
   gap: 8px;
   font-size: 14px;

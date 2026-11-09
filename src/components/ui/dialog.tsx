@@ -114,7 +114,7 @@ export function Dialog({
         <header className="dialog-heading">
           <h2 id={titleId}>{title}</h2>
           <Button
-            variant="secondary"
+            variant="ghost"
             aria-label={title + ' 닫기'}
             onClick={() => onOpenChange(false)}
             disabled={closeDisabled}

@@ -1,15 +1,17 @@
 import type { ButtonHTMLAttributes } from 'react';
+
+const buttonClasses = {
+  primary: 'add-button',
+  secondary: 'secondary-button',
+  text: 'text-button',
+  ghost: 'ghost-button',
+};
+
 export function Button({
   variant = 'primary',
   className = '',
   type = 'button',
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'text' }) {
-  return (
-    <button
-      type={type}
-      className={`${variant === 'primary' ? 'add-button' : variant === 'secondary' ? 'secondary-button' : 'text-button'} ${className}`}
-      {...props}
-    />
-  );
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: keyof typeof buttonClasses }) {
+  return <button type={type} className={`${buttonClasses[variant]} ${className}`} {...props} />;
 }

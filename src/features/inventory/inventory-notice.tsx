@@ -1,5 +1,6 @@
 'use client';
 import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 
 export function InventoryNotice({ message, onClose }: { message: string; onClose: () => void }) {
   useEffect(() => {
@@ -10,8 +11,8 @@ export function InventoryNotice({ message, onClose }: { message: string; onClose
   return (
     <div className="inventory-notice" role="status">
       <span>{message}</span>
-      <button
-        type="button"
+      <Button
+        variant="ghost"
         className="inventory-notice-close"
         aria-label="알림 닫기"
         onClick={onClose}
@@ -25,7 +26,7 @@ export function InventoryNotice({ message, onClose }: { message: string; onClose
         >
           <path d="m5 5 10 10M15 5 5 15" />
         </svg>
-      </button>
+      </Button>
     </div>
   );
 }

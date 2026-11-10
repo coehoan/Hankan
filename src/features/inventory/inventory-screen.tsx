@@ -8,8 +8,7 @@ import { IngredientForm } from './ingredient-form';
 import { IngredientArt } from './ingredient-art';
 import { IngredientGroup, ingredientGroups } from './ingredient-group';
 import { InventoryNotice } from './inventory-notice';
-import Link from 'next/link';
-import { RecipeResults } from '@/features/recipes/recipe-results';
+import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { PantryIcon } from '@/components/ui/pantry-icon';
 
@@ -376,7 +375,18 @@ export function InventoryScreen({
       )}
       <div className="inventory-columns">
         <div className="inventory-list-column">
-          <h2 className="inventory-list-title">재료 목록</h2>
+          <div className="inventory-list-heading">
+            <h2 className="inventory-list-title">재료 목록</h2>
+            <Button
+              variant="ghost"
+              className="inventory-refresh-button"
+              aria-label="새로고침"
+              onClick={() => void inventory.refresh()}
+              disabled={!inventory.online || busy}
+            >
+              <PantryIcon name="refresh" />
+            </Button>
+          </div>
           <div className="inventory-tools">
             <div className="storage-filters" role="group" aria-label="보관 장소 필터">
               {(['all', 'fridge', 'freezer', 'pantry'] as const).map((place) => (
@@ -461,15 +471,7 @@ export function InventoryScreen({
                 >
                   필터 초기화
                 </button>
-              ) : (
-                <button
-                  className="secondary-button"
-                  onClick={() => setAddingFor(fridgeId)}
-                  disabled={disabled}
-                >
-                  첫 재료 등록
-                </button>
-              )}
+              ) : null}
             </section>
           ) : null}
           {ingredientGroups.map((group) => (
@@ -512,42 +514,7 @@ export function InventoryScreen({
               )}
             />
           ))}
-          <div className="inventory-bottom">
-            <span>
-              {busy ? '변경 내용을 저장하고 있어요.' : '함께 관리하는 목록도 최신 상태로 확인해요.'}
-            </span>
-            <button
-              className="text-button"
-              onClick={() => void inventory.refresh()}
-              disabled={!inventory.online || busy}
-            >
-              새로고침
-            </button>
-          </div>
         </div>
-        <aside className="fridge-summary" aria-label="요리 추천 빠른 실행">
-          <div className="summary-recipes">
-            <span className="recipe-side-icon">
-              <PantryIcon name="bowl" />
-            </span>
-            <RecipeResults
-              compact
-              fridgeId={fridgeId}
-              ingredients={inventory.items}
-              today={today}
-              online={inventory.online}
-              loading={inventory.loading}
-              revoked={inventory.revoked}
-              pending={busy}
-              inventoryError={!!inventory.error}
-              onAccessLost={onAccessLost}
-            />
-            <Link className="text-button" href={'/fridges/' + fridgeId + '/recipes'}>
-              요리 추천 전체 보기
-              <span aria-hidden="true">›</span>
-            </Link>
-          </div>
-        </aside>
       </div>
     </main>
   );

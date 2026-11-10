@@ -104,6 +104,17 @@ afterEach(() => {
 });
 const show = () =>
   render(<RecipeList fridgeId={A} fridgeName="우리집" initialToday="2026-10-28" />);
+it('keeps recommendations disabled without an extra notice when inventory is empty', async () => {
+  rows = [];
+  show();
+
+  await waitFor(() =>
+    expect(screen.queryByText('현재 냉장고 재료를 확인하고 있어요…')).not.toBeInTheDocument(),
+  );
+  expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeDisabled();
+  expect(screen.queryByRole('heading', { name: '추천에 쓸 재료가 아직 없어요' })).toBeNull();
+  expect(screen.queryByRole('link', { name: '재료 확인하기' })).toBeNull();
+});
 it('recipe_request_does_not_change_remaining', async () => {
   show();
   const button = await screen.findByRole('button', { name: '요리 추천 받기' });
@@ -291,10 +302,7 @@ it('shows_accepted_and_partial_results_then_restores_completed_history_on_remoun
   );
   show();
   expect(await screen.findByRole('button', { name: '계란찜 조리법 보기' })).toBeVisible();
-  expect(screen.getByRole('link', { name: '추천 내역' })).toHaveAttribute(
-    'href',
-    '/recipes/history',
-  );
+  expect(screen.queryByRole('link', { name: '추천 내역' })).not.toBeInTheDocument();
 });
 it('offline_blocks_new_recommendations', async () => {
   show();

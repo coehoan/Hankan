@@ -88,10 +88,12 @@ export function RecipeResults({
       <p className="recipe-quantity-note">
         물은 기본으로 있어요. 나머지는 보유한 재료 종류를 기준으로 찾으니 필요한 양을 확인해 주세요.
       </p>
-      <div className="recipe-history-links">
-        <Link href="/recipes/history">추천 내역</Link>
-        {savedJobId && <Link href={'/fridges/' + fridgeId}>냉장고로 돌아가기</Link>}
-      </div>
+      {savedJobId && (
+        <div className="recipe-history-links">
+          <Link href="/recipes/history">추천 내역</Link>
+          <Link href={'/fridges/' + fridgeId}>냉장고로 돌아가기</Link>
+        </div>
+      )}
       {!online && (
         <p className="connection-banner" role="status">
           온라인으로 연결하면 추천 상태를 다시 확인해요. 접수한 작업은 계속 진행돼요.
@@ -105,22 +107,7 @@ export function RecipeResults({
         <p className="recipe-feedback" role="status">
           재료 목록을 다시 불러온 뒤 추천받아 주세요.
         </p>
-      ) : (
-        !usable.length &&
-        !savedJobId && (
-          <div className="recipe-empty">
-            <h3>추천에 쓸 재료가 아직 없어요</h3>
-            <p>
-              남은 양이 있는 재료를 등록해 주세요. 0%이거나 기한이 지난 묶음은 추천에서 제외해요.
-            </p>
-            {!compact && (
-              <Link className="secondary-button" href={'/fridges/' + fridgeId}>
-                재료 확인하기
-              </Link>
-            )}
-          </div>
-        )
-      )}
+      ) : null}
       {stale && (
         <p className="recipe-feedback" role="status">
           추천을 요청한 뒤 재료나 날짜가 바뀌었어요. 아래 요리는 요청 당시 재료를 기준으로 해요.

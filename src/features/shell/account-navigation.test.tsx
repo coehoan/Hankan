@@ -28,7 +28,7 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
-it('header_brand_opens_selected_inventory_and_account_controls_live_in_mypage', () => {
+it('header_brand_opens_selected_inventory_and_account_controls_live_in_mypage', async () => {
   render(
     <AppShell
       fridges={[{ id, name: '우리집', role: 'member' }]}
@@ -55,6 +55,16 @@ it('header_brand_opens_selected_inventory_and_account_controls_live_in_mypage', 
     'href',
     '/recipes/history',
   );
+  const inventory = within(screen.getByRole('main'));
+  expect(inventory.getByRole('heading', { name: '재료 목록' })).toBeVisible();
+  expect(inventory.queryByRole('complementary', { name: '요리 추천 빠른 실행' })).toBeNull();
+  expect(inventory.queryByRole('link', { name: '추천 내역' })).toBeNull();
+  expect(
+    await inventory.findByRole('heading', { name: '냉장고의 첫 재료를 담아 보세요' }),
+  ).toBeVisible();
+  expect(inventory.queryByRole('button', { name: '첫 재료 등록' })).not.toBeInTheDocument();
+  expect(inventory.getByRole('button', { name: '직접 등록' })).toBeEnabled();
+  expect(inventory.getByRole('button', { name: '영수증 등록' })).toBeEnabled();
 });
 it('mypage_has_keyboard_account_row_inline_notifications_and_no_logout', async () => {
   render(

@@ -595,9 +595,6 @@ a:focus-visible,
   color: var(--muted);
   background: transparent;
 }
-.inventory-bottom {
-  font-size: 12px;
-}
 .inventory-page .fridge-summary {
   display: block;
   background: var(--soft);
@@ -1157,9 +1154,6 @@ a:focus-visible,
   }
   .notification-time-settings {
     padding-inline: 0;
-  }
-  .inventory-bottom {
-    flex-wrap: wrap;
   }
 }
 @media (max-width: 400px) {

@@ -305,7 +305,6 @@ textarea:focus-visible {
 .ingredient-row {
   padding: 17px 18px;
 }
-.inventory-bottom,
 .pantry-footer > span {
   font-size: 12px;
 }
@@ -587,17 +586,6 @@ textarea:focus-visible {
   }
   .pantry-footer > span {
     font-size: 12px;
-  }
-  .inventory-bottom {
-    font-size: 12px;
-    align-items: flex-start;
-  }
-  .inventory-bottom > span {
-    flex: 1;
-    min-width: 0;
-  }
-  .inventory-bottom button {
-    flex-shrink: 0;
   }
   .dialog-backdrop {
     padding: 12px;

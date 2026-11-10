@@ -442,7 +442,14 @@ describe('inventory controls with real hook and HTTP boundary', () => {
     fireEvent.click(screen.getByRole('button', { name: '조금 더 여유 있어요 더 보기' }));
     fireEvent.click(groupToggle('조금 더 여유 있어요'));
     rows = [item('other', '사과')];
-    fireEvent.click(screen.getByRole('button', { name: '새로고침' }));
+    const refresh = screen.getByRole('button', { name: '새로고침' });
+    expect(screen.getByRole('heading', { name: '재료 목록' }).parentElement).toContainElement(
+      refresh,
+    );
+    expect(
+      screen.queryByText('함께 관리하는 목록도 최신 상태로 확인해요.'),
+    ).not.toBeInTheDocument();
+    fireEvent.click(refresh);
     await screen.findByRole('heading', { name: '찾는 재료가 없어요' });
     rows = matches;
     fireEvent.click(screen.getByRole('button', { name: '새로고침' }));

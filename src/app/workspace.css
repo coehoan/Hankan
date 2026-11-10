@@ -211,13 +211,26 @@
   font-size: 13px;
 }
 .inventory-columns {
-  grid-template-columns: minmax(0, 1fr) minmax(250px, 0.34fr);
-  gap: clamp(20px, 3vw, 36px);
+  grid-template-columns: minmax(0, 1fr);
+}
+.inventory-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 .inventory-list-title {
-  margin-bottom: 12px;
   font-size: 23px;
   letter-spacing: -0.035em;
+}
+.inventory-refresh-button {
+  flex: none;
+  padding: 0;
+}
+.inventory-refresh-button svg {
+  width: 20px;
+  height: 20px;
 }
 .inventory-tools {
   gap: 12px;

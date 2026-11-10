@@ -49,7 +49,7 @@ it('displays a test push once for its owner and opens the notification settings'
   await push(sw, payload);
   await push(sw, payload);
   expect(sw.showNotification).toHaveBeenCalledExactlyOnceWith(
-    '한칸 · 테스트 알림',
+    '테스트 알림',
     expect.objectContaining({ body: '테스트 메시지', data: { url } }),
   );
   let task: Promise<unknown> | undefined;
@@ -73,7 +73,7 @@ it('displays_a_recipe_completion_once_and_opens_its_saved_result', async () => {
   await push(sw, payload);
   await push(sw, payload);
   expect(sw.showNotification).toHaveBeenCalledTimes(1);
-  expect(sw.showNotification.mock.calls[0][0]).toBe('한칸 · 요리 추천 완료');
+  expect(sw.showNotification.mock.calls[0][0]).toBe('요리 추천 완료');
   let task: Promise<unknown> | undefined;
   sw.handlers.notificationclick({
     notification: { close: vi.fn(), data: { url: payload.url } },
@@ -108,4 +108,5 @@ it('rejects_foreign_users_and_mismatched_job_ids_but_keeps_daily_digests', async
   expect(sw.showNotification).not.toHaveBeenCalled();
   await push(sw, { notificationId: 'user:2026-11-06', digestId: id, url: '/notifications/' + id });
   expect(sw.showNotification).toHaveBeenCalledTimes(1);
+  expect(sw.showNotification.mock.calls[0][0]).toBe('임박 재료 알림');
 });

@@ -18,7 +18,7 @@ export async function dispatchDigest(
       result = await transport.send(subscription, {
         notificationId: job.userId + ':' + job.localDate,
         digestId: job.id,
-        title: '한칸 · 임박 재료 알림',
+        title: '임박 재료 알림',
         body: count + '개 재료를 먼저 사용해 보세요.',
         url: '/notifications/' + job.id,
       });

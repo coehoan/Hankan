@@ -25,7 +25,7 @@ export async function dispatchRecipeNotification(
     const result = await transport.send(current, {
       notificationId: job.userId + ':recipe:' + job.id,
       recipeJobId: job.id,
-      title: '한칸 · 요리 추천 완료',
+      title: '요리 추천 완료',
       body:
         job.status === 'failed'
           ? '추천을 완료하지 못했어요. 내역에서 다시 확인해 주세요.'

@@ -81,8 +81,8 @@ export async function sendTestPush() {
     { ...data, userId },
     {
       notificationId: userId + ':test:' + crypto.randomUUID(),
-      title: '한칸 · 테스트 알림',
-      body: '이 기기에서 한칸 알림을 받을 수 있어요.',
+      title: '테스트 알림',
+      body: '이 기기에서 알림을 받을 수 있어요.',
       url: '/mypage#notifications',
     },
   );

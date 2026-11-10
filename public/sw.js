@@ -117,11 +117,7 @@ self.addEventListener('push', (event) => {
         return;
       if (!(await hankanPushDedup.claimNotificationDisplay(payload.notificationId))) return;
       await self.registration.showNotification(
-        isTest
-          ? '한칸 · 테스트 알림'
-          : payload.recipeJobId
-            ? '한칸 · 요리 추천 완료'
-            : '한칸 · 임박 재료 알림',
+        isTest ? '테스트 알림' : payload.recipeJobId ? '요리 추천 완료' : '임박 재료 알림',
         {
           body:
             typeof payload.body === 'string'

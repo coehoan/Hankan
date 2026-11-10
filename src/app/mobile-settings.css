@@ -158,11 +158,6 @@
   object-fit: contain;
   border-radius: 8px;
 }
-.receipt-upload-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 22px;
-}
 .receipt-upload-actions button {
   min-width: 130px;
 }
@@ -185,11 +180,6 @@
 .rename-fridge-trigger svg {
   width: 20px;
   height: 20px;
-}
-.rename-fridge-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
 }
 @media (max-width: 540px) {
   .pantry-header > div {

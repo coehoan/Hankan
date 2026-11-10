@@ -451,13 +451,6 @@
   color: var(--muted);
   line-height: 1.8;
 }
-.editor-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 23px;
-}
 .editor-actions p {
   margin-right: auto;
   font-size: 11px;
@@ -858,9 +851,6 @@
   .ingredient-fields input {
     font-size: 14px;
     padding-inline: 10px;
-  }
-  .editor-actions {
-    flex-wrap: wrap;
   }
   .editor-actions p {
     flex-basis: 100%;

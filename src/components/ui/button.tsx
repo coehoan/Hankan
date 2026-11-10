@@ -2,6 +2,7 @@ import type { ButtonHTMLAttributes } from 'react';
 
 const buttonClasses = {
   primary: 'add-button',
+  destructive: 'add-button destructive-button',
   secondary: 'secondary-button',
   text: 'text-button',
   ghost: 'ghost-button',

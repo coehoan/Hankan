@@ -140,6 +140,10 @@ a:focus-visible,
   padding: 12px 20px;
   font-size: 14px;
 }
+.destructive-button:enabled {
+  background: var(--error);
+  color: var(--error-bg);
+}
 .secondary-button,
 .sign-out button,
 .theme-control select {
@@ -902,6 +906,17 @@ a:focus-visible,
 }
 .dialog-content {
   padding: 28px;
+}
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+.dialog-actions > .ghost-button {
+  min-height: 48px;
 }
 .dialog-footer {
   padding: 20px 28px;

@@ -141,7 +141,7 @@ export function IngredientForm({
               )}
             </div>
           )}
-          <div className="editor-actions">
+          <div className="dialog-actions editor-actions">
             <p>
               {!online
                 ? '연결이 돌아오면 저장할 수 있어요. 입력은 유지돼요.'

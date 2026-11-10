@@ -193,9 +193,6 @@ textarea:focus-visible {
 .dialog-content .ingredient-fields > .field:first-child {
   grid-column: 1/-1;
 }
-.dialog-content .editor-actions {
-  flex-wrap: wrap;
-}
 .dialog-content .editor-actions p {
   flex-basis: 100%;
   max-width: none;

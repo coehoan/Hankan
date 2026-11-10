@@ -212,12 +212,20 @@ export function RecipeHistory({
             : '이 추천 내역을 삭제할까요?'}
           {' 삭제하면 추천 목록과 상세 화면에서 볼 수 없어요.'}
         </p>
-        {deleteError && <p role="alert">{deleteError}</p>}
-        <div className="recipe-history-actions">
+        {deleteError && (
+          <p className="form-message error" role="alert">
+            {deleteError}
+          </p>
+        )}
+        <div className="dialog-actions">
           <Button variant="ghost" disabled={deleting} onClick={() => setSelectedJob(null)}>
             취소
           </Button>
-          <Button variant="secondary" disabled={deleting} onClick={() => void deleteSelectedJob()}>
+          <Button
+            variant="destructive"
+            disabled={deleting}
+            onClick={() => void deleteSelectedJob()}
+          >
             {deleting ? '삭제 중…' : '삭제하기'}
           </Button>
         </div>

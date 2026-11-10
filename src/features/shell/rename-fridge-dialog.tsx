@@ -86,7 +86,7 @@ export function RenameFridgeDialog({
             {error}
           </p>
         )}
-        <div className="rename-fridge-actions">
+        <div className="dialog-actions">
           <Button type="submit" disabled={saving}>
             {saving ? '저장 중…' : '이름 저장'}
           </Button>

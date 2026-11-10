@@ -82,15 +82,6 @@
 .fridge-options > [role='option'] > .fridge-picker-name {
   flex: 1;
 }
-.password-dialog-actions {
-  gap: 12px;
-}
-.password-dialog-actions button {
-  width: 90px;
-  min-width: 0;
-  flex: 0 0 90px;
-  min-height: 44px;
-}
 .invite-history-heading {
   display: flex;
   align-items: center;

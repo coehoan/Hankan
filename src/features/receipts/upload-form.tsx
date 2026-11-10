@@ -139,7 +139,7 @@ export function UploadForm({
             {error}
           </p>
         )}
-        <div className="receipt-upload-actions">
+        <div className="dialog-actions receipt-upload-actions">
           <Button type="submit" disabled={!online || busy || !file}>
             {analyzing ? 'AI 분석 중…' : busy ? '사진 확인 중…' : '품목 확인'}
           </Button>

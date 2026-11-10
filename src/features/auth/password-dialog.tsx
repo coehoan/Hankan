@@ -29,7 +29,7 @@ export function PasswordDialog({
           onSuccess={onComplete}
           onPendingChange={setPending}
         />
-        <div className="password-dialog-actions">
+        <div className="dialog-actions">
           <Button type="button" variant="ghost" onClick={onClose} disabled={pending}>
             취소
           </Button>

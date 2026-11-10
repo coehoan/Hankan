@@ -482,6 +482,7 @@ export type Database = {
           created_at: string;
           delivered_subscription_ids: string[];
           fridge_id: string;
+          history_hidden_at: string | null;
           id: string;
           lease_token: string | null;
           lease_until: string | null;
@@ -507,6 +508,7 @@ export type Database = {
           created_at?: string;
           delivered_subscription_ids?: string[];
           fridge_id: string;
+          history_hidden_at?: string | null;
           id?: string;
           lease_token?: string | null;
           lease_until?: string | null;
@@ -531,6 +533,7 @@ export type Database = {
           created_at?: string;
           delivered_subscription_ids?: string[];
           fridge_id?: string;
+          history_hidden_at?: string | null;
           id?: string;
           lease_token?: string | null;
           lease_until?: string | null;
@@ -600,6 +603,7 @@ export type Database = {
           created_at: string;
           delivered_subscription_ids: string[];
           fridge_id: string;
+          history_hidden_at: string | null;
           id: string;
           lease_token: string | null;
           lease_until: string | null;
@@ -633,6 +637,7 @@ export type Database = {
           created_at: string;
           delivered_subscription_ids: string[];
           fridge_id: string;
+          history_hidden_at: string | null;
           id: string;
           lease_token: string | null;
           lease_until: string | null;
@@ -763,6 +768,7 @@ export type Database = {
           created_at: string;
           delivered_subscription_ids: string[];
           fridge_id: string;
+          history_hidden_at: string | null;
           id: string;
           lease_token: string | null;
           lease_until: string | null;
@@ -793,6 +799,7 @@ export type Database = {
         Args: { draft_id: string; extracted: Json; run_id: string; succeeded: boolean };
         Returns: boolean;
       };
+      hide_recipe_job: { Args: { actor_id: string; target_job_id: string }; Returns: undefined };
       inspect_fridge_invite: {
         Args: { token_digest: string };
         Returns: {

@@ -132,6 +132,37 @@ it('retries_an_active_job_alias_after_completion_without_creating_another_job', 
   expect(retried.error).toBeNull();
   expect(retried.data?.id).toBe(originalJobId);
 });
+
+it('hides only the requester’s finished job and retains its results and request alias', async () => {
+  const admin = localAdmin();
+  const jobId = originalJobId;
+  const hide = (userId: string) =>
+    admin.rpc('hide_recipe_job', { target_job_id: jobId, actor_id: userId });
+  const original = await admin.from('recipe_jobs').select('*').eq('id', jobId).single();
+  expect(original.error).toBeNull();
+  expect((await hide(group.owner.userId)).error?.code).toBe('PT404');
+  expect(
+    (
+      await group.member.client.rpc('hide_recipe_job', {
+        target_job_id: jobId,
+        actor_id: group.member.userId,
+      })
+    ).error?.code,
+  ).toBe('42501');
+
+  expect((await hide(group.member.userId)).error).toBeNull();
+  expect((await hide(group.member.userId)).error).toBeNull();
+  const visible = await group.member.client.from('recipe_jobs').select('id').eq('id', jobId);
+  expect(visible.error).toBeNull();
+  expect(visible.data).toEqual([]);
+  const retained = await admin.from('recipe_jobs').select('*').eq('id', jobId).single();
+  expect(retained.data).toEqual({ ...original.data, history_hidden_at: expect.any(String) });
+  const retried = await group.member.client.rpc('enqueue_recipe_job', {
+    target_fridge_id: group.fridgeId,
+    request_id: aliasedRequestId,
+  });
+  expect(retried.data?.id).toBe(jobId);
+});
 it('revoked_members_cannot_read_or_publish_saved_work', async () => {
   const queued = await group.member.client.rpc('enqueue_recipe_job', {
     target_fridge_id: group.fridgeId,
@@ -139,12 +170,16 @@ it('revoked_members_cannot_read_or_publish_saved_work', async () => {
   });
   const admin = localAdmin();
   const job = (await admin.rpc('claim_recipe_jobs', { target_job_id: queued.data!.id })).data![0];
+  const hide = () =>
+    admin.rpc('hide_recipe_job', { target_job_id: job.id, actor_id: group.member.userId });
+  expect((await hide()).error?.code).toBe('PT409');
   await admin
     .from('fridge_members')
     .delete()
     .eq('fridge_id', group.fridgeId)
     .eq('user_id', group.member.userId);
   try {
+    expect((await hide()).error?.code).toBe('PT404');
     expect(
       (await group.member.client.from('recipe_jobs').select('id').eq('id', job.id)).data,
     ).toEqual([]);

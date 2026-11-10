@@ -1,7 +1,8 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
 import { recipeJobPending, type RecipeJob } from './job-contracts';
 export function RecipeHistory({
   timeZone,
@@ -18,6 +19,12 @@ export function RecipeHistory({
     error: '',
   });
   const [attempt, setAttempt] = useState(0);
+  const [selectedJob, setSelectedJob] = useState<RecipeJob | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [announcement, setAnnouncement] = useState('');
+  const heading = useRef<HTMLHeadingElement>(null);
+  const listVersion = useRef(0);
   useEffect(() => {
     let active = true,
       busy = false,
@@ -33,6 +40,7 @@ export function RecipeHistory({
       )
         return;
       busy = true;
+      const version = listVersion.current;
       controller = new AbortController();
       try {
         const response = await fetch('/api/recipe-jobs', {
@@ -40,7 +48,7 @@ export function RecipeHistory({
           signal: controller.signal,
         });
         const json = await response.json();
-        if (!active) return;
+        if (!active || version !== listVersion.current) return;
         if (!response.ok) {
           if ([401, 403].includes(response.status)) {
             setState({ jobs: [], loading: false, error: '로그인을 다시 확인해 주세요.' });
@@ -53,7 +61,7 @@ export function RecipeHistory({
         pending = json.data.some(recipeJobPending);
         setState({ jobs: json.data, loading: false, error: '' });
       } catch {
-        if (active && !controller.signal.aborted)
+        if (active && !controller.signal.aborted && version === listVersion.current)
           setState((previous) => ({
             ...previous,
             loading: false,
@@ -78,13 +86,46 @@ export function RecipeHistory({
       document.removeEventListener('visibilitychange', refresh);
     };
   }, [attempt, onAccessLost]);
+
+  async function deleteSelectedJob() {
+    if (!selectedJob || deleting) return;
+    const { id } = selectedJob;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      const response = await fetch('/api/recipe-jobs/' + encodeURIComponent(id), {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        if (response.status === 401) onAccessLost?.();
+        throw new Error('Delete failed');
+      }
+      listVersion.current += 1;
+      setState((previous) => ({
+        ...previous,
+        jobs: previous.jobs.filter((job) => job.id !== id),
+      }));
+      setSelectedJob(null);
+      setAnnouncement('추천 내역을 삭제했어요.');
+      setAttempt((value) => value + 1);
+    } catch {
+      setDeleteError('추천 내역을 삭제하지 못했어요. 연결을 확인한 뒤 다시 시도해 주세요.');
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <main className="recipes-page recipe-history">
       <header className="recipes-page-heading">
         <p className="workspace-kicker">저장한 한 끼</p>
-        <h1>추천 내역</h1>
+        <h1 ref={heading} tabIndex={-1}>
+          추천 내역
+        </h1>
         <p>요청할 때의 재료와 요리법을 최근 30건까지 다시 볼 수 있어요.</p>
       </header>
+      {announcement && <p role="status">{announcement}</p>}
       {state.loading && <p role="status">추천 내역을 불러오고 있어요…</p>}
       {state.error && (
         <div className="recipe-error">
@@ -135,12 +176,52 @@ export function RecipeHistory({
                       : '추천을 완료하지 못했어요'}
               </p>
             </div>
-            <Link href={'/recipes/jobs/' + job.id}>
-              {recipeJobPending(job) ? '진행 상태 보기' : '추천 보기'}
-            </Link>
+            <div className="recipe-history-actions">
+              <Link href={'/recipes/jobs/' + job.id} prefetch={false}>
+                {recipeJobPending(job) ? '진행 상태 보기' : '추천 보기'}
+              </Link>
+              {!recipeJobPending(job) && (
+                <Button
+                  variant="ghost"
+                  aria-label={(job.matches[0]?.recipe.name ?? '저장된 요리 추천') + ' 내역 삭제'}
+                  onClick={() => {
+                    setAnnouncement('');
+                    setDeleteError('');
+                    setSelectedJob(job);
+                  }}
+                >
+                  삭제
+                </Button>
+              )}
+            </div>
           </li>
         ))}
       </ol>
+      <Dialog
+        open={selectedJob !== null}
+        title="추천 내역 삭제"
+        closeDisabled={deleting}
+        onOpenChange={(open) => {
+          if (!open) setSelectedJob(null);
+        }}
+        fallbackFocus={() => heading.current}
+      >
+        <p>
+          {selectedJob?.matches[0]?.recipe.name
+            ? '‘' + selectedJob.matches[0].recipe.name + '’이 포함된 추천 내역을 삭제할까요?'
+            : '이 추천 내역을 삭제할까요?'}
+          {' 삭제하면 추천 목록과 상세 화면에서 볼 수 없어요.'}
+        </p>
+        {deleteError && <p role="alert">{deleteError}</p>}
+        <div className="recipe-history-actions">
+          <Button variant="ghost" disabled={deleting} onClick={() => setSelectedJob(null)}>
+            취소
+          </Button>
+          <Button variant="secondary" disabled={deleting} onClick={() => void deleteSelectedJob()}>
+            {deleting ? '삭제 중…' : '삭제하기'}
+          </Button>
+        </div>
+      </Dialog>
     </main>
   );
 }

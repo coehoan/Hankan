@@ -79,6 +79,15 @@
   display: inline-flex;
   align-items: center;
 }
+.recipe-history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.recipe-history-list .recipe-history-actions {
+  flex-shrink: 0;
+}
 @media (max-width: 600px) {
   .recipe-history-list li {
     align-items: flex-start;

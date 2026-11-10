@@ -2,6 +2,7 @@ import 'server-only';
 import type { AccessContext } from '@/lib/contracts';
 import { requireUser } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
+import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { Tables } from '@/lib/supabase/database.types';
 import { checkDatabaseError, toIngredient } from '@/features/inventory/service';
@@ -10,6 +11,9 @@ import { classifyRecipes, inventoryVersion } from './domain';
 import { deduplicateRecipes } from './recommendations';
 import { parseSavedRecipeCandidates } from './validation';
 import type { RecipeJob, RecipeJobStatus } from './job-contracts';
+
+const recipeJobNotFound = () =>
+  new AppError('not_found', '추천 내역을 찾을 수 없어요. 냉장고 권한도 확인해 주세요.');
 
 export function jobIngredients(row: Tables<'recipe_jobs'>) {
   if (!Array.isArray(row.snapshot))
@@ -47,6 +51,7 @@ export async function enqueueRecipeJob(
     throw new AppError('conflict', '추천 요청이 많아요. 잠시 후 다시 시도해 주세요.');
   if (error) checkDatabaseError(error);
   if (!data) throw new AppError('internal', '추천을 접수하지 못했어요. 다시 시도해 주세요.');
+  if (data.history_hidden_at) throw recipeJobNotFound();
   return toRecipeJob(data);
 }
 export async function getRecipeJob(id: string): Promise<RecipeJob> {
@@ -58,9 +63,18 @@ export async function getRecipeJob(id: string): Promise<RecipeJob> {
     .eq('id', parseId(id))
     .maybeSingle();
   if (error) checkDatabaseError(error);
-  if (!data)
-    throw new AppError('not_found', '추천 내역을 찾을 수 없어요. 냉장고 권한도 확인해 주세요.');
+  if (!data) throw recipeJobNotFound();
   return toRecipeJob(data);
+}
+export async function hideRecipeJob(id: string): Promise<void> {
+  const { userId } = await requireUser();
+  const { error } = await createAdminSupabaseClient().rpc('hide_recipe_job', {
+    target_job_id: parseId(id),
+    actor_id: userId,
+  });
+  if (error?.code === 'PT404') throw recipeJobNotFound();
+  if (error?.code === 'PT409') throw new AppError('conflict', '추천이 끝난 뒤 삭제할 수 있어요.');
+  if (error) throw new AppError('internal', '추천 내역을 삭제하지 못했어요.');
 }
 export async function listRecipeJobs(fridgeId?: string, latest = false): Promise<RecipeJob[]> {
   await requireUser();

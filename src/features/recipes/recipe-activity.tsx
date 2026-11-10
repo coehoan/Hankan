@@ -1,16 +1,18 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { PantryIcon } from '@/components/ui/pantry-icon';
 type Activity = { id: string; status: string };
 export function RecipeActivity() {
   const [notice, setNotice] = useState<Activity | null>(null);
+  const dismissed = useRef(new Set<string>());
   useEffect(() => {
     let active = true,
       busy = false,
       controller: AbortController | null = null;
-    const known = new Map<string, string>(),
-      dismissed = new Set<string>();
+    const known = new Map<string, string>();
+    const dismissedJobs = dismissed.current;
     const load = async () => {
       if (!active || busy || navigator.onLine === false || document.visibilityState === 'hidden')
         return;
@@ -36,17 +38,20 @@ export function RecipeActivity() {
           const before = known.get(job.id);
           if (
             ['queued', 'running'].includes(before ?? '') &&
-            ['complete', 'failed'].includes(job.status)
+            ['complete', 'failed'].includes(job.status) &&
+            !dismissedJobs.has(job.id)
           )
             completed = job;
           known.set(job.id, job.status);
         }
         const pending = jobs.find((job) => ['queued', 'running'].includes(job.status));
         setNotice((previous) =>
-          completed && !dismissed.has(completed.id)
+          completed && !dismissedJobs.has(completed.id)
             ? completed
             : (pending ??
-              (previous && jobs.some((job) => job.id === previous.id) && !dismissed.has(previous.id)
+              (previous &&
+              jobs.some((job) => job.id === previous.id) &&
+              !dismissedJobs.has(previous.id)
                 ? previous
                 : null)),
         );
@@ -63,11 +68,6 @@ export function RecipeActivity() {
       }
       void load();
     };
-    const dismiss = (event: Event) => {
-      const id = (event as CustomEvent<string>).detail;
-      dismissed.add(id);
-      setNotice(null);
-    };
     void load();
     const timer = setInterval(() => {
       if ([...known.values()].some((status) => ['queued', 'running'].includes(status))) void load();
@@ -75,7 +75,6 @@ export function RecipeActivity() {
     window.addEventListener('focus', load);
     window.addEventListener('online', load);
     window.addEventListener('hankan:recipe-job', accepted);
-    window.addEventListener('hankan:recipe-dismiss', dismiss);
     document.addEventListener('visibilitychange', load);
     return () => {
       active = false;
@@ -84,30 +83,45 @@ export function RecipeActivity() {
       window.removeEventListener('focus', load);
       window.removeEventListener('online', load);
       window.removeEventListener('hankan:recipe-job', accepted);
-      window.removeEventListener('hankan:recipe-dismiss', dismiss);
       document.removeEventListener('visibilitychange', load);
     };
   }, []);
   if (!notice) return null;
   const pending = ['queued', 'running'].includes(notice.status);
+  const failed = notice.status === 'failed';
+  const message = pending
+    ? '요리 추천이 진행 중이에요'
+    : failed
+      ? '요리 추천에 실패했어요'
+      : '요리 추천이 준비됐어요';
+  const dismiss = () => {
+    dismissed.current.add(notice.id);
+    setNotice((previous) => (previous?.id === notice.id ? null : previous));
+  };
   return (
-    <aside className="recipe-activity" aria-label="요리 추천 상태">
-      <p role="status">
-        {pending
-          ? '요리 추천이 진행 중이에요. 다른 화면에서도 이어서 확인할 수 있어요.'
-          : notice.status === 'failed'
-            ? '요리 추천을 완료하지 못했어요. 내역을 확인해 주세요.'
-            : '요리 추천이 준비됐어요. 저장된 결과를 확인해 보세요.'}
-      </p>
-      <Link href={'/recipes/jobs/' + notice.id}>{pending ? '진행 상태 보기' : '결과 보기'}</Link>
+    <aside className="recipe-activity" aria-label="요리 추천 상태" data-status={notice.status}>
+      <Link
+        className="recipe-activity-link"
+        href={'/recipes/jobs/' + notice.id}
+        aria-label={message}
+        onNavigate={pending ? undefined : dismiss}
+      >
+        <span className="recipe-activity-mark">
+          <PantryIcon name={pending ? 'bowl' : failed ? 'alert' : 'check'} />
+        </span>
+        <span role="status">{message}</span>
+        <span className="recipe-activity-chevron">
+          <PantryIcon name="chevronRight" />
+        </span>
+      </Link>
       {!pending && (
         <Button
           variant="ghost"
-          onClick={() =>
-            window.dispatchEvent(new CustomEvent('hankan:recipe-dismiss', { detail: notice.id }))
-          }
+          className="recipe-activity-close"
+          aria-label="요리 추천 알림 닫기"
+          onClick={dismiss}
         >
-          닫기
+          <PantryIcon name="close" />
         </Button>
       )}
     </aside>

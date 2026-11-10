@@ -54,6 +54,19 @@ it('profile_menu_keeps_account_actions_and_supports_keyboard_and_outside_close',
   fireEvent.pointerDown(document.body);
   expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 });
+it('opens the profile menu by touch without moving focus to My Page', () => {
+  render(<AppShell {...props} />);
+  const avatar = screen.getByRole('button', { name: 'fresh_user 계정 메뉴' });
+  fireEvent.pointerDown(avatar, { pointerType: 'touch' });
+  fireEvent.pointerUp(avatar, { pointerType: 'touch' });
+  fireEvent.click(avatar, { detail: 1 });
+  const menu = screen.getByRole('menu', { name: '계정 메뉴' });
+  const mypage = within(menu).getByRole('menuitem', { name: '마이페이지' });
+  expect(mypage).not.toHaveFocus();
+  avatar.focus();
+  fireEvent.keyDown(avatar, { key: 'ArrowDown' });
+  expect(mypage).toHaveFocus();
+});
 it('profile_menu_stays_open_when_touch_tap_blurs_without_focusing_the_item', () => {
   render(<AppShell {...props} />);
   fireEvent.click(screen.getByRole('button', { name: 'fresh_user 계정 메뉴' }));

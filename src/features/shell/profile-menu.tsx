@@ -8,11 +8,12 @@ export function ProfileMenu({ accountName, fridgeId }: { accountName: string; fr
     root = useRef<HTMLDivElement>(null),
     trigger = useRef<HTMLButtonElement>(null),
     menu = useRef<HTMLDivElement>(null),
+    focusOnOpen = useRef(false),
     id = useId();
   const name = accountName.trim() || '사용자';
   useEffect(() => {
     if (!open) return;
-    menu.current?.querySelector<HTMLElement>('[role=menuitem]')?.focus();
+    if (focusOnOpen.current) menu.current?.querySelector<HTMLElement>('[role=menuitem]')?.focus();
     const outside = (event: PointerEvent) => {
       if (event.target instanceof Node && !root.current?.contains(event.target)) setOpen(false);
     };
@@ -37,6 +38,7 @@ export function ProfileMenu({ accountName, fridgeId }: { accountName: string; fr
         if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
         event.preventDefault();
         if (!open) {
+          focusOnOpen.current = true;
           setOpen(true);
           return;
         }
@@ -46,11 +48,13 @@ export function ProfileMenu({ accountName, fridgeId }: { accountName: string; fr
           index = items.indexOf(document.activeElement as HTMLElement);
         const next =
           event.key === 'Home'
-            ? 0
+            ? items[0]
             : event.key === 'End'
-              ? items.length - 1
-              : (index + (event.key === 'ArrowUp' ? -1 : 1) + items.length) % items.length;
-        items[next]?.focus();
+              ? items.at(-1)
+              : event.key === 'ArrowUp'
+                ? items.at(Math.max(index, 0) - 1)
+                : (items[index + 1] ?? items[0]);
+        next?.focus();
       }}
     >
       <button
@@ -60,7 +64,10 @@ export function ProfileMenu({ accountName, fridgeId }: { accountName: string; fr
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? id : undefined}
-        onClick={() => setOpen((value) => !value)}
+        onClick={(event) => {
+          focusOnOpen.current = event.detail === 0;
+          setOpen((value) => !value);
+        }}
       >
         <svg
           viewBox="0 0 24 24"

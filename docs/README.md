@@ -12,8 +12,8 @@
 | DB 변경·운영 안전 수칙 | [에이전트 운영 안내](../.agents/operations.md) |
 | 환경변수·worker·장애 복구 | [운영](operations.md) |
 | dev push, Secrets/Variables, DB→앱 배포 | [배포 파이프라인](deployment-pipeline.md) |
-| 비동기 접수·저장 내역·부분 결과·완료 푸시 | [비동기 추천](async-recipes.md) |
-| 식약처 캐시·AI 병합·재료 파싱 | [레시피 DB](foodsafety-recipes.md) |
+| AI 추천 접수·저장 내역·완료 푸시 | [비동기 추천](async-recipes.md) |
+| 과거 식약처 추천 내역 호환 | [레시피 DB](foodsafety-recipes.md) |
 | 재료 변경 신호·권한·로컬 Realtime | [Realtime](inventory-realtime.md) |
 | 개인 알림 시각·예약 계산 | [알림 일정](notification-schedules.md) |
 | SVG 범위·이름 연결·추가 방법 | [재료 일러스트](ingredient-illustrations.md) |
@@ -21,7 +21,7 @@
 ## 검증 기록과 과거 설계
 
 - [인수 체크리스트](acceptance.md): 최신 릴리스 검사와 실제 기기에서 남은 절차. 과거 검사 숫자를 현재 검사 결과로 재사용하지 않는다.
-- [AI 평가](ai-evaluation.md): 2026-10-28 실제 API 평가와 당시 비용·품질의 기록. 현재 추천 경로는 비동기 식약처·AI 병합이다.
+- [AI 평가](ai-evaluation.md): 2026-10-28 실제 API 평가와 당시 비용·품질의 기록. 현재 코드의 새 추천은 AI만 사용한다.
 - [11단계 리뷰](release-review.md): 2026-10-28 결함·수정 근거. 최신 릴리스 승인 상태를 나타내지 않는다.
 - [설계·구현 기록](superpowers/README.md): 날짜별 승인 범위·결정·당시 검증을 보존한다. 문서 안의 실행 지시·미완료 체크박스·당시의 배포 금지는 새 작업 지시나 현재 상태가 아니다. 현재 사용자 요청과 AGENTS.md를 따른다.
 

@@ -10,7 +10,7 @@
 - 이번 릴리스에는 목록 아코디언과 더 보기 `977c9dd`, 화면 개편 `a2b9e91`, 프로필 메뉴 정리 `38a3173`이 포함된다. 운영 반영 여부는 이 문서 커밋의 [Actions 결과](https://github.com/coehoan/Hankan/actions/workflows/production.yml)와 Vercel READY를 확인한다. 이번 변경에 신규 마이그레이션은 없다.
 - B PC에서는 개발 중 생성된 `next-env.d.ts` 변경을 커밋에서 제외했다. 환경파일·로컬 데이터·`work/` 자료를 보존했으며 미완료 기능 구현은 없다. 다음 기능은 새 사용자 요청에 따라 진행한다.
 
-현재 구현은 일반 아이디 인증, 공동 냉장고·24시간 초대, 구매 묶음별 재료·기한·남은 양, private Realtime 목록 갱신, 영수증 확인 후 AI 분석·명시적 저장, 라이트/다크/시스템 화면과 자체 SVG 108종, 식약처·AI 비동기 추천, 본인 추천 내역·완료 알림이다. 출처·AI 표시는 사용자 목록·상세에서 숨긴다.
+현재 구현은 일반 아이디 인증, 공동 냉장고·24시간 초대, 구매 묶음별 재료·기한·남은 양, private Realtime 목록 갱신, 영수증 확인 후 AI 분석·명시적 저장, 라이트/다크/시스템 화면과 자체 SVG 108종, 비동기 AI 추천, 본인 추천 내역·완료 알림이다. 이전에 저장한 식약처 결과도 추천 내역에서 볼 수 있다. 출처·AI 표시는 사용자 목록·상세에서 숨긴다.
 
 상단 주 메뉴에서 식재료·요리 추천·추천 내역을 연다. 계정 메뉴는 마이페이지·냉장고 관리·로그아웃을 제공한다. 식재료 화면 상단에 냉장고 요약과 직접 등록·영수증 등록 버튼이 있다. 목록의 기한 지남과 임박 구역은 기본으로 펼치고, 더 보기로 구역마다 5개씩 추가한다. 서비스 워커는 개발 CSS의 캐시 재검증 지시를 따르고 운영 immutable 파일과 공개 파일의 오프라인 사용을 유지한다.
 
@@ -26,7 +26,7 @@
 
 ### 환경파일의 경계
 
-`.env.example`이 변수 이름의 기준이다. 최소 웹/DB 연결은 `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, 서버용 `SUPABASE_SERVICE_ROLE_KEY`다. AI 분석·추천에는 `OPENAI_API_KEY`, 카탈로그에는 `FOODSAFETY_API_KEY`, 푸시에는 VAPID 공개/개인 키와 실제 `VAPID_SUBJECT`를 사용한다. `SUPABASE_SERVER_URL`은 선택적 서버 내부 주소이고 `WORKER_SECRET`은 예약 HTTP 호출 인증용이다. 비밀은 `NEXT_PUBLIC_`에 넣지 않는다.
+`.env.example`이 변수 이름의 기준이다. 최소 웹/DB 연결은 `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, 서버용 `SUPABASE_SERVICE_ROLE_KEY`다. AI 분석·추천에는 `OPENAI_API_KEY`, 푸시에는 VAPID 공개/개인 키와 실제 `VAPID_SUBJECT`를 사용한다. `SUPABASE_SERVER_URL`은 선택적 서버 내부 주소이고 `WORKER_SECRET`은 예약 HTTP 호출 인증용이다. 비밀은 `NEXT_PUBLIC_`에 넣지 않는다.
 
 `.env.test.local`에는 `.env.example` 중 사이트·Supabase URL·공개 키·service role·서버 URL을 로컬 값으로 지정한다. 통합 검사는 원격 URL을 거부한다. `scripts/ci-test-env.mjs`의 실행 진입점은 CI 전용이므로 B 설정용으로 GitHub 환경을 흉내 내지 않는다. 기본 회귀 검사는 실제 OpenAI 호출을 하지 않는다.
 

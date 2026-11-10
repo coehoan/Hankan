@@ -31,7 +31,6 @@ Vercel 함수의4.5MB 요청 한도를 피하기 위해 브라우저는10MB 이�
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | 웹/브라우저 인증 | 프로젝트의 공개 키. service role과 교체하지 않음 |
 | `SUPABASE_SERVICE_ROLE_KEY` | 서버 사진 처리·worker·로컬 테스트 | 브라우저 노출 금지. 운영 비밀 저장소에서 주입 |
 | `SUPABASE_SERVER_URL` | 서버/컨테이너 연결만 | 컨테이너에서 공개 URL로 연결할 수 없을 때 사용. 원격 배포는 원격 API를 명시 |
-| `FOODSAFETY_API_KEY` | 서버·worker COOKRCP01 카탈로그 | 서버 전용. Next Data Cache 또는 독립 worker 메모리 캐시 24시간 |
 | `WORKER_SECRET` | Vercel worker HTTP / Supabase Vault | 32자 이상. 양쪽 같은 값, 인증 헤더·값 출력 금지 |
 | `OPENAI_API_KEY` | 웹 서버 영수증·추천 worker | 서버 전용. 실제 사용자 파일·전체 요청/응답을 로그로 남기지 않음 |
 | 모델/추론 설정 | `src/features/ai/registry.ts`, `selected-provider.ts` | 평가한 `gpt-6-luna`/`high`로 서버 코드에 고정. 현재 `OPENAI_MODEL` 환경변수는 지원하지 않음 |

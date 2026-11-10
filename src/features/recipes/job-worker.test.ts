@@ -11,16 +11,16 @@ const job = {
   catalog_state: 'pending',
   ai_state: 'pending',
 } as unknown as Tables<'recipe_jobs'>;
-it('publishes first source without waiting for the other and retains independent failures', async () => {
+it('closes the unused catalog slot without loading it and waits for AI', async () => {
   let finish!: (value: RecipeCandidate[]) => void;
   const pending = new Promise<RecipeCandidate[]>((resolve) => {
     finish = resolve;
   });
   const publish = vi.fn(async () => {});
-  const load = vi.fn((source: string) => (source === 'catalog' ? Promise.resolve([]) : pending));
+  const load = vi.fn(() => pending);
   const run = runRecipeJob(job, publish, load);
-  await vi.waitFor(() => expect(publish).toHaveBeenCalledWith('catalog', [], true));
-  expect(load).toHaveBeenCalledTimes(2);
+  await vi.waitFor(() => expect(publish).toHaveBeenCalledWith('catalog', [], false));
+  expect(load).toHaveBeenCalledExactlyOnceWith({ today: job.today, ingredients: [] });
   expect(publish).toHaveBeenCalledTimes(1);
   finish([]);
   await run;
@@ -30,23 +30,26 @@ it('resumes only unfinished sources and does not turn publication failure into p
   const publish = vi.fn(async () => {
     throw new Error('storage down');
   });
-  const load = vi.fn(async (source: string) => {
-    expect(source).toBe('ai');
-    return [];
-  });
+  const load = vi.fn(async () => []);
   await expect(runRecipeJob({ ...job, catalog_state: 'complete' }, publish, load)).rejects.toThrow(
     'deferred',
   );
   expect(load).toHaveBeenCalledTimes(1);
-  expect(load.mock.calls[0]?.[0]).toBe('ai');
   expect(publish).toHaveBeenCalledTimes(1);
 });
-it('records safe provider failure without discarding the other source', async () => {
+it('records AI failure and closes the unused catalog slot', async () => {
   const publish = vi.fn(async () => {});
-  await runRecipeJob(job, publish, async (source) => {
-    if (source === 'ai') throw new Error('secret');
-    return [];
+  await runRecipeJob(job, publish, async () => {
+    throw new Error('secret');
   });
-  expect(publish).toHaveBeenCalledWith('catalog', [], true);
+  expect(publish).toHaveBeenCalledWith('catalog', [], false);
   expect(publish).toHaveBeenCalledWith('ai', [], false);
+});
+
+it('closes an old pending catalog slot without rerunning completed AI', async () => {
+  const publish = vi.fn(async () => {});
+  const load = vi.fn(async () => []);
+  await runRecipeJob({ ...job, ai_state: 'complete' }, publish, load);
+  expect(load).not.toHaveBeenCalled();
+  expect(publish).toHaveBeenCalledExactlyOnceWith('catalog', [], false);
 });

@@ -2,7 +2,6 @@ import 'server-only';
 import { z } from 'zod';
 import { AppError } from '@/lib/errors';
 import type { RecipeCandidate } from '@/features/ai/contracts';
-import { getRegisteredRecipe } from './catalog';
 const text = (max: number) => z.string().trim().min(1).max(max);
 const origin = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('generated') }).strict(),
@@ -54,25 +53,7 @@ export function parseSavedRecipeCandidates(input: unknown): RecipeCandidate[] {
   return parsed.data;
 }
 export async function validateRecipeCandidates(input: unknown): Promise<RecipeCandidate[]> {
-  const parsed = candidates.safeParse(input);
-  if (!parsed.success) throw invalid();
-  const result: RecipeCandidate[] = [];
-  for (const item of parsed.data) {
-    if (item.origin.kind === 'generated') {
-      result.push(item);
-      continue;
-    }
-    const canonical = await getRegisteredRecipe(item.origin.provider, item.origin.recordId);
-    const checked = recipe.safeParse(canonical);
-    if (
-      !checked.success ||
-      checked.data.origin.kind !== 'catalog' ||
-      checked.data.origin.provider !== item.origin.provider ||
-      checked.data.origin.recordId !== item.origin.recordId
-    )
-      throw invalid();
-    result.push(checked.data);
-  }
-  if (new Set(result.map((item) => item.id)).size !== result.length) throw invalid();
-  return result;
+  const output = parseSavedRecipeCandidates(input);
+  if (output.some((item) => item.origin.kind !== 'generated')) throw invalid();
+  return output;
 }

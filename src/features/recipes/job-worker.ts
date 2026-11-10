@@ -4,7 +4,7 @@ import type { Tables, Json } from '@/lib/supabase/database.types';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { usableIngredients } from './domain';
 import { jobIngredients } from './jobs';
-import { loadRecipeSource } from './recommendations';
+import { loadAiRecipes } from './recommendations';
 import { processRecipeNotifications } from './job-notifications';
 
 type Source = 'catalog' | 'ai';
@@ -12,21 +12,22 @@ type Publish = (source: Source, recipes: RecipeCandidate[], succeeded: boolean) 
 export async function runRecipeJob(
   job: Tables<'recipe_jobs'>,
   publish: Publish,
-  load: (
-    source: Source,
-    input: RecommendationInput,
-  ) => Promise<RecipeCandidate[]> = loadRecipeSource,
+  load: (input: RecommendationInput) => Promise<RecipeCandidate[]> = loadAiRecipes,
 ): Promise<void> {
-  const input = {
-    today: job.today,
-    ingredients: usableIngredients(jobIngredients(job), job.today),
-  };
   const tasks = (['catalog', 'ai'] as const)
     .filter((source) => job[`${source}_state`] === 'pending')
     .map(async (source) => {
+      // The existing job RPC finalizes only after both slots are closed.
+      if (source === 'catalog') {
+        await publish(source, [], false);
+        return;
+      }
       let recipes: RecipeCandidate[];
       try {
-        recipes = await load(source, structuredClone(input));
+        recipes = await load({
+          today: job.today,
+          ingredients: usableIngredients(jobIngredients(job), job.today),
+        });
       } catch {
         await publish(source, [], false);
         return;

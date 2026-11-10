@@ -5,7 +5,7 @@ import { AppError } from '@/lib/errors';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { listIngredients } from '@/features/inventory/service';
 import { parseId } from '@/features/inventory/domain';
-import { getMixedRecipeCandidates } from './recommendations';
+import { loadAiRecipes } from './recommendations';
 import type { RecipeMatch } from './domain';
 import { classifyRecipes, inventoryVersion, usableIngredients } from './domain';
 async function todayForUser(userId: string) {
@@ -34,15 +34,9 @@ export async function recommendForFridgeSnapshot(
     version = inventoryVersion(items),
     usable = usableIngredients(items, today);
   if (!usable.length) return { matches: [], inventoryVersion: version, today };
-  let timer: ReturnType<typeof setTimeout> | undefined;
   let matches: RecipeMatch[];
   try {
-    const output = await Promise.race([
-      getMixedRecipeCandidates({ today, ingredients: usable.map((item) => ({ ...item })) }),
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error('Recommendation timed out')), 60_000);
-      }),
-    ]);
+    const output = await loadAiRecipes({ today, ingredients: usable });
     matches = classifyRecipes(output, items, today);
   } catch (error) {
     if (error instanceof AppError && error.code === 'provider_unconfigured')
@@ -54,8 +48,6 @@ export async function recommendForFridgeSnapshot(
       'provider_failed',
       '요리 추천을 불러오지 못했어요. 재료는 그대로예요. 잠시 후 다시 시도해 주세요.',
     );
-  } finally {
-    if (timer) clearTimeout(timer);
   }
   const freshAccess = await requireFridgeAccess(current.fridgeId),
     latest = await listIngredients(freshAccess),

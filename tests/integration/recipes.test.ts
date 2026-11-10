@@ -5,6 +5,8 @@ import type { Database } from '../../src/lib/supabase/database.types';
 import { cleanupTestGroup, localAdmin, seedTestGroup, type GroupFixture } from '../support/db';
 import { recommendForFridge } from '../../src/features/recipes/service';
 import { POST } from '../../src/app/api/fridges/[fridgeId]/recipes/route';
+import { processRecipeJobs } from '../../src/features/recipes/job-worker';
+import { getRecipeJob } from '../../src/features/recipes/jobs';
 let activeClient: SupabaseClient<Database>, group: GroupFixture;
 let output: unknown;
 let providerAction: (() => Promise<void>) | null = null;
@@ -15,19 +17,12 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 vi.mock('@/features/ai/registry', () => ({
   getAiProvider: () => ({
-    recommendRecipes: async () => {
-      throw new Error('AI unavailable in catalog regression fixture');
+    recommendRecipes: async (input: unknown) => {
+      received = input;
+      if (providerAction) await providerAction();
+      return output;
     },
   }),
-}));
-vi.mock('@/features/recipes/catalog', () => ({
-  getRecipeCandidates: async (input: unknown) => {
-    received = input;
-    if (providerAction) await providerAction();
-    return output;
-  },
-  getRegisteredRecipe: async (provider: string, recordId: string) =>
-    provider === '식품의약품안전처 조리식품 레시피 DB' && recordId === '28' ? candidate : null,
 }));
 const candidate = {
   id: 'egg',
@@ -40,7 +35,7 @@ const candidate = {
   prepMinutes: null,
   servings: null,
   ingredientsText: '달걀 2개, 소금 조금',
-  origin: { kind: 'catalog', provider: '식품의약품안전처 조리식품 레시피 DB', recordId: '28' },
+  origin: { kind: 'generated' },
 };
 beforeAll(async () => {
   group = await seedTestGroup();
@@ -100,7 +95,7 @@ it('recipe_request_does_not_change_remaining', async () => {
     ingredients: [expect.objectContaining({ fridgeId: group.fridgeId })],
   });
 });
-it('rejects_unverified_catalog_sources', async () => {
+it('rejects_catalog_origin_claimed_by_the_ai_provider', async () => {
   output = [
     {
       ...candidate,
@@ -159,9 +154,24 @@ it('route_checks_origin_and_returns_private_results', async () => {
   const response = await POST(request(origin), { params });
   expect(response.status).toBe(202);
   expect(response.headers.get('Cache-Control')).toBe('private, no-store');
-  expect(await response.json()).toMatchObject({
+  const body = await response.json();
+  expect(body).toMatchObject({
     data: { status: 'queued', matches: [], ingredients: expect.any(Array) },
   });
+  await processRecipeJobs(body.data.id);
+  expect(await getRecipeJob(body.data.id)).toMatchObject({
+    status: 'complete',
+    matches: [{ recipe: candidate, missing: ['소금'] }],
+  });
+
+  providerAction = async () => {
+    throw new Error('AI unavailable');
+  };
+  const failure = await POST(request(origin), { params });
+  expect(failure.status).toBe(202);
+  const { data } = await failure.json();
+  await processRecipeJobs(data.id);
+  expect(await getRecipeJob(data.id)).toMatchObject({ status: 'failed', matches: [] });
 });
 it('provider_sees_only_usable_batches_from_the_selected_fridge', async () => {
   const own = await localAdmin()

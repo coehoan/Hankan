@@ -86,7 +86,7 @@ export function RecipeResults({
         )}
       </header>
       <p className="recipe-quantity-note">
-        보유한 재료 종류를 기준으로 찾아요. 필요한 양은 따로 확인해 주세요.
+        물은 기본으로 있어요. 나머지는 보유한 재료 종류를 기준으로 찾으니 필요한 양을 확인해 주세요.
       </p>
       <div className="recipe-history-links">
         <Link href="/recipes/history">추천 내역</Link>

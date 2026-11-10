@@ -72,8 +72,21 @@ it('salt_is_missing_unless_registered', () => {
       .missing,
   ).toEqual(['소금', '식용유']);
 });
+it('treats unregistered water as available while retaining its recipe amount', () => {
+  const candidate = recipe('계란찜', ['계란', ' 물① ']);
+  expect(classifyRecipes([candidate], [item('egg', '계란')], today)).toEqual([
+    { recipe: candidate, missing: [], urgentIngredientIds: [], kind: 'available' },
+  ]);
+});
+it('counts water even without usable stock without recommending unrelated dishes', () => {
+  const waterOnly = recipe('끓인 물', ['물']);
+  const unrelated = recipe('두부국', ['물', '두부']);
+  expect(classifyRecipes([waterOnly, unrelated], [item('water', '물', today, 0)], today)).toEqual([
+    { recipe: waterOnly, missing: [], urgentIngredientIds: [], kind: 'available' },
+  ]);
+});
 it('recalculates_missing_even_if_a_candidate_claims_everything_is_available', () => {
-  const candidate = { ...recipe('계란찜', ['계란', '소금']), missing: [], kind: 'available' };
+  const candidate = { ...recipe('계란찜', ['계란', '물', '소금']), missing: [], kind: 'available' };
   expect(classifyRecipes([candidate], [item('egg', '계란')], today)[0]).toMatchObject({
     kind: 'needs-shopping',
     missing: ['소금'],

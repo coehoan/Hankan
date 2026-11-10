@@ -146,6 +146,19 @@ it('recipe_input_sends_food_data_without_account_or_fridge_identifiers', async (
   expect(sent).toContain('60');
   expect(sent).not.toContain('secret-');
 });
+it('recipe_request_instructs_the_model_to_choose_by_inventory_and_explain_cooking', async () => {
+  let instructions = '';
+  vi.stubGlobal('fetch', async (_url: unknown, options: RequestInit) => {
+    ({ instructions } = JSON.parse(String(options.body)));
+    return apiResponse({ recipes: [recipe] });
+  });
+
+  await provider().recommendRecipes(input);
+
+  expect(instructions).toMatch(/특정 요리권을\s+우선하거나 요리권별 개수를\s+맞추지 않는다/);
+  expect(instructions).toMatch(/부족한 필수 재료가\s+최대 두 종류일 때/);
+  expect(instructions).toMatch(/불 세기, 대략적인 시간,\s+다음 단계로 넘어갈 때 확인할 상태/);
+});
 it.each(['incomplete', 'failed'])(
   'rejects_%s_response_instead_of_saving_partial_items',
   async (status) => {

@@ -1,6 +1,9 @@
 import type { Ingredient, ISODate } from '@/features/inventory/contracts';
 import type { RecipeCandidate } from '@/features/ai/contracts';
 import { urgencyOf, validateISODate } from '@/features/inventory/domain';
+
+const BASIC_WATER = '물';
+
 export type RecipeMatch = {
   recipe: RecipeCandidate;
   missing: string[];
@@ -44,7 +47,7 @@ export function classifyRecipes(
   const held = new Map<string, Ingredient>();
   for (const item of batches) {
     const name = normalizeIngredientName(item.name);
-    if (!held.has(name)) held.set(name, item);
+    if (name !== BASIC_WATER && !held.has(name)) held.set(name, item);
   }
   const ranked = candidates.flatMap((recipe) => {
     const required = new Map<string, string>();
@@ -55,8 +58,11 @@ export function classifyRecipes(
     const matched = [...required.keys()].flatMap((name) =>
       held.has(name) ? [held.get(name)!] : [],
     );
-    if (!matched.length) return [];
-    const missing = [...required].filter(([name]) => !held.has(name)).map(([, display]) => display);
+    const onlyWater = required.size === 1 && required.has(BASIC_WATER);
+    if (!matched.length && !onlyWater) return [];
+    const missing = [...required]
+      .filter(([name]) => name !== BASIC_WATER && !held.has(name))
+      .map(([, display]) => display);
     const urgent = matched
       .filter((item) => urgencyOf(item.expiresOn, today) === 'soon')
       .sort((a, b) => a.expiresOn.localeCompare(b.expiresOn) || a.id.localeCompare(b.id));

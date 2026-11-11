@@ -54,3 +54,13 @@ A에서는 같은 Hallmark HTML이 열리지만 B의 Codex 원격 연결에서�
 ## 다음 배포
 
 사용자의 새 명시적 요청이 있어야 push·배포·클라우드 변경을 진행한다. `dev` push는 문서 변경만 있어도 [통합 배포](deployment-pipeline.md)를 실행한다. 별도 직접 배포로 우회하거나 workflow를 끄지 않는다. 커밋 요청만으로 push 승인까지 확대하지 않는다.
+
+## 2026-11-11 선택 재료 추천 작업
+
+선택 재료 중심 추천을 구현했다. 설계는 `docs/superpowers/specs/2026-11-11-selected-ingredients-design.md`, 진행·검증 기록은 `docs/superpowers/plans/2026-11-11-selected-ingredients.md`와 `docs/async-recipes.md`를 따른다. 후속 세션에서 Docker·로컬 DB·Git 쓰기 권한을 확인하고 기존 DB를 초기화하지 않은 채 `20261111083903_selected_recipe_ingredients.sql`을 적용했다. CLI로 재생성한 DB 타입은 수동 추가 내용과 일치했다.
+
+로컬 검증: 단위·컴포넌트 479개, DB pgTAP 125개, 통합 135개 통과와 선택적 실 API 2개 스킵, 배포 보호 59개 통과. 타입·전체 포맷·제품 빌드(Node 24.15.0)·worker 빌드·DB 보안 검사 통과. 린트 오류 0, 기존 경고 3개. 첫 단위 실행의 시간 초과 3건은 동시 빌드 부하를 줄인 전체 재실행에서 통과했다. 통합 테스트의 확인 없는 직접 재고 변경은 정상 수정 RPC와 결과 검증으로 바꿨다.
+
+실제 React 컴포넌트와 현재 CSS를 합성 재고·가짜 API 응답으로 브라우저에서 실행해 라이트/다크, 320·390·844·1440px, 터치 영역, 검색·선택 복원·선택 POST·진행 중 잠금·완료 조건·빈 결과·키보드를 확인했다. 실제 로그인·AI 호출·실기기 푸시는 이 검사에 포함하지 않는다. 로그·캡처는 `work/release-20261111/`와 `work/selected-feature-browser/`에 보존하며 커밋하지 않는다.
+
+사용자가 기능·테스트와 문서를 나눈 커밋, dev push 및 기존 GitHub Actions를 통한 운영 migration·배포를 승인했다. 이 문서 커밋의 Actions 성공, 운영 migration 이력, Vercel READY와 실행 커밋을 확인해야 최종 운영 반영 완료다. `next-env.d.ts`의 개발용 자동 생성 변경과 환경파일·기존 데이터·work 산출물은 제외하고 보존한다.

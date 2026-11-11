@@ -491,6 +491,7 @@ export type Database = {
           notify_token: string | null;
           notify_until: string | null;
           request_id: string;
+          selected_ingredient_ids: string[] | null;
           snapshot: NonNullable<Json>;
           status: string;
           today: string;
@@ -517,6 +518,7 @@ export type Database = {
           notify_token?: string | null;
           notify_until?: string | null;
           request_id: string;
+          selected_ingredient_ids?: string[] | null;
           snapshot: NonNullable<Json>;
           status?: string;
           today: string;
@@ -542,6 +544,7 @@ export type Database = {
           notify_token?: string | null;
           notify_until?: string | null;
           request_id?: string;
+          selected_ingredient_ids?: string[] | null;
           snapshot?: NonNullable<Json>;
           status?: string;
           today?: string;
@@ -612,6 +615,7 @@ export type Database = {
           notify_token: string | null;
           notify_until: string | null;
           request_id: string;
+          selected_ingredient_ids: string[] | null;
           snapshot: NonNullable<Json>;
           status: string;
           today: string;
@@ -646,6 +650,7 @@ export type Database = {
           notify_token: string | null;
           notify_until: string | null;
           request_id: string;
+          selected_ingredient_ids: string[] | null;
           snapshot: NonNullable<Json>;
           status: string;
           today: string;
@@ -757,7 +762,7 @@ export type Database = {
       };
       delete_push_subscription: { Args: { subscription_id: string }; Returns: undefined };
       enqueue_recipe_job: {
-        Args: { request_id: string; target_fridge_id: string };
+        Args: { request_id: string; selected_ingredient_ids?: string[]; target_fridge_id: string };
         Returns: {
           ai_recipes: NonNullable<Json>;
           ai_state: string;
@@ -777,6 +782,7 @@ export type Database = {
           notify_token: string | null;
           notify_until: string | null;
           request_id: string;
+          selected_ingredient_ids: string[] | null;
           snapshot: NonNullable<Json>;
           status: string;
           today: string;

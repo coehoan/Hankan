@@ -15,6 +15,7 @@ type Scope = {
   sequence: number;
   controller: AbortController | null;
   requestId: string | null;
+  selectedIngredientIds?: string[];
   refresh: () => Promise<void>;
   accept: (job: RecipeJob | null) => void;
 };
@@ -84,7 +85,10 @@ export function useRecipeJob(
               ? {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ requestId: unresolvedRequestId }),
+                  body: JSON.stringify({
+                    requestId: unresolvedRequestId,
+                    selectedIngredientIds: scope.selectedIngredientIds,
+                  }),
                 }
               : {}),
           },
@@ -149,7 +153,7 @@ export function useRecipeJob(
     };
   }, [key, fridgeId, revoked, savedJobId]);
   const current = state.key === key && !revoked ? state : empty(key);
-  async function start() {
+  async function start(selectedIngredientIds?: string[]) {
     const scope = scopeRef.current;
     if (
       !scope?.active ||
@@ -160,7 +164,11 @@ export function useRecipeJob(
       savedJobId
     )
       return;
-    scope.requestId ??= crypto.randomUUID();
+    if (!scope.requestId) {
+      scope.requestId = crypto.randomUUID();
+      scope.selectedIngredientIds =
+        selectedIngredientIds === undefined ? undefined : [...selectedIngredientIds];
+    }
     scope.busy = true;
     const sequence = ++scope.sequence,
       controller = new AbortController();
@@ -175,7 +183,10 @@ export function useRecipeJob(
       const response = await fetch('/api/fridges/' + encodeURIComponent(fridgeId) + '/recipes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requestId: scope.requestId }),
+        body: JSON.stringify({
+          requestId: scope.requestId,
+          selectedIngredientIds: scope.selectedIngredientIds,
+        }),
         cache: 'no-store',
         signal: controller.signal,
       });
@@ -215,5 +226,10 @@ export function useRecipeJob(
     }
   }
   // Polling uses the server state, including a job accepted while the POST response was lost.
-  return { ...current, start, refresh: () => scopeRef.current?.refresh() };
+  return {
+    ...current,
+    start,
+    resolving: scopeRef.current?.key === key && !!scopeRef.current.requestId,
+    refresh: () => scopeRef.current?.refresh(),
+  };
 }

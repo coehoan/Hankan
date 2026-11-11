@@ -65,6 +65,7 @@ const recipeInstructions = `너는 한칸의 한국어 가정 요리 추천 도�
 - 남은 비율은 무게나 개수로 환산할 수 없다. 실제 보유량이 레시피에 필요한 양을 충족한다고 단정하지 않는다.
 
 [후보 선택]
+- priorityIngredients가 주어지면 각 요리는 그 목록의 재료를 최소 하나 이상 실제로 활용해야 한다. 전체 ingredients의 다른 보유 재료와 양념도 함께 사용한다. 선택한 재료를 모두 한 요리에 넣거나 각 재료마다 요리를 하나씩 만들 필요는 없다. 선택 재료를 핵심 또는 의미 있는 구성 재료로 쓰고 이름만 언급하거나 장식으로 곁들여 조건을 채우지 않는다. 선택 조건에 맞는 요리가 없으면 recipes=[]를 반환한다.
 - 한식·중식·일식·양식 등 여러 요리권에서 보유한 핵심 재료로 만들 수 있는 기존 요리를 고른다. 특정 요리권을 우선하거나 요리권별 개수를 맞추지 않는다.
 - 보유 재료 중 적어도 하나가 요리의 핵심 재료여야 한다. 소금이나 식용유처럼 맛이나 조리를 보조하는 재료만 겹치면 제외한다.
 - 보유 재료와 물로 만들 수 있는 요리를 우선한다. 그중 오늘부터 3일 이내에 기한이 오는 재료를 실제로 쓰는 메뉴를 먼저 고른다.
@@ -160,6 +161,17 @@ export function createSelectedProvider(config: {
     async recommendRecipes(input) {
       const data = {
         today: input.today,
+        ...(input.selectedIngredientIds === undefined
+          ? {}
+          : {
+              priorityIngredients: [
+                ...new Set(
+                  input.ingredients
+                    .filter((item) => input.selectedIngredientIds!.includes(item.id))
+                    .map((item) => item.name),
+                ),
+              ],
+            }),
         ingredients: input.ingredients.map((item) => ({
           name: item.name,
           remainingPercent: item.remainingPercent,

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { recipeJobPending, type RecipeJob } from './job-contracts';
+import { recipeCondition } from './recipe-condition';
 export function RecipeHistory({
   timeZone,
   onAccessLost,
@@ -164,6 +165,7 @@ export function RecipeHistory({
                   (recipeJobPending(job) ? '요리를 찾고 있어요' : '저장된 요리 추천')}
                 {job.matches.length > 1 && ' 외 ' + (job.matches.length - 1) + '개'}
               </h2>
+              <p>{recipeCondition(job)}</p>
               <p>
                 {recipeJobPending(job)
                   ? job.matches.length

@@ -14,12 +14,24 @@ export async function POST(
   try {
     assertSameOrigin(request);
     const input = z
-      .object({ requestId: z.string().uuid() })
+      .object({
+        requestId: z.string().uuid(),
+        selectedIngredientIds: z
+          .array(z.string().uuid())
+          .min(1)
+          .max(1000)
+          .refine((ids) => new Set(ids).size === ids.length)
+          .optional(),
+      })
       .strict()
-      .safeParse(await readInventoryJson(request));
+      .safeParse(await readInventoryJson(request, 65_536));
     if (!input.success) throw new AppError('validation', '추천 요청을 확인해 주세요.');
     const access = await requireFridgeAccess(parseId((await params).fridgeId));
-    const result = await enqueueRecipeJob(access, input.data.requestId);
+    const result = await enqueueRecipeJob(
+      access,
+      input.data.requestId,
+      input.data.selectedIngredientIds,
+    );
     if (result.status === 'queued' || result.status === 'running')
       after(async () => {
         try {

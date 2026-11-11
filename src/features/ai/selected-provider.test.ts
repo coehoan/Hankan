@@ -146,6 +146,20 @@ it('recipe_input_sends_food_data_without_account_or_fridge_identifiers', async (
   expect(sent).toContain('60');
   expect(sent).not.toContain('secret-');
 });
+
+it('sends selected ingredient names alongside full inventory without identifiers', async () => {
+  let sent: { input: { content: { text: string }[] }[]; instructions: string } | undefined;
+  vi.stubGlobal('fetch', async (_url: unknown, options: RequestInit) => {
+    sent = JSON.parse(String(options.body));
+    return apiResponse({ recipes: [recipe] });
+  });
+  await provider().recommendRecipes({ ...input, selectedIngredientIds: ['secret-ingredient-id'] });
+  const data = JSON.parse(sent!.input[0].content[0].text);
+  expect(data.priorityIngredients).toEqual(['두부']);
+  expect(data.ingredients).toHaveLength(1);
+  expect(JSON.stringify(sent)).not.toContain('secret-');
+  expect(sent!.instructions).toContain('priorityIngredients');
+});
 it('recipe_request_instructs_the_model_to_choose_by_inventory_and_explain_cooking', async () => {
   let instructions = '';
   vi.stubGlobal('fetch', async (_url: unknown, options: RequestInit) => {

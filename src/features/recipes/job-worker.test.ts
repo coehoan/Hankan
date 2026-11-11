@@ -53,3 +53,34 @@ it('closes an old pending catalog slot without rerunning completed AI', async ()
   expect(load).not.toHaveBeenCalled();
   expect(publish).toHaveBeenCalledExactlyOnceWith('catalog', [], false);
 });
+
+it('passes selected IDs and filters unrelated AI results before publication', async () => {
+  const row = (id: string, name: string) => ({
+    id,
+    name,
+    normalized_name: name,
+    storage: 'fridge',
+    created_at: '2026-11-06',
+    expires_on: '2099-01-01',
+    remaining_percent: 100,
+  });
+  const snapshot = [row('tofu', '두부'), row('egg', '계란'), row('salt', '소금')];
+  const candidate = (name: string): RecipeCandidate => ({
+    id: name,
+    name,
+    ingredients: [{ name, amountText: '1개' }],
+    steps: ['익힌다'],
+    prepMinutes: 10,
+    servings: 1,
+    origin: { kind: 'generated' },
+  });
+  const load = vi.fn(async (_input: import('@/features/ai/contracts').RecommendationInput) => {
+    void _input;
+    return [candidate('두부'), candidate('계란')];
+  });
+  const publish = vi.fn(async () => {});
+  await runRecipeJob({ ...job, snapshot, selected_ingredient_ids: ['tofu'] }, publish, load);
+  expect(load.mock.calls[0][0]).toMatchObject({ selectedIngredientIds: ['tofu'] });
+  expect(load.mock.calls[0][0].ingredients).toHaveLength(3);
+  expect(publish).toHaveBeenCalledWith('ai', [candidate('두부')], true);
+});

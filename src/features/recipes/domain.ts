@@ -37,6 +37,7 @@ export function classifyRecipes(
   candidates: RecipeCandidate[],
   ingredients: Ingredient[],
   today: ISODate,
+  selectedIngredientIds?: string[],
 ): RecipeMatch[] {
   const batches = [...usableIngredients(ingredients, today)].sort(
     (a, b) =>
@@ -49,12 +50,21 @@ export function classifyRecipes(
     const name = normalizeIngredientName(item.name);
     if (name !== BASIC_WATER && !held.has(name)) held.set(name, item);
   }
+  const selectedNames =
+    selectedIngredientIds === undefined
+      ? null
+      : new Set(
+          batches
+            .filter((item) => selectedIngredientIds.includes(item.id))
+            .map((item) => normalizeIngredientName(item.name)),
+        );
   const ranked = candidates.flatMap((recipe) => {
     const required = new Map<string, string>();
     for (const item of recipe.ingredients) {
       const name = normalizeIngredientName(item.name);
       if (!required.has(name)) required.set(name, item.name);
     }
+    if (selectedNames && ![...required.keys()].some((name) => selectedNames.has(name))) return [];
     const matched = [...required.keys()].flatMap((name) =>
       held.has(name) ? [held.get(name)!] : [],
     );

@@ -7,6 +7,7 @@ export type RecipeJob = {
   status: RecipeJobStatus;
   matches: RecipeMatch[];
   ingredients: Ingredient[];
+  selectedIngredientIds?: string[];
   inventoryVersion: string;
   today: string;
   createdAt: string;

@@ -104,6 +104,52 @@ afterEach(() => {
 });
 const show = () =>
   render(<RecipeList fridgeId={A} fridgeName="우리집" initialToday="2026-10-28" />);
+
+it('selects ingredient types, preserves hidden selections and posts IDs from duplicate batches', async () => {
+  rows = [item, { ...item, id: 'egg-2', name: '계란' }, { ...item, id: 'tofu', name: '두부' }];
+  show();
+  await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
+  await user.click(screen.getByRole('radio', { name: '재료 골라서' }));
+  const submit = screen.getByRole('button', { name: '선택한 재료로 추천받기' });
+  expect(submit).toBeDisabled();
+  expect(screen.getAllByRole('button', { name: /선택$/ })).toHaveLength(2);
+  await user.click(screen.getByRole('button', { name: '계란 선택' }));
+  await user.type(screen.getByRole('searchbox', { name: '재료 검색' }), '두부');
+  expect(screen.queryByRole('button', { name: '계란 선택' })).toBeNull();
+  await user.click(submit);
+  const post = vi.mocked(fetch).mock.calls.find(([, init]) => init?.method === 'POST');
+  expect(JSON.parse(String(post![1]!.body)).selectedIngredientIds).toEqual(['egg', 'egg-2']);
+});
+
+it('keeps selected conditions unchanged when recovering a lost POST response', async () => {
+  const requests: Record<string, unknown>[] = [];
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === 'POST') {
+        requests.push(JSON.parse(String(init.body)));
+        if (requests.length === 1) throw new TypeError('lost');
+        return Response.json(
+          { data: { ...savedJob([], 'queued'), selectedIngredientIds: ['egg'] } },
+          { status: 202 },
+        );
+      }
+      return response(String(url).includes('/api/recipe-jobs') ? [] : rows);
+    }),
+  );
+  show();
+  await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
+  await user.click(screen.getByRole('radio', { name: '재료 골라서' }));
+  await user.click(screen.getByRole('button', { name: '달걀 선택' }));
+  await user.click(screen.getByRole('button', { name: '선택한 재료로 추천받기' }));
+  await screen.findByRole('alert');
+  expect(screen.getByRole('radio', { name: '전체 재료' })).toBeDisabled();
+  await act(async () => window.dispatchEvent(new Event('focus')));
+  await screen.findByRole('button', { name: '추천 중…' });
+  expect(requests).toHaveLength(2);
+  expect(requests[1]).toEqual(requests[0]);
+  expect(requests[1].selectedIngredientIds).toEqual(['egg']);
+});
 it('keeps recommendations disabled without an extra notice when inventory is empty', async () => {
   rows = [];
   show();
@@ -284,7 +330,9 @@ it('shows_accepted_and_partial_results_then_restores_completed_history_on_remoun
   const view = show();
   await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
   await user.click(screen.getByRole('button', { name: '요리 추천 받기' }));
-  expect(await screen.findByText(/화면을 나가도 추천은 계속돼요/)).toBeVisible();
+  expect(await screen.findByText('지금 있는 재료로 만들 요리를 찾고 있어요.')).toBeVisible();
+  expect(screen.getByText('알림을 켜 두면 추천이 끝났을 때 알려드려요.')).toBeVisible();
+  expect(screen.getByText('마이페이지 → 알림 → 알림 받기')).toBeVisible();
   expect(screen.getByRole('button', { name: '추천 중…' })).toBeDisabled();
   job = savedJob([match], 'running');
   await act(async () => window.dispatchEvent(new Event('focus')));

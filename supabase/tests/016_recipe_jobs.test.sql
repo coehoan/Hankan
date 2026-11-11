@@ -77,7 +77,7 @@ select
   ok (
     has_function_privilege(
       'authenticated',
-      'public.enqueue_recipe_job(uuid,uuid)',
+      'public.enqueue_recipe_job(uuid,uuid,uuid[])',
       'EXECUTE'
     ),
     'members can request recipes'
@@ -87,7 +87,7 @@ select
   ok (
     not has_function_privilege(
       'anon',
-      'public.enqueue_recipe_job(uuid,uuid)',
+      'public.enqueue_recipe_job(uuid,uuid,uuid[])',
       'EXECUTE'
     ),
     'anonymous cannot enqueue'

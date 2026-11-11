@@ -3,9 +3,9 @@ import { z } from 'zod';
 import { AppError } from '@/lib/errors';
 import { parseIngredientPatch, parseVersion } from './domain';
 
-export async function readInventoryJson(request: Request): Promise<unknown> {
+export async function readInventoryJson(request: Request, maxBytes = 8192): Promise<unknown> {
   const raw = await request.text();
-  if (new TextEncoder().encode(raw).length > 8192)
+  if (new TextEncoder().encode(raw).length > maxBytes)
     throw new AppError('validation', '입력 내용이 너무 길어요.');
   try {
     return JSON.parse(raw);

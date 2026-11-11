@@ -9,6 +9,8 @@ import { recipeMetadata } from './recipe-metadata';
 import { recipeJobPending } from './job-contracts';
 import { useRecipeJob } from './use-recipe-job';
 import { PantryIcon } from '@/components/ui/pantry-icon';
+import { RecipeIngredientPicker } from './recipe-ingredient-picker';
+import { recipeCondition } from './recipe-condition';
 type Props = {
   fridgeId: string;
   ingredients: Ingredient[];
@@ -72,7 +74,7 @@ export function RecipeResults({
             {savedJobId ? '추천 결과' : compact ? '남은 재료로 한 끼' : '내 재료로 요리 찾기'}
           </h2>
         </div>
-        {!savedJobId && (
+        {!savedJobId && compact && (
           <Button disabled={disabled} onClick={() => void state.start()}>
             {state.submitting
               ? '요청 접수 중…'
@@ -85,6 +87,27 @@ export function RecipeResults({
           </Button>
         )}
       </header>
+      {!savedJobId && !compact && (
+        <RecipeIngredientPicker
+          key={fridgeId}
+          ingredients={ingredients}
+          today={today}
+          disabled={disabled}
+          loading={loading}
+          resolving={state.resolving}
+          actionLabel={
+            state.submitting
+              ? '요청 접수 중…'
+              : working
+                ? '추천 중…'
+                : job || state.error
+                  ? '다시 추천 받기'
+                  : '요리 추천 받기'
+          }
+          onSubmit={(ids) => void state.start(ids)}
+        />
+      )}
+      {job && <p className="recipe-request-condition">{recipeCondition(job)}</p>}
       <p className="recipe-quantity-note">
         물은 기본으로 있어요. 나머지는 보유한 재료 종류를 기준으로 찾으니 필요한 양을 확인해 주세요.
       </p>
@@ -123,10 +146,12 @@ export function RecipeResults({
           <strong>
             {matches.length
               ? '먼저 준비된 요리부터 확인해 보세요'
-              : '현재 재료로 만들 요리를 찾고 있어요'}
+              : '지금 있는 재료로 만들 요리를 찾고 있어요.'}
           </strong>
-          <p>화면을 나가도 추천은 계속돼요. 완료한 요리는 추천 내역에 저장해요.</p>
-          <p>알림 받기가 켜져 있고 이 기기에 연결돼 있으면 완료 알림도 보내요.</p>
+          <p>알림을 켜 두면 추천이 끝났을 때 알려드려요.</p>
+          <p>
+            <strong>마이페이지 → 알림 → 알림 받기</strong>에서 켤 수 있어요.
+          </p>
           <progress aria-label="요리 추천 진행 중" />
         </div>
       )}
@@ -149,8 +174,16 @@ export function RecipeResults({
       )}
       {job?.status === 'complete' && matches.length === 0 && (
         <div className="recipe-empty">
-          <h3>겹치는 재료의 요리를 찾지 못했어요</h3>
-          <p>재료를 더 등록하거나 잠시 후 다시 추천받아 보세요.</p>
+          <h3>
+            {job.selectedIngredientIds
+              ? '고른 재료로 추천할 요리를 찾지 못했어요'
+              : '겹치는 재료의 요리를 찾지 못했어요'}
+          </h3>
+          <p>
+            {job.selectedIngredientIds
+              ? '선택한 재료를 바꾸거나 전체 재료로 추천받아 보세요.'
+              : '재료를 더 등록하거나 잠시 후 다시 추천받아 보세요.'}
+          </p>
         </div>
       )}
       {job?.status === 'complete' && matches.length > 0 && (

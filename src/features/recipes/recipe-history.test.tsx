@@ -22,6 +22,22 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+it('shows the saved selection alongside old all-ingredient jobs', async () => {
+  const selected = {
+    ...finished,
+    id: 'selected-job',
+    selectedIngredientIds: ['tofu'],
+    ingredients: [{ id: 'tofu', name: '두부' }],
+  };
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => Response.json({ data: [selected, finished] })),
+  );
+  render(<RecipeHistory timeZone="Asia/Seoul" />);
+  expect(await screen.findByText('선택 재료: 두부')).toBeVisible();
+  expect(screen.getByText('전체 재료로 추천')).toBeVisible();
+});
+
 it('confirms deletion, restores focus and ignores an older list response', async () => {
   let resolveOlder!: (response: Response) => void;
   const older = new Promise<Response>((resolve) => (resolveOlder = resolve));

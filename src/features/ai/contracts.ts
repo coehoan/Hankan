@@ -21,7 +21,11 @@ export type RecipeCandidate = {
     | { kind: 'generated' }
     | { kind: 'catalog'; provider: string; recordId: string; sourceUrl?: string };
 };
-export type RecommendationInput = { today: ISODate; ingredients: Ingredient[] };
+export type RecommendationInput = {
+  today: ISODate;
+  ingredients: Ingredient[];
+  selectedIngredientIds?: string[];
+};
 export interface AiProvider {
   extractReceipt(image: VerifiedImage): Promise<ExtractedItem[]>;
   recommendRecipes(input: RecommendationInput): Promise<RecipeCandidate[]>;

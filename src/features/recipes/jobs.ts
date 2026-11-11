@@ -30,8 +30,14 @@ export function toRecipeJob(row: Tables<'recipe_jobs'>): RecipeJob {
     id: row.id,
     fridgeId: row.fridge_id,
     status: row.status as RecipeJobStatus,
-    matches: classifyRecipes(recipes, ingredients, row.today),
+    matches: classifyRecipes(
+      recipes,
+      ingredients,
+      row.today,
+      row.selected_ingredient_ids ?? undefined,
+    ),
     ingredients,
+    ...(row.selected_ingredient_ids ? { selectedIngredientIds: row.selected_ingredient_ids } : {}),
     inventoryVersion: inventoryVersion(ingredients),
     today: row.today,
     createdAt: row.created_at,
@@ -41,14 +47,28 @@ export function toRecipeJob(row: Tables<'recipe_jobs'>): RecipeJob {
 export async function enqueueRecipeJob(
   access: AccessContext,
   requestId: string,
+  selectedIngredientIds?: string[],
 ): Promise<RecipeJob> {
   const client = await createServerSupabaseClient();
   const { data, error } = await client.rpc('enqueue_recipe_job', {
     target_fridge_id: access.fridgeId,
     request_id: parseId(requestId),
+    ...(selectedIngredientIds === undefined
+      ? {}
+      : { selected_ingredient_ids: selectedIngredientIds.map(parseId) }),
   });
   if (error?.code === 'PT429')
     throw new AppError('conflict', '추천 요청이 많아요. 잠시 후 다시 시도해 주세요.');
+  if (error?.code === 'PT409')
+    throw new AppError(
+      'conflict',
+      '다른 조건의 추천이 진행 중이거나 요청 조건이 바뀌었어요. 상태를 확인해 주세요.',
+    );
+  if (error?.code === '22023' && selectedIngredientIds !== undefined)
+    throw new AppError(
+      'validation',
+      '선택한 재료가 변경됐어요. 재료 목록을 확인하고 다시 골라 주세요.',
+    );
   if (error) checkDatabaseError(error);
   if (!data) throw new AppError('internal', '추천을 접수하지 못했어요. 다시 시도해 주세요.');
   if (data.history_hidden_at) throw recipeJobNotFound();

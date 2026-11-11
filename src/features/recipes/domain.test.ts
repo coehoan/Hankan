@@ -130,3 +130,20 @@ it('keeps_available_and_needs_shopping_in_separate_groups', () => {
   );
   expect(result.map((x) => x.kind)).toEqual(['available', 'needs-shopping']);
 });
+
+it('requires at least one selected ingredient while counting all held ingredients', () => {
+  const ingredients = [item('tofu', '두부'), item('egg', '달걀'), item('salt', '소금')];
+  const result = classifyRecipes(
+    [recipe('두부찜', ['두부', '소금', '물']), recipe('계란찜', ['계란']), recipe('물', ['물'])],
+    ingredients,
+    today,
+    ['tofu'],
+  );
+  expect(result.map((value) => value.recipe.name)).toEqual(['두부찜']);
+  expect(result[0].missing).toEqual([]);
+  expect(
+    classifyRecipes([recipe('계란찜', ['계란'])], ingredients, today, ['egg', 'tofu']),
+  ).toHaveLength(1);
+  expect(classifyRecipes([recipe('계란찜', ['계란'])], ingredients, today, [])).toEqual([]);
+  expect(classifyRecipes([recipe('계란찜', ['계란'])], ingredients, today, ['gone'])).toEqual([]);
+});

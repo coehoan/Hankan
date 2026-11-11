@@ -2,7 +2,7 @@ import 'server-only';
 import type { RecipeCandidate, RecommendationInput } from '@/features/ai/contracts';
 import type { Tables, Json } from '@/lib/supabase/database.types';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
-import { usableIngredients } from './domain';
+import { usableIngredients, classifyRecipes } from './domain';
 import { jobIngredients } from './jobs';
 import { loadAiRecipes } from './recommendations';
 import { processRecipeNotifications } from './job-notifications';
@@ -24,10 +24,17 @@ export async function runRecipeJob(
       }
       let recipes: RecipeCandidate[];
       try {
+        const ingredients = usableIngredients(jobIngredients(job), job.today);
+        const selection = job.selected_ingredient_ids ?? undefined;
         recipes = await load({
           today: job.today,
-          ingredients: usableIngredients(jobIngredients(job), job.today),
+          ingredients,
+          ...(selection === undefined ? {} : { selectedIngredientIds: selection }),
         });
+        if (selection)
+          recipes = classifyRecipes(recipes, ingredients, job.today, selection).map(
+            (match) => match.recipe,
+          );
       } catch {
         await publish(source, [], false);
         return;

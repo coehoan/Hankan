@@ -68,7 +68,7 @@ it('history_cleanup_keeps_active_link_and_uses_24_hour_expiry_display', async ()
   vi.stubGlobal('fetch', fetcher);
   render(<MembersDialog fridgeId="fixture" role="owner" onClose={() => {}} onLeft={() => {}} />);
   const list = await screen.findByRole('list', { name: '만든 초대' });
-  expect(screen.getByText(/새 초대 링크는 1일간 유효/)).toBeVisible();
+  expect(screen.getByText('24시간 동안 한 명을 초대할 수 있어요.')).toBeVisible();
   for (const time of list.querySelectorAll('time')) {
     expect(time.textContent).not.toMatch(/오전|오후/);
     expect(time.textContent).toMatch(/\d{2}:\d{2}/);

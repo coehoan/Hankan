@@ -98,7 +98,8 @@ export function IngredientForm({
                 disabled={pending}
               />
               <span id={hintId} className="field-hint">
-                {[...name].length}/80자 · 같은 재료도 묶음별로 관리해요.
+                {[...name].length}/80자
+                {!item && ' · 같은 재료를 새로 샀다면 따로 등록해 주세요.'}
               </span>
             </label>
             <label className="field">

@@ -105,9 +105,9 @@ export function UploadForm({
     >
       <form className="receipt-upload" aria-label={fridgeName + ' 영수증 등록'} onSubmit={upload}>
         <p className="muted">
-          JPEG·PNG·WebP, 최대 10MB. 사진을 분석한 뒤 재료를 확인하고 저장해요. 원본과 초안은 나만 볼
-          수 있어요.
+          JPEG·PNG·WebP · 최대 10MB. 사진을 분석한 뒤 재료를 확인하고 저장해요.
         </p>
+        <p className="muted">원본 사진과 초안은 다른 냉장고 멤버에게 보이지 않아요.</p>
         <div className="receipt-photo-box">
           {preview && (
             <img className="receipt-photo-preview" src={preview} alt="선택한 영수증 미리보기" />

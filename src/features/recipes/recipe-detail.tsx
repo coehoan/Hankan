@@ -30,7 +30,7 @@ export function RecipeDetail({
       <article className="recipe-detail">
         <p className="recipe-detail-meta">{recipeMetadata(recipe)}</p>
         <p className="recipe-quantity-note">
-          보유 여부는 재료 종류 기준이에요. 아래 필요한 양과 실제 남은 양을 확인해 주세요.
+          보유 여부는 재료 종류 기준이에요. 필요한 양과 남은 양을 확인해 주세요.
         </p>
         {urgent.length > 0 && (
           <section className="recipe-urgent">

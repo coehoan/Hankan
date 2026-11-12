@@ -225,7 +225,7 @@ export function MembersDialog({
             <div className="invite-management-title">
               <div>
                 <h3>냉장고에 초대하기</h3>
-                <p>새 초대 링크는 1일간 유효해요. 한 사람이 참여하면 사용이 끝나요.</p>
+                <p>24시간 동안 한 명을 초대할 수 있어요.</p>
               </div>
               <button
                 className="add-button"

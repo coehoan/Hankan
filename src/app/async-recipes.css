@@ -1,3 +1,27 @@
+.development-tools {
+  display: grid;
+  gap: 24px;
+}
+.development-tools h3 {
+  margin: 0;
+}
+.development-tools > section {
+  display: grid;
+  gap: 12px;
+}
+.development-tools > section > button {
+  justify-self: start;
+}
+.development-tools p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.development-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
 .recipe-history-links {
   display: flex;
   flex-wrap: wrap;
@@ -8,7 +32,7 @@
   --activity-gutter: max(16px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
   position: fixed;
   z-index: 30;
-  inset-block-start: calc(92px + env(safe-area-inset-top, 0px));
+  inset-block-start: max(16px, env(safe-area-inset-top, 0px));
   inset-inline-end: var(--activity-gutter);
   width: min(368px, 100% - 2 * var(--activity-gutter));
   padding: 4px;
@@ -25,7 +49,7 @@
 }
 @media (max-width: 760px) {
   .recipe-activity {
-    inset-block-start: calc(116px + env(safe-area-inset-top, 0px));
+    width: auto;
     inset-inline: var(--activity-gutter);
     margin-inline: auto;
   }
@@ -98,22 +122,36 @@
   text-underline-offset: 4px;
 }
 .recipe-job-status {
+  display: grid;
+  gap: 12px;
   padding: 20px;
   margin-block: 24px;
   border-radius: 16px;
   background: var(--soft);
   color: var(--foreground);
 }
+.recipe-job-status > strong {
+  font-size: 18px;
+  line-height: 1.5;
+}
 .recipe-job-status p {
-  margin-block: 8px;
+  margin: 0;
   color: var(--muted);
   line-height: 1.6;
 }
-.recipe-job-status progress {
+.recipe-job-status .recipe-notification-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  height: 8px;
-  margin-top: 12px;
-  accent-color: var(--accent);
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 10px 16px;
+  border-radius: var(--radius-control);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
 }
 .recipe-history-list {
   list-style: none;

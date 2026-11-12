@@ -63,6 +63,7 @@ export function RecipeList({
         revoked={inventory.revoked}
         pending={inventory.pendingId !== null}
         inventoryError={!!inventory.error}
+        onReloadInventory={() => void inventory.refresh()}
         onAccessLost={onAccessLost}
         savedJobId={savedJobId}
       />

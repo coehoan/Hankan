@@ -602,8 +602,10 @@
   }
   .recipe-workspace-heading {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
   }
   .recipe-workspace-heading .fridge-switcher {
+    width: 100%;
     max-width: 100%;
   }
   .my-page-heading {

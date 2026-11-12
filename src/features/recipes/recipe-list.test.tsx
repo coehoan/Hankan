@@ -105,6 +105,31 @@ afterEach(() => {
 const show = () =>
   render(<RecipeList fridgeId={A} fridgeName="우리집" initialToday="2026-10-28" />);
 
+it('retries inventory in place when the recommendation screen cannot load ingredients', async () => {
+  let reads = 0;
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: RequestInfo | URL) => {
+      if (String(url).endsWith('/ingredients'))
+        return ++reads === 1 ? response(null, 503) : response(rows);
+      return response([]);
+    }),
+  );
+  show();
+  await user.click(await screen.findByRole('button', { name: '재료 다시 불러오기' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
+  expect(reads).toBe(2);
+});
+it('does not render an empty recipe category before available results', async () => {
+  show();
+  await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
+  await user.click(screen.getByRole('button', { name: '요리 추천 받기' }));
+  await screen.findByRole('button', { name: '계란찜 조리법 보기' });
+  expect(
+    screen.queryByRole('heading', { name: /조금만 더 사면 만들어요/ }),
+  ).not.toBeInTheDocument();
+});
+
 it('selects ingredient types, preserves hidden selections and posts IDs from duplicate batches', async () => {
   rows = [item, { ...item, id: 'egg-2', name: '계란' }, { ...item, id: 'tofu', name: '두부' }];
   show();
@@ -330,9 +355,12 @@ it('shows_accepted_and_partial_results_then_restores_completed_history_on_remoun
   const view = show();
   await waitFor(() => expect(screen.getByRole('button', { name: '요리 추천 받기' })).toBeEnabled());
   await user.click(screen.getByRole('button', { name: '요리 추천 받기' }));
-  expect(await screen.findByText('지금 있는 재료로 만들 요리를 찾고 있어요.')).toBeVisible();
-  expect(screen.getByText('알림을 켜 두면 추천이 끝났을 때 알려드려요.')).toBeVisible();
-  expect(screen.getByText('마이페이지 → 알림 → 알림 받기')).toBeVisible();
+  expect(await screen.findByText('요리를 추천하고 있어요')).toBeVisible();
+  expect(
+    screen.getByText('결과는 추천 내역에 저장돼요. 알림을 켜 두면 완료 소식도 받아요.'),
+  ).toBeVisible();
+  expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  expect(screen.queryByText(/물은 기본으로 있어요/)).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: '추천 중…' })).toBeDisabled();
   job = savedJob([match], 'running');
   await act(async () => window.dispatchEvent(new Event('focus')));

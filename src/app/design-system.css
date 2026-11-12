@@ -154,8 +154,7 @@ a:focus-visible,
 }
 .secondary-button:hover,
 .settings-row:hover,
-.profile-dropdown > a:hover,
-.profile-dropdown .sign-out button:hover {
+.profile-dropdown [role='menuitem']:hover {
   background: var(--soft);
 }
 .text-button {

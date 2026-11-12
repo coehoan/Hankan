@@ -1,6 +1,5 @@
 'use client';
 import { useId, useState } from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { Ingredient } from '@/features/inventory/contracts';
 import { inventoryVersion, usableIngredients } from './domain';
@@ -11,6 +10,7 @@ import { useRecipeJob } from './use-recipe-job';
 import { PantryIcon } from '@/components/ui/pantry-icon';
 import { RecipeIngredientPicker } from './recipe-ingredient-picker';
 import { recipeCondition } from './recipe-condition';
+import { RecipeJobStatus } from './recipe-job-status';
 type Props = {
   fridgeId: string;
   ingredients: Ingredient[];
@@ -20,6 +20,7 @@ type Props = {
   revoked: boolean;
   pending?: boolean;
   inventoryError?: boolean;
+  onReloadInventory?: () => void;
   compact?: boolean;
   onAccessLost?: () => void;
   savedJobId?: string;
@@ -33,6 +34,7 @@ export function RecipeResults({
   revoked,
   pending = false,
   inventoryError = false,
+  onReloadInventory,
   compact = false,
   onAccessLost,
   savedJobId,
@@ -108,53 +110,41 @@ export function RecipeResults({
         />
       )}
       {job && <p className="recipe-request-condition">{recipeCondition(job)}</p>}
-      <p className="recipe-quantity-note">
-        물은 기본으로 있어요. 나머지는 보유한 재료 종류를 기준으로 찾으니 필요한 양을 확인해 주세요.
-      </p>
-      {savedJobId && (
-        <div className="recipe-history-links">
-          <Link href="/recipes/history">추천 내역</Link>
-          <Link href={'/fridges/' + fridgeId}>냉장고로 돌아가기</Link>
-        </div>
+      {!savedJobId && !working && (
+        <p className="recipe-quantity-note">
+          물은 기본으로 있어요. 나머지는 보유한 재료 종류를 기준으로 찾으니 필요한 양을 확인해
+          주세요.
+        </p>
       )}
       {!online && (
         <p className="connection-banner" role="status">
           온라인으로 연결하면 추천 상태를 다시 확인해요. 접수한 작업은 계속 진행돼요.
         </p>
       )}
-      {loading ? (
-        <p className="recipe-feedback" role="status">
-          현재 냉장고 재료를 확인하고 있어요…
-        </p>
-      ) : inventoryError ? (
-        <p className="recipe-feedback" role="status">
-          재료 목록을 다시 불러온 뒤 추천받아 주세요.
-        </p>
-      ) : null}
-      {stale && (
+      {!savedJobId &&
+        (loading ? (
+          <p className="recipe-feedback" role="status">
+            현재 냉장고 재료를 확인하고 있어요…
+          </p>
+        ) : inventoryError ? (
+          <div className="recipe-error">
+            <p role="alert">현재 재료를 확인하지 못했어요.</p>
+            <Button variant="secondary" disabled={!online} onClick={onReloadInventory}>
+              재료 다시 불러오기
+            </Button>
+          </div>
+        ) : null)}
+      {!savedJobId && stale && (
         <p className="recipe-feedback" role="status">
           추천을 요청한 뒤 재료나 날짜가 바뀌었어요. 아래 요리는 요청 당시 재료를 기준으로 해요.
         </p>
       )}
-      {state.submitting && (
+      {!savedJobId && state.submitting && (
         <p className="recipe-feedback" role="status">
           추천 요청을 저장하고 있어요…
         </p>
       )}
-      {working && (
-        <div className="recipe-job-status" role="status">
-          <strong>
-            {matches.length
-              ? '먼저 준비된 요리부터 확인해 보세요'
-              : '지금 있는 재료로 만들 요리를 찾고 있어요.'}
-          </strong>
-          <p>알림을 켜 두면 추천이 끝났을 때 알려드려요.</p>
-          <p>
-            <strong>마이페이지 → 알림 → 알림 받기</strong>에서 켤 수 있어요.
-          </p>
-          <progress aria-label="요리 추천 진행 중" />
-        </div>
-      )}
+      {working && <RecipeJobStatus hasResults={matches.length > 0} />}
       {state.error && (
         <div className="recipe-error">
           <p role="alert">{state.error}</p>
@@ -186,7 +176,7 @@ export function RecipeResults({
           </p>
         </div>
       )}
-      {job?.status === 'complete' && matches.length > 0 && (
+      {!savedJobId && job?.status === 'complete' && matches.length > 0 && (
         <p className="recipe-feedback" role="status">
           추천이 완료되어 내역에 저장했어요.
         </p>
@@ -194,6 +184,7 @@ export function RecipeResults({
       {matches.length > 0 &&
         (['available', 'needs-shopping'] as const).map((kind) => {
           const group = matches.filter((item) => item.kind === kind);
+          if (!group.length) return null;
           return (
             <section className="recipe-group" key={kind} aria-labelledby={headingId + kind}>
               <header>
@@ -203,9 +194,7 @@ export function RecipeResults({
                   <span>{group.length}개</span>
                 </h3>
               </header>
-              {group.length === 0 ? (
-                <p className="recipe-group-empty">이 분류의 추천은 아직 없어요.</p>
-              ) : (
+              {
                 <div className="recipe-cards">
                   {(compact ? group.slice(0, 2) : group).map((item) => (
                     <article className="recipe-card" key={item.recipe.id}>
@@ -231,7 +220,7 @@ export function RecipeResults({
                     </article>
                   ))}
                 </div>
-              )}
+              }
             </section>
           );
         })}

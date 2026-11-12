@@ -6,6 +6,7 @@ import { PantryIcon } from '@/components/ui/pantry-icon';
 type Activity = { id: string; status: string };
 export function RecipeActivity() {
   const [notice, setNotice] = useState<Activity | null>(null);
+  const [hiddenProgress, setHiddenProgress] = useState(() => new Set<string>());
   const dismissed = useRef(new Set<string>());
   useEffect(() => {
     let active = true,
@@ -86,25 +87,64 @@ export function RecipeActivity() {
       document.removeEventListener('visibilitychange', load);
     };
   }, []);
-  if (!notice) return null;
-  const pending = ['queued', 'running'].includes(notice.status);
-  const failed = notice.status === 'failed';
+  const noticeId = notice?.id;
+  const pending = !!notice && ['queued', 'running'].includes(notice.status);
+  useEffect(() => {
+    if (!pending || !noticeId) return;
+    const timer = setTimeout(() => {
+      setHiddenProgress((previous) => new Set(previous).add(noticeId));
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [noticeId, pending]);
+  if (!notice || (pending && hiddenProgress.has(notice.id))) return null;
+  const dismiss = () => {
+    if (pending) {
+      setHiddenProgress((previous) => new Set(previous).add(notice.id));
+      return;
+    }
+    dismissed.current.add(notice.id);
+    setNotice((previous) => (previous?.id === notice.id ? null : previous));
+  };
+  return (
+    <RecipeActivityPopup
+      status={notice.status}
+      href={'/recipes/jobs/' + notice.id}
+      onDismiss={dismiss}
+    />
+  );
+}
+
+export function RecipeActivityPopup({
+  status,
+  href,
+  onDismiss,
+}: {
+  status: string;
+  href?: string;
+  onDismiss: () => void;
+}) {
+  const pending = ['queued', 'running'].includes(status);
+  const failed = status === 'failed';
   const message = pending
     ? '요리 추천이 진행 중이에요'
     : failed
       ? '요리 추천에 실패했어요'
       : '요리 추천이 준비됐어요';
-  const dismiss = () => {
-    dismissed.current.add(notice.id);
-    setNotice((previous) => (previous?.id === notice.id ? null : previous));
-  };
   return (
-    <aside className="recipe-activity" aria-label="요리 추천 상태" data-status={notice.status}>
+    <aside className="recipe-activity" aria-label="요리 추천 상태" data-status={status}>
       <Link
         className="recipe-activity-link"
-        href={'/recipes/jobs/' + notice.id}
+        href={href ?? '#'}
         aria-label={message}
-        onNavigate={pending ? undefined : dismiss}
+        onNavigate={pending ? undefined : onDismiss}
+        onClick={
+          href
+            ? undefined
+            : (event) => {
+                event.preventDefault();
+                if (!pending) onDismiss();
+              }
+        }
       >
         <span className="recipe-activity-mark">
           <PantryIcon name={pending ? 'bowl' : failed ? 'alert' : 'check'} />
@@ -114,16 +154,14 @@ export function RecipeActivity() {
           <PantryIcon name="chevronRight" />
         </span>
       </Link>
-      {!pending && (
-        <Button
-          variant="ghost"
-          className="recipe-activity-close"
-          aria-label="요리 추천 알림 닫기"
-          onClick={dismiss}
-        >
-          <PantryIcon name="close" />
-        </Button>
-      )}
+      <Button
+        variant="ghost"
+        className="recipe-activity-close"
+        aria-label="요리 추천 알림 닫기"
+        onClick={onDismiss}
+      >
+        <PantryIcon name="close" />
+      </Button>
     </aside>
   );
 }

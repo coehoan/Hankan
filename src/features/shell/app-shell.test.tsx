@@ -55,7 +55,7 @@ it('management_dialogs_close_without_leaving_duplicates', async () => {
       timeZone="Asia/Seoul"
     />,
   );
-  fireEvent.click(screen.getByRole('button', { name: '멤버 관리' }));
+  fireEvent.click(screen.getByRole('button', { name: '함께 쓰는 사람들' }));
   await screen.findByRole('dialog', { name: '함께 쓰는 사람들' });
   fireEvent.click(screen.getByRole('button', { name: '함께 쓰는 사람들 닫기' }));
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -83,5 +83,5 @@ it('notification_settings_link_opens_mypage_instead_of_a_modal', async () => {
   );
   expect(screen.queryByRole('link', { name: '알림 설정' })).not.toBeInTheDocument();
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: '멤버 관리' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: '함께 쓰는 사람들' })).not.toBeInTheDocument();
 });

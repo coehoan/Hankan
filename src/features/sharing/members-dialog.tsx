@@ -271,7 +271,7 @@ export function MembersDialog({
                   disabled={busy || !online || !invites.some((invite) => invite.state !== 'valid')}
                   onClick={() => void clearHistory()}
                 >
-                  초대 내역 전체 삭제
+                  종료된 초대 내역 삭제
                 </button>
               </div>
             )}

@@ -39,14 +39,13 @@ export function FridgeManagement({
       </section>
       <section className="my-page-card">
         <h2>{selected.name}</h2>
-        <p className="muted">선택한 냉장고에 적용돼요.</p>
         <div className="management-actions">
           <button className="settings-row" onClick={() => setDialog('name')} disabled={disabled}>
             <span>냉장고 이름 변경</span>
             <span aria-hidden="true">›</span>
           </button>
           <button className="settings-row" onClick={() => setDialog('members')} disabled={disabled}>
-            <span>멤버 관리</span>
+            <span>함께 쓰는 사람들</span>
             <span aria-hidden="true">›</span>
           </button>
         </div>

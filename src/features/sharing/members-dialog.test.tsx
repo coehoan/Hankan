@@ -73,11 +73,11 @@ it('history_cleanup_keeps_active_link_and_uses_24_hour_expiry_display', async ()
     expect(time.textContent).not.toMatch(/오전|오후/);
     expect(time.textContent).toMatch(/\d{2}:\d{2}/);
   }
-  fireEvent.click(screen.getByRole('button', { name: '초대 내역 전체 삭제' }));
+  fireEvent.click(screen.getByRole('button', { name: '종료된 초대 내역 삭제' }));
   await screen.findByText(/1개의 초대 내역을 삭제/);
   expect(within(list).getByText('참여 가능')).toBeVisible();
   expect(within(list).queryByText('만료됨')).not.toBeInTheDocument();
-  expect(screen.getByRole('button', { name: '초대 내역 전체 삭제' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '종료된 초대 내역 삭제' })).toBeDisabled();
 });
 it('failed_history_cleanup_preserves_history_and_allows_retry', async () => {
   vi.stubGlobal('fetch', async (url: unknown, init?: RequestInit) =>
@@ -91,10 +91,10 @@ it('failed_history_cleanup_preserves_history_and_allows_retry', async () => {
   );
   render(<MembersDialog fridgeId="fixture" role="owner" onClose={() => {}} onLeft={() => {}} />);
   await screen.findByText('사용됨');
-  fireEvent.click(screen.getByRole('button', { name: '초대 내역 전체 삭제' }));
+  fireEvent.click(screen.getByRole('button', { name: '종료된 초대 내역 삭제' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('삭제하지 못했어요.');
   expect(screen.getByText('사용됨')).toBeVisible();
   await waitFor(() =>
-    expect(screen.getByRole('button', { name: '초대 내역 전체 삭제' })).toBeEnabled(),
+    expect(screen.getByRole('button', { name: '종료된 초대 내역 삭제' })).toBeEnabled(),
   );
 });

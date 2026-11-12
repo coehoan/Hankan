@@ -86,7 +86,7 @@ it('inventory_registration_opens_manual_or_receipt_from_the_two_a1_actions', asy
   expect(screen.getByRole('option', { name: '함께 냉장고 · 함께 관리' })).toBeInTheDocument();
   fireEvent.keyDown(screen.getByRole('combobox', { name: '냉장고 선택' }), { key: 'Escape' });
   expect(screen.getByRole('button', { name: '영수증 등록' })).toBeVisible();
-  expect(screen.queryByRole('button', { name: '멤버 관리' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: '함께 쓰는 사람들' })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: '냉장고 이름 변경' })).not.toBeInTheDocument();
   expect(screen.queryByRole('form', { name: '재료 등록' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: '직접 등록' }));
@@ -94,7 +94,7 @@ it('inventory_registration_opens_manual_or_receipt_from_the_two_a1_actions', asy
   fireEvent.click(screen.getByRole('button', { name: '재료 등록 닫기' }));
   fireEvent.click(screen.getByRole('button', { name: '영수증 등록' }));
   expect(await screen.findByRole('dialog', { name: '영수증으로 등록' })).toBeVisible();
-  expect(screen.getByRole('button', { name: '사진 업로드' })).toBeVisible();
+  expect(screen.getByRole('button', { name: '사진 선택' })).toBeVisible();
   expect(screen.getAllByRole('dialog')).toHaveLength(1);
 });
 it('management_owns_name_and_members_and_stays_on_management_after_switch', async () => {
@@ -103,7 +103,7 @@ it('management_owns_name_and_members_and_stays_on_management_after_switch', asyn
   fireEvent.click(screen.getByRole('button', { name: '냉장고 이름 변경' }));
   expect(screen.getByRole('dialog', { name: '냉장고 이름 변경' })).toBeVisible();
   fireEvent.click(screen.getByRole('button', { name: '냉장고 이름 변경 닫기' }));
-  fireEvent.click(screen.getByRole('button', { name: '멤버 관리' }));
+  fireEvent.click(screen.getByRole('button', { name: '함께 쓰는 사람들' }));
   expect(await screen.findByRole('dialog', { name: '함께 쓰는 사람들' })).toBeVisible();
   fireEvent.click(screen.getByRole('button', { name: '함께 쓰는 사람들 닫기' }));
   fireEvent.click(screen.getByRole('combobox', { name: '냉장고 선택' }));

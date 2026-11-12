@@ -13,14 +13,14 @@ function keyBytes(value: string) {
   const raw = atob(value.replace(/-/g, '+').replace(/_/g, '/'));
   return Uint8Array.from(raw, (c) => c.charCodeAt(0));
 }
-async function configuration(signal?: AbortSignal) {
+export async function readPushConfiguration(signal?: AbortSignal) {
   const response = await fetch('/api/push/subscriptions', { cache: 'no-store', signal });
   if (!response.ok) throw new Error('알림 연결 상태를 확인하지 못했어요.');
   return (await response.json()).data as Configuration;
 }
 export async function registerBrowserPush(signal: AbortSignal, confirmWorker = false) {
   signal.throwIfAborted();
-  const current = await configuration(signal);
+  const current = await readPushConfiguration(signal);
   if (!current.publicKey) throw new Error('브라우저 알림 연결을 준비 중이에요.');
   const registration = await registerWorker();
   await navigator.serviceWorker.ready;
@@ -74,7 +74,7 @@ export function PushControls({ enabled }: { enabled: boolean }) {
   useEffect(() => {
     if (!supported) return;
     let active = true;
-    void configuration()
+    void readPushConfiguration()
       .then((value) => {
         if (active) setConfig(value);
       })

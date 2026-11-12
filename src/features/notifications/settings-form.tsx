@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { requestPushPermission, supportsPush } from './browser-push';
 import { preferenceInput, preferenceResponse, type NotificationPreferences } from './contracts';
 import { registerBrowserPush } from './push-controls';
+import { DevicePushStatus } from './device-push-status';
 type Draft = Pick<NotificationPreferences, 'enabled' | 'localTime'>;
 type DeviceConnection = {
   controller: AbortController;
@@ -131,6 +132,24 @@ export function NotificationSettingsForm({ onAccessLost }: { onAccessLost?: () =
       if (!signal.aborted) deviceConnection.current = null;
     }
   }
+  async function reconnectDevice() {
+    if (!saved?.enabled || navigator.onLine === false || !supportsPush()) return;
+    cancelConnection();
+    setDeviceMessage('');
+    const controller = new AbortController();
+    const permission = requestPushPermission().then(
+      () => true,
+      (caught: unknown) => {
+        if (!controller.signal.aborted)
+          setDeviceMessage(
+            caught instanceof Error ? caught.message : '알림 권한을 확인하지 못했어요.',
+          );
+        return false;
+      },
+    );
+    deviceConnection.current = { controller, permission, started: false };
+    await connectDevice();
+  }
   async function persist(input: Draft) {
     if (
       !saved ||
@@ -186,7 +205,7 @@ export function NotificationSettingsForm({ onAccessLost }: { onAccessLost?: () =
   }
   return (
     <div className="notification-settings">
-      <p>내가 참여한 냉장고의 임박 재료를 매일 한 번 모아 알려드려요.</p>
+      <p>임박 재료는 매일 정한 시각에, 요리 추천 완료는 준비되는 대로 알려드려요.</p>
       {!online && (
         <p className="connection-banner" role="status">
           오프라인이에요. 연결한 뒤 알림 설정을 바꿀 수 있어요.
@@ -221,12 +240,15 @@ export function NotificationSettingsForm({ onAccessLost }: { onAccessLost?: () =
                 />
               </label>
               <p className="notification-hint">
-                오늘 아직 보내지 않았고 새 시각이 남아 있으면 오늘부터, 이미 지났거나 오늘 보냈으면
-                내일부터 적용해요. 이 설정은 내 계정에만 적용돼요.
+                오늘 알림을 받았거나 선택한 시각이 지났다면 내일부터 적용돼요. 설정은 내 계정에만
+                적용돼요.
               </p>
             </div>
           )}
           {saving && <p role="status">알림 설정을 저장하고 있어요…</p>}
+          {saved?.enabled && draft.enabled && (
+            <DevicePushStatus revision={deviceMessage} onConnect={reconnectDevice} />
+          )}
           {draft.enabled && deviceMessage && (
             <p className="notification-hint" role="status">
               {deviceMessage}

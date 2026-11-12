@@ -183,3 +183,15 @@
     width: 100%;
   }
 }
+
+.receipt-validation-summary {
+  flex-basis: 100%;
+  padding-block: 12px;
+  border-block: 1px solid var(--border);
+}
+.receipt-validation-summary .text-button {
+  margin-right: 16px;
+}
+.receipt-item [aria-invalid='true'] {
+  border-color: var(--error);
+}

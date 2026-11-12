@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
 import { parseCreateIngredient } from '@/features/inventory/domain';
 import type { StoragePlace } from '@/features/inventory/contracts';
 import type { ExtractedItem } from '@/features/ai/contracts';
@@ -42,6 +43,7 @@ export function ReviewScreen({
     [error, setError] = useState(''),
     [revoked, setRevoked] = useState(false),
     [notice, setNotice] = useState('');
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const online = useOnline(),
     pending = useRef(false),
     alive = useRef(true),
@@ -54,18 +56,26 @@ export function ReviewScreen({
     };
   }, []);
   const selected = rows.filter((row) => row.included);
-  let valid = selected.length > 0;
-  try {
-    for (const row of selected)
+  const rowErrors = new Map<string, { name?: string; expiresOn?: string }>();
+  for (const row of selected) {
+    const problems: { name?: string; expiresOn?: string } = {};
+    const nameLength = [...row.name.trim()].length;
+    if (nameLength < 1 || nameLength > 80) problems.name = '재료 이름은 1~80자로 입력해 주세요.';
+    try {
       parseCreateIngredient({
         requestId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-        name: row.name,
-        storage: row.storage,
+        name: '날짜 확인',
+        storage: 'fridge',
         expiresOn: row.expiresOn,
       });
-  } catch {
-    valid = false;
+    } catch {
+      problems.expiresOn = row.expiresOn
+        ? '유효한 유통기한을 선택해 주세요.'
+        : '유통기한을 선택해 주세요.';
+    }
+    if (problems.name || problems.expiresOn) rowErrors.set(row.id, problems);
   }
+  const valid = selected.length > 0 && rowErrors.size === 0;
   const blocked = !!busy || !online || status === 'analyzing' || revoked;
   function change(id: string, patch: Partial<Row>) {
     setRows((current) => current.map((row) => (row.id === id ? { ...row, ...patch } : row)));
@@ -271,10 +281,21 @@ export function ReviewScreen({
                 재료 이름
                 <input
                   aria-label={'재료 이름 ' + (index + 1)}
+                  id={'receipt-' + row.id + '-name'}
+                  aria-invalid={!!rowErrors.get(row.id)?.name}
+                  aria-describedby={
+                    rowErrors.get(row.id)?.name ? 'receipt-' + row.id + '-name-error' : undefined
+                  }
                   value={row.name}
                   maxLength={160}
                   onChange={(event) => change(row.id, { name: event.target.value })}
                 />
+                <span className="field-hint">{[...row.name.trim()].length}/80자</span>
+                {rowErrors.get(row.id)?.name && (
+                  <span className="form-message error" id={'receipt-' + row.id + '-name-error'}>
+                    품목 {index + 1}: {rowErrors.get(row.id)?.name}
+                  </span>
+                )}
               </label>
               <div className="receipt-fields">
                 <label className="field">
@@ -295,6 +316,13 @@ export function ReviewScreen({
                   유통기한 · 직접 선택
                   <input
                     aria-label={'유통기한 ' + (index + 1)}
+                    id={'receipt-' + row.id + '-date'}
+                    aria-invalid={!!rowErrors.get(row.id)?.expiresOn}
+                    aria-describedby={
+                      rowErrors.get(row.id)?.expiresOn
+                        ? 'receipt-' + row.id + '-date-error'
+                        : undefined
+                    }
                     type="date"
                     min="0001-01-01"
                     max="9999-12-31"
@@ -302,6 +330,11 @@ export function ReviewScreen({
                     onChange={(event) => change(row.id, { expiresOn: event.target.value })}
                     required={row.included}
                   />
+                  {rowErrors.get(row.id)?.expiresOn && (
+                    <span className="form-message error" id={'receipt-' + row.id + '-date-error'}>
+                      품목 {index + 1}: {rowErrors.get(row.id)?.expiresOn}
+                    </span>
+                  )}
                 </label>
               </div>
               <Button
@@ -335,6 +368,31 @@ export function ReviewScreen({
             </Button>
           )}
           <div className="receipt-actions">
+            {rowErrors.size > 0 && (
+              <div className="receipt-validation-summary">
+                <p role="status">확인이 필요한 품목 {rowErrors.size}개</p>
+                {rows.map(
+                  (row, index) =>
+                    rowErrors.has(row.id) && (
+                      <Button
+                        key={row.id}
+                        variant="text"
+                        onClick={() => {
+                          document
+                            .getElementById(
+                              'receipt-' +
+                                row.id +
+                                (rowErrors.get(row.id)?.name ? '-name' : '-date'),
+                            )
+                            ?.focus();
+                        }}
+                      >
+                        품목 {index + 1} 확인
+                      </Button>
+                    ),
+                )}
+              </div>
+            )}
             <Button
               variant="secondary"
               disabled={blocked}
@@ -351,8 +409,8 @@ export function ReviewScreen({
               검토 내용 임시 저장
             </Button>
             <p>
-              {selected.length}개 품목을 원래 냉장고에 저장해요. 선택한 모든 품목의 이름과 날짜가
-              필요해요.
+              ‘{draft.fridgeName}’에 {selected.length}개 재료를 저장해요. 선택한 품목의 이름과
+              유통기한을 확인해 주세요.
             </p>
             <Button disabled={blocked || !valid} onClick={() => void save()}>
               {busy === 'save' ? '저장 중…' : '확인한 재료 저장'}
@@ -360,21 +418,52 @@ export function ReviewScreen({
             <Button
               variant="text"
               disabled={!online || !!busy}
-              onClick={() =>
-                void perform('cancel', async () => {
-                  await request(base, 'DELETE', {});
-                  if (alive.current) {
-                    setPhoto(null);
-                    onCancel();
-                  }
-                })
-              }
+              onClick={() => setConfirmCancel(true)}
             >
               초안 취소·사진 삭제
             </Button>
           </div>
         </section>
       </div>
+      <Dialog
+        open={confirmCancel}
+        title="초안 취소·사진 삭제"
+        closeDisabled={!!busy}
+        onOpenChange={(open) => {
+          if (!busy) setConfirmCancel(open);
+        }}
+      >
+        <p>
+          이 영수증 초안과 원본 사진을 삭제할까요? 검토 중인 품목은 재료로 저장되지 않으며, 취소하면
+          다시 확인할 수 없어요.
+        </p>
+        {error && (
+          <p className="form-message error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="dialog-actions">
+          <Button variant="ghost" disabled={!!busy} onClick={() => setConfirmCancel(false)}>
+            계속 확인하기
+          </Button>
+          <Button
+            variant="destructive"
+            disabled={!!busy || !online}
+            onClick={() =>
+              void perform('cancel', async () => {
+                await request(base, 'DELETE', {});
+                if (alive.current) {
+                  setPhoto(null);
+                  setConfirmCancel(false);
+                  onCancel();
+                }
+              })
+            }
+          >
+            {busy === 'cancel' ? '취소 중…' : '초안 취소하기'}
+          </Button>
+        </div>
+      </Dialog>
     </main>
   );
 }

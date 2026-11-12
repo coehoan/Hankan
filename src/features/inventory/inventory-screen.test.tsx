@@ -75,6 +75,28 @@ afterEach(() => {
 });
 
 describe('inventory request isolation and synchronization', () => {
+  it('requires fresh confirmation after a delete version conflict', async () => {
+    let version = 1;
+    const sent: number[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: unknown, init?: RequestInit) => {
+        if (init?.method === 'DELETE') {
+          sent.push(JSON.parse(String(init.body)).expectedVersion);
+          version = 2;
+          return response(null, sent.length === 1 ? 409 : 200);
+        }
+        return response([item('a', '두부', A, { version })]);
+      }),
+    );
+    render(<InventoryScreen fridgeId={A} fridgeName="내 냉장고" initialToday="2026-10-26" />);
+    fireEvent.click(await screen.findByRole('button', { name: '두부 삭제' }));
+    fireEvent.click(screen.getByRole('button', { name: '삭제하기' }));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: '재료 삭제' })).toBeNull());
+    fireEvent.click(await screen.findByRole('button', { name: '두부 삭제' }));
+    fireEvent.click(screen.getByRole('button', { name: '삭제하기' }));
+    await waitFor(() => expect(sent).toEqual([1, 2]));
+  });
   it('ignores_late_response_from_previous_fridge', async () => {
     const late = deferred();
     vi.stubGlobal(
@@ -503,6 +525,9 @@ describe('inventory controls with real hook and HTTP boundary', () => {
     fireEvent.click(slider);
     expect(screen.queryByRole('form', { name: '재료 수정' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '두부 삭제' }));
+    expect(screen.getByRole('dialog', { name: '재료 삭제' })).toBeVisible();
+    expect(screen.getByRole('button', { name: '두부 수정' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '삭제하기' }));
     await waitFor(() =>
       expect(screen.queryByRole('button', { name: '두부 수정' })).not.toBeInTheDocument(),
     );

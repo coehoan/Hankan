@@ -19,9 +19,43 @@ afterEach(() => {
 it('dates_start_empty_and_are_required', async () => {
   render(<ReviewScreen draft={draft} onSaved={() => {}} onCancel={() => {}} />);
   expect(screen.getByLabelText('유통기한 1')).toHaveValue('');
+  expect(screen.getByText('품목 1: 유통기한을 선택해 주세요.')).toBeVisible();
   expect(screen.getByRole('button', { name: '확인한 재료 저장' })).toBeDisabled();
   fireEvent.change(screen.getByLabelText('유통기한 1'), { target: { value: '2026-11-05' } });
   expect(screen.getByRole('button', { name: '확인한 재료 저장' })).toBeEnabled();
+});
+it('explains a long name and does not block an excluded row', () => {
+  render(<ReviewScreen draft={draft} onSaved={() => {}} onCancel={() => {}} />);
+  fireEvent.change(screen.getByLabelText('유통기한 1'), { target: { value: '2026-11-05' } });
+  fireEvent.change(screen.getByLabelText('재료 이름 1'), { target: { value: '가'.repeat(81) } });
+  expect(screen.getByText('품목 1: 재료 이름은 1~80자로 입력해 주세요.')).toBeVisible();
+  expect(screen.getByLabelText('재료 이름 1')).toHaveAttribute('aria-invalid', 'true');
+  fireEvent.click(screen.getByRole('button', { name: '품목 1 확인' }));
+  expect(screen.getByLabelText('재료 이름 1')).toHaveFocus();
+  fireEvent.click(screen.getByRole('button', { name: '품목 직접 추가' }));
+  fireEvent.change(screen.getByLabelText('재료 이름 2'), { target: { value: '계란' } });
+  fireEvent.change(screen.getByLabelText('유통기한 2'), { target: { value: '2026-11-05' } });
+  fireEvent.click(screen.getByLabelText('품목 1 저장에 포함'));
+  expect(screen.queryByText('품목 1: 재료 이름은 1~80자로 입력해 주세요.')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '확인한 재료 저장' })).toBeEnabled();
+});
+it('requires confirmation before cancelling a draft and keeps edits when declined', async () => {
+  const fetcher = vi.fn(async () => Response.json({ data: null }));
+  vi.stubGlobal('fetch', fetcher);
+  const cancel = vi.fn();
+  render(<ReviewScreen draft={draft} onSaved={() => {}} onCancel={cancel} />);
+  fireEvent.click(screen.getByRole('button', { name: '초안 취소·사진 삭제' }));
+  expect(fetcher).not.toHaveBeenCalled();
+  expect(screen.getByRole('dialog', { name: '초안 취소·사진 삭제' })).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: '계속 확인하기' }));
+  expect(screen.getByLabelText('재료 이름 1')).toHaveValue('두부');
+  fireEvent.click(screen.getByRole('button', { name: '초안 취소·사진 삭제' }));
+  fireEvent.click(screen.getByRole('button', { name: '초안 취소하기' }));
+  await waitFor(() => expect(cancel).toHaveBeenCalledOnce());
+  expect(fetcher).toHaveBeenCalledExactlyOnceWith(
+    '/api/receipts/' + draft.draftId,
+    expect.objectContaining({ method: 'DELETE' }),
+  );
 });
 it('only_explicit_save_imports_into_the_original_fridge', async () => {
   let writes = 0;
@@ -38,7 +72,7 @@ it('only_explicit_save_imports_into_the_original_fridge', async () => {
   expect(writes).toBe(0);
   fireEvent.change(screen.getByLabelText('재료 이름 1'), { target: { value: '손질한 두부' } });
   fireEvent.change(screen.getByLabelText('유통기한 1'), { target: { value: '2026-11-05' } });
-  expect(screen.getByText(/처음 선택한 냉장고/)).toBeVisible();
+  expect(screen.getByText(/’에 1개 재료를 저장해요/)).toBeVisible();
   fireEvent.click(screen.getByRole('button', { name: '확인한 재료 저장' }));
   await waitFor(() => expect(writes).toBe(1));
   expect(body).toEqual({

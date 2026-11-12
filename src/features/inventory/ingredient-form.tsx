@@ -142,13 +142,13 @@ export function IngredientForm({
             </div>
           )}
           <div className="dialog-actions editor-actions">
-            <p>
-              {!online
-                ? '연결이 돌아오면 저장할 수 있어요. 입력은 유지돼요.'
-                : item
-                  ? '현재 저장된 버전을 확인한 뒤 수정해요.'
+            {(!online || !item) && (
+              <p>
+                {!online
+                  ? '연결이 돌아오면 저장할 수 있어요. 입력은 유지돼요.'
                   : '남은 양은 100%로 시작해요.'}
-            </p>
+              </p>
+            )}
             <Button variant="ghost" onClick={onCancel} disabled={pending}>
               취소
             </Button>

@@ -3,13 +3,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode, RefCallback } from 'react';
 import type { Ingredient, StoragePlace } from './contracts';
 import { sortIngredients, urgencyOf } from './domain';
-import { useInventory } from './use-inventory';
+import { InventoryRequestError, useInventory } from './use-inventory';
 import { IngredientForm } from './ingredient-form';
+import { Dialog } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { IngredientArt } from './ingredient-art';
 import { IngredientGroup, ingredientGroups } from './ingredient-group';
 import { InventoryNotice } from './inventory-notice';
-import { Button } from '@/components/ui/button';
-import { Dialog } from '@/components/ui/dialog';
 import { PantryIcon } from '@/components/ui/pantry-icon';
 
 const storageNames: Record<StoragePlace, string> = {
@@ -149,11 +149,11 @@ function IngredientRow({
       <div className="ingredient-tools">
         <button
           className="edit-ingredient"
-          aria-label={item.name + ' 기한 수정'}
+          aria-label={item.name + ' 재료 수정'}
           onClick={onEdit}
           disabled={disabled}
         >
-          기한 수정
+          재료 수정
         </button>
         <button
           className="delete-ingredient"
@@ -195,6 +195,31 @@ export function InventoryScreen({
   const searchInput = useRef<HTMLInputElement>(null);
   const getSearchInput = useCallback(() => searchInput.current, []);
   const [addingFor, setAddingFor] = useState<string | null>(null);
+  const [deletion, setDeletion] = useState<{ fridgeId: string; item: Ingredient } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const activeDeletion = deletion?.fridgeId === fridgeId ? deletion : null;
+  async function confirmDelete() {
+    if (!activeDeletion || deleting || !inventory.online || inventory.revoked) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await inventory.remove(activeDeletion.item.id, activeDeletion.item.version);
+      setDeletion(null);
+      showNotice(activeDeletion.item.name + '를 삭제했어요.');
+    } catch (error) {
+      if (error instanceof InventoryRequestError && error.code === 'conflict') {
+        setDeletion(null);
+        showNotice('재료가 변경됐어요. 최신 내용을 확인한 뒤 다시 삭제해 주세요.');
+        return;
+      }
+      setDeleteError(
+        error instanceof Error ? error.message : '삭제하지 못했어요. 다시 시도해 주세요.',
+      );
+    } finally {
+      setDeleting(false);
+    }
+  }
   const dismissNotice = useCallback(
     () => setNotice((current) => ({ ...current, message: '' })),
     [],
@@ -505,10 +530,8 @@ export function InventoryScreen({
                   }}
                   onDelete={() => {
                     showNotice('');
-                    void inventory
-                      .remove(item.id, item.version)
-                      .then(() => showNotice('재료를 삭제했어요.'))
-                      .catch(() => {});
+                    setDeleteError('');
+                    setDeletion({ fridgeId, item });
                   }}
                 />
               )}
@@ -516,6 +539,37 @@ export function InventoryScreen({
           ))}
         </div>
       </div>
+      <Dialog
+        open={!!activeDeletion}
+        title="재료 삭제"
+        closeDisabled={deleting}
+        onOpenChange={(open) => {
+          if (!open) setDeletion(null);
+        }}
+        fallbackFocus={getSearchInput}
+      >
+        <p>
+          ‘{activeDeletion?.item.name}’ 재료를 삭제할까요? 이름·유통기한·남은 양을 포함한 이 재고가
+          삭제되며 되돌릴 수 없어요.
+        </p>
+        {deleteError && (
+          <p className="form-message error" role="alert">
+            {deleteError}
+          </p>
+        )}
+        <div className="dialog-actions">
+          <Button variant="ghost" disabled={deleting} onClick={() => setDeletion(null)}>
+            취소
+          </Button>
+          <Button
+            variant="destructive"
+            disabled={deleting || !inventory.online}
+            onClick={() => void confirmDelete()}
+          >
+            {deleting ? '삭제 중…' : '삭제하기'}
+          </Button>
+        </div>
+      </Dialog>
     </main>
   );
 }

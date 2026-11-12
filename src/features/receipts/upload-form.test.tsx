@@ -47,7 +47,7 @@ const show = () =>
   );
 it('photo_selection_previews_without_upload_then_confirmation_uploads_and_analyzes', async () => {
   show();
-  expect(screen.getByRole('button', { name: '사진 업로드' })).toBeVisible();
+  expect(screen.getByRole('button', { name: '사진 선택' })).toBeVisible();
   fireEvent.change(screen.getByLabelText('영수증 사진 선택'), {
     target: { files: [new File(['png'], 'receipt.png', { type: 'image/png' })] },
   });
@@ -56,7 +56,7 @@ it('photo_selection_previews_without_upload_then_confirmation_uploads_and_analyz
     'blob:receipt-preview',
   );
   expect(requests.filter((r) => r.method !== 'GET')).toHaveLength(0);
-  fireEvent.click(screen.getByRole('button', { name: '품목 확인' }));
+  fireEvent.click(screen.getByRole('button', { name: '사진 올리고 분석하기' }));
   await waitFor(() => expect(created).toHaveBeenCalledWith('new-draft'));
   expect(requests.filter((r) => r.method !== 'GET').map((r) => r.url)).toEqual([
     '/api/receipts/uploads',
@@ -79,7 +79,7 @@ it('waits_for_analysis_before_opening_results_and_prevents_duplicate_confirmatio
   fireEvent.change(screen.getByLabelText('영수증 사진 선택'), {
     target: { files: [new File(['png'], 'receipt.png', { type: 'image/png' })] },
   });
-  fireEvent.click(screen.getByRole('button', { name: '품목 확인' }));
+  fireEvent.click(screen.getByRole('button', { name: '사진 올리고 분석하기' }));
   await waitFor(() => expect(analyze).toHaveBeenCalledTimes(1));
   expect(screen.getByRole('button', { name: 'AI 분석 중…' })).toBeDisabled();
   expect(created).not.toHaveBeenCalled();
@@ -101,7 +101,7 @@ it.each(['server', 'network'])(
     fireEvent.change(screen.getByLabelText('영수증 사진 선택'), {
       target: { files: [new File(['png'], 'receipt.png', { type: 'image/png' })] },
     });
-    fireEvent.click(screen.getByRole('button', { name: '품목 확인' }));
+    fireEvent.click(screen.getByRole('button', { name: '사진 올리고 분석하기' }));
     await waitFor(() => expect(created).toHaveBeenCalledExactlyOnceWith('new-draft'));
     expect(requests.filter((r) => r.url === '/api/receipts/uploads/complete')).toHaveLength(1);
   },
@@ -112,7 +112,7 @@ it('invalid_photo_never_enables_confirmation_or_uploads', async () => {
     target: { files: [new File(['pdf'], 'receipt.pdf', { type: 'application/pdf' })] },
   });
   expect(await screen.findByRole('alert')).toBeVisible();
-  expect(screen.getByRole('button', { name: '품목 확인' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '사진 올리고 분석하기' })).toBeDisabled();
   expect(requests.filter((r) => r.method !== 'GET')).toHaveLength(0);
 });
 it('selecting_the_same_photo_again_keeps_its_preview', async () => {

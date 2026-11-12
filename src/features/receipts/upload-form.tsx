@@ -105,8 +105,8 @@ export function UploadForm({
     >
       <form className="receipt-upload" aria-label={fridgeName + ' 영수증 등록'} onSubmit={upload}>
         <p className="muted">
-          JPEG·PNG·WebP, 최대 10MB. 원본과 초안은 나만 볼 수 있어요. 사진을 올려도 재료는 바로
-          저장되지 않아요.
+          JPEG·PNG·WebP, 최대 10MB. 사진을 분석한 뒤 재료를 확인하고 저장해요. 원본과 초안은 나만 볼
+          수 있어요.
         </p>
         <div className="receipt-photo-box">
           {preview && (
@@ -130,7 +130,7 @@ export function UploadForm({
             onClick={() => picker.current?.click()}
             disabled={busy}
           >
-            사진 업로드
+            사진 선택
           </Button>
         </div>
         {!online && <p role="status">연결이 돌아오면 업로드할 수 있어요.</p>}
@@ -141,7 +141,7 @@ export function UploadForm({
         )}
         <div className="dialog-actions receipt-upload-actions">
           <Button type="submit" disabled={!online || busy || !file}>
-            {analyzing ? 'AI 분석 중…' : busy ? '사진 확인 중…' : '품목 확인'}
+            {analyzing ? 'AI 분석 중…' : busy ? '사진 확인 중…' : '사진 올리고 분석하기'}
           </Button>
         </div>
       </form>

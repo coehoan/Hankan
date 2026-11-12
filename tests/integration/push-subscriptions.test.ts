@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../../src/lib/supabase/database.types';
-import { beforeAll, afterAll, it, expect, vi } from 'vitest';
+import { beforeAll, afterAll, afterEach, it, expect, vi } from 'vitest';
 import { randomUUID } from 'node:crypto';
 import { localAdmin, seedTestGroup, cleanupTestGroup, type GroupFixture } from '../support/db';
 import { GET, POST, DELETE } from '../../src/app/api/push/subscriptions/route';
@@ -48,6 +48,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (group) await cleanupTestGroup(group);
 });
+afterEach(() => vi.unstubAllEnvs());
 it('register_and_disconnect_only_the_bound_browser', async () => {
   expect((await POST(request('POST', subscription()))).status).toBe(200);
   const id = jar.get('hankan-push-id');
@@ -69,6 +70,7 @@ it('cross_origin_and_invalid_endpoint_are_rejected', async () => {
   ).toBe(422);
 });
 it('test push sends only to the signed-in browser even when another device is subscribed', async () => {
+  vi.stubEnv('NODE_ENV', 'development');
   const browser = subscription();
   expect((await POST(request('POST', browser))).status).toBe(200);
   const id = jar.get('hankan-push-id');
@@ -93,6 +95,15 @@ it('test push sends only to the signed-in browser even when another device is su
   );
   expect((await DELETE(request('DELETE'))).status).toBe(200);
 });
+it.each(['production', 'test'])(
+  'test push is unavailable outside development (%s)',
+  async (mode) => {
+    vi.stubEnv('NODE_ENV', mode);
+    send.mockClear();
+    expect((await sendTestPush(request('POST'))).status).toBe(404);
+    expect(send).not.toHaveBeenCalled();
+  },
+);
 it('logout_removes_this_browser_before_ending_session_and_keeps_other_devices', async () => {
   expect((await POST(request('POST', subscription()))).status).toBe(200);
   const id = jar.get('hankan-push-id')!;
